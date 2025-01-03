@@ -5,28 +5,63 @@
     <div class="container-fluid">
 
         @include('layouts.shared.page-title', ['title' => '客戶管理', 'subtitle' => '客戶列表'])
-
         <div class="row">
             <div class="col-12">
                 <div class="card">
                     <div class="card-body">
-                        <div class="row mb-2">
-                            <div class="col-sm-4">
-                                <a href="{{ route('user.create') }}">
-                                    <button type="button" class="btn btn-danger waves-effect waves-light"><i
-                                            class="mdi mdi-plus-circle me-1"></i> 新增客戶</button>
-                                </a>
+                        <div class="row justify-content-between">
+                            <div class="col-md-10">
+                                <form class="d-flex flex-wrap align-items-center" action="{{ route('customers') }}" method="GET">
+                                    @csrf
+                                    <label for="inputPassword2" class="visually-hidden">Search</label>
+                                    <div class="me-3">
+                                        <input type="search" class="form-control my-1 my-md-0" id="inputPassword2"
+                                            placeholder="客戶名稱..." name="name" value="{{ $request->name }}">
+                                    </div>
+                                    <label for="status-select" class="me-2">簽約狀態</label>
+                                    <div class="me-sm-3">
+                                        <select class="form-select my-1 my-md-0" id="status-select" name="contract_status" onchange="this.form.submit()">
+                                            <option value="null" selected>不限</option>
+                                            @foreach($contract_status as $contract_statu)
+                                                <option value="{{ $contract_statu->id }}" @if($request->contract_status == $contract_statu->id) selected @endif>{{ $contract_statu->name }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    <label for="status-select" class="me-2">申請計畫</label>
+                                    <div class="me-sm-3">
+                                        <select class="form-select" name="type" onchange="this.form.submit()">
+                                            <option value="null" @if(!isset($request->type) && $request->type=='null') selected @endif>不限</option>
+                                            <option value="0" @if($request->type == '0') selected @endif>商業服務業</option>
+                                            <option value="1" @if($request->type == '1') selected @endif>製造業</option>
+                                        </select>
+                                    </div>
+                                    <label for="status-select" class="me-2">帳號狀態</label>
+                                    <div class="me-sm-3">
+                                        <select class="form-select" name="status" onchange="this.form.submit()">
+                                            <option value="0" @if(!isset($request->status) && $request->status=='0') selected @endif>開通</option>
+                                            <option value="1" @if($request->status == '1') selected @endif>關閉</option>
+                                         </select>
+                                    </div>
+                                    <button type="submit" class="btn btn-success waves-effect waves-light me-1">搜尋</button>
+                                </form>
                             </div>
-                            <div class="col-sm-8">
-                                {{-- <div class="text-sm-end mt-2 mt-sm-0">
-                                    <button type="button" class="btn btn-success mb-2 me-1"><i
-                                            class="mdi mdi-cog"></i></button>
-                                    <button type="button" class="btn btn-light mb-2 me-1">Import</button>
-                                    <button type="button" class="btn btn-light mb-2">Export</button>
-                                </div> --}}
+                            <div class="col-md-2">
+                                <div class="text-md-end mt-3 mt-md-0">
+                                    <a href="{{ route('customer.create') }}">
+                                        <button type="button" class="btn btn-danger waves-effect waves-light"><i
+                                                class="mdi mdi-plus-circle me-1"></i> 新增客戶</button>
+                                    </a>
+                                </div>
                             </div><!-- end col-->
-                        </div>
-
+                        </div> <!-- end row -->
+                    </div>
+                </div> <!-- end card -->
+            </div><!-- end col-->
+        </div>
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body">
                         <div class="table-responsive">
                             <table class="table table-centered table-nowrap table-striped" id="products-datatable">
                                 <thead>

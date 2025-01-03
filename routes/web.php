@@ -12,6 +12,7 @@ use App\Http\Controllers\CheckStatusController;
 use App\Http\Controllers\TaskTemplateController;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\ProjectController;
+use App\Http\Controllers\ProjectMilestonesController;
 
 
 require __DIR__ . '/auth.php';
@@ -81,7 +82,21 @@ Route::post('task/edit/{id}', [TaskController::class, 'update'])->name('task.edi
 
 
 Route::get('projects', [ProjectController::class,'index'])->name('projects');
+Route::get('project/create', [ProjectController::class, 'create'])->name('project.create');
+Route::post('project/create', [ProjectController::class, 'store'])->name('project.create.data');
+Route::get('project/edit/{id}', [ProjectController::class, 'edit'])->name('project.edit');
+Route::post('project/edit/{id}', [ProjectController::class, 'update'])->name('project.edit.data');
 Route::get('/project/{id}', [ProjectController::class, 'show'])->name('project.show');
+
+Route::get('projectMilestones', [ProjectMilestonesController::class, 'index'])->name('projectMilestones');
+Route::get('projectMilestones/create', [ProjectMilestonesController::class, 'create'])->name('projectMilestones.create');
+Route::post('projectMilestones/create', [ProjectMilestonesController::class, 'store'])->name('projectMilestones.create.data');
+Route::get('projectMilestones/edit/{id}', [ProjectMilestonesController::class, 'show'])->name('projectMilestones.edit');
+Route::post('projectMilestones/edit/{id}', [ProjectMilestonesController::class, 'update'])->name('projectMilestones.edit.data');
+
+// routes/web.php
+Route::get('/api/projects/{user_id}', [ProjectController::class, 'getProjectsByUser']);
+
 
 
 Route::get('', function () {

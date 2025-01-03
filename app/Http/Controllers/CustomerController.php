@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\CustData;
 use App\Models\CustProject;
+use App\Models\ContractStatus;
 use Illuminate\Support\Facades\Hash;
 use Carbon\Carbon;
 use App\Models\CustSocail;
@@ -37,7 +38,7 @@ class CustomerController extends Controller
      */
     public function index(Request $request)
     {
-
+        $contract_status = ContractStatus::where('status', 'up')->orderby('seq','desc')->get();
         $datas = User::where('group_id', '2')
             ->join('cust_data', 'cust_data.user_id', '=', 'users.id');
 
@@ -53,11 +54,13 @@ class CustomerController extends Controller
             } else {
                 $datas = $datas->where('users.status', '0');
             }
-            $check_status = $request->check_status;
-            if ($check_status) {
-                $datas = $datas->where('check_status', $check_status);
-            } else {
-                $datas = $datas->where('cust_data.check_status', '0');
+            $contracts = $request->contract_status;
+            if ($contracts != "null") {
+                if (isset($contracts)) {
+                    $datas = $datas->where('cust_data.contract_status', $contracts);
+                } else {
+                    $datas = $datas;
+                }
             }
             $type = $request->type;
             if ($type != "null") {
@@ -74,7 +77,7 @@ class CustomerController extends Controller
                 $datas = $datas;
             }
         } else {
-            $datas = $datas->where('users.status', '0')->where('check_status', '0');
+            $datas = $datas->where('users.status', '0')->where('cust_data.contract_status', '0');
         }
 
         if (Auth::user()->group_id == 1) {
@@ -91,13 +94,14 @@ class CustomerController extends Controller
             }
         }
         // dd($types);
-        return view('customer.index')->with('datas', $datas)->with('types', $types)->with('request', $request);
+        return view('customer.index')->with('datas', $datas)->with('types', $types)->with('request', $request)->with('contract_status', $contract_status);
     }
 
     public function Create()
     {
+        $contract_status = ContractStatus::where('status', 'up')->orderby('seq','desc')->get();
         $groups = UserGroup::whereNotIn('id', [2])->get();
-        return view('customer.create')->with('hint', 0)->with('groups', $groups);
+        return view('customer.create')->with('hint', 0)->with('groups', $groups)->with('contract_status', $contract_status);
     }
 
     public function IntroduceCreate()
@@ -335,6 +339,10 @@ class CustomerController extends Controller
             $cust_data->user_id = $user_data->id;
             $cust_data->nas_link = $request->nas_link;
             $cust_data->registration_no = $request->registration_no;
+            $cust_data->county = $request->county;
+            $cust_data->district = $request->district;
+            $cust_data->zipcode = $request->zipcode;
+            $cust_data->address = $request->address;
             $cust_data->principal_name = $request->principal_name;
             if ((Auth::user()->level == 2)) {
                 $cust_data->limit_status = Auth::user()->group_id;

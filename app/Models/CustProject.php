@@ -9,7 +9,7 @@ class CustProject extends Model
 {
     use HasFactory;
     protected $table = "cust_project";
-    protected $fillable = ['user_id','year','type','status'];
+    protected $fillable = ['user_id','year','type','status','name','check_limlit','check_status'];
 
     public function user_data()
     {

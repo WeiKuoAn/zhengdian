@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\CustProject;
 use App\Models\CustSocail;
+use App\Models\CheckStatus;
 use App\Models\BusinessDrive;
 use App\Models\BusinessNeed;
 use App\Models\BusinessSituation;
@@ -27,6 +28,15 @@ use Illuminate\Support\Facades\Auth;
 
 class ProjectController extends Controller
 {
+    public function getProjectsByUser($user_id)
+    {
+        // 查詢特定用戶的專案
+        $projects = CustProject::where('user_id', $user_id)->get();
+
+        // 回傳 JSON 資料
+        return response()->json($projects);
+    }
+    
     public function index(Request $request)
     {
         $datas = CustProject::join('cust_data', 'cust_data.user_id', '=', 'cust_project.user_id')
@@ -47,8 +57,31 @@ class ProjectController extends Controller
      */
     public function create()
     {
-        //
+        $cust_datas = User::where('status', 1)->where('group_id', 2)->get();
+        $check_statuss = CheckStatus::where('status','up')->get();
+        return view('project.create')->with('cust_datas', $cust_datas)->with('check_statuss', $check_statuss);
     }
+
+    public function store(Request $request)
+    {
+        $cust_data = User::where('id',$request->user_id)->first();
+        $type = '';
+        if($request->type == 0) $type = '商業服務業';
+        if($request->type == 1) $type = '製造業';
+
+        $data = new CustProject;
+        $data->date = $request->date;
+        $data->name = date('Ymd', strtotime($request->date)) . '-' . ($type ?? 'N/A') . '-' . ($cust_data->name ?? '000');;
+        $data->year = substr($request->date, 0, 4);
+        $data->user_id = $request->user_id;
+        $data->type = $request->type;
+        $data->check_status = $request->check_status;
+        $data->status = 0;
+        $data->check_limlit  = 0;
+        $data->save();
+        return redirect()->route('projects');
+    }
+
 
     public function BusinessCreate()
     {   
@@ -430,11 +463,7 @@ class ProjectController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
-    {
-        //
-    }
-
+    
     /**
      * Display the specified resource.
      */

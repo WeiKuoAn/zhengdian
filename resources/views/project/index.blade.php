@@ -85,9 +85,9 @@
                             </div>
                             <div class="col-sm-2">
                                 <div class="text-sm-end mt-3 mt-sm-0">
-                                    <a href="{{ route('user.create') }}">
+                                    <a href="{{ route('project.create') }}">
                                         <button type="button" class="btn btn-danger waves-effect waves-light"><i
-                                                class="mdi mdi-plus-circle me-1"></i> 新增客戶</button>
+                                                class="mdi mdi-plus-circle me-1"></i> 新增專案</button>
                                     </a>
                                 </div>
                             </div><!-- end col-->
