@@ -10,4 +10,6 @@ class ContractStatus extends Model
     protected $fillable = [
         'name', 'status','seq'
     ];
+
+    
 }

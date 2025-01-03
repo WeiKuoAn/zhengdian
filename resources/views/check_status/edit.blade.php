@@ -27,7 +27,7 @@
                                     <label for="project-priority" class="form-label">父項目<span
                                             class="text-danger">*</span></label>
                                     <select class="form-control" data-toggle="select" data-width="100%" name="parent_id">
-                                        <option value="null">無</option>
+                                        <option value="">無</option>
                                         @foreach ($status_datas as $key => $status_data)
                                             <option value="{{ $status_data->id }}" @if($data->parent_id == $status_data->parent_id) selected @endif>{{ $status_data->name }}</option>
                                         @endforeach

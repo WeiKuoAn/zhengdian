@@ -38,7 +38,11 @@
                                         <tr>
                                             <td>{{ $key + 1 }}</td>
                                             <td>{{ $data->name }}</td>
-                                            <td>{{ $data->parent_id }}</td>
+                                            <td>
+                                                @if (isset($data->check_data))
+                                                    {{ $data->check_data->name }}
+                                                @endif
+                                            </td>
                                             <td>{{ $data->seq }}</td>
                                             <td>
                                                 @if ($data->status == 'up')
@@ -48,7 +52,7 @@
                                                 @endif
                                             </td>
                                             <td>
-                                                <a href="{{ route('contractStatus.edit', $data->id) }}" class="action-icon"> <i
+                                                <a href="{{ route('checkStatus.edit', $data->id) }}" class="action-icon"> <i
                                                         class="mdi mdi-square-edit-outline"></i></a>
                                                 {{-- <a href="javascript:void(0);" class="action-icon"> <i class="mdi mdi-delete"></i></a> --}}
                                             </td>

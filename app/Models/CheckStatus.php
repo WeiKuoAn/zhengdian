@@ -13,4 +13,9 @@ class CheckStatus extends Model
         'status',
         'seq'
     ];
+
+    public function check_data()
+    {
+        return $this->hasOne('App\Models\CheckStatus', 'id', 'parent_id');
+    }
 }

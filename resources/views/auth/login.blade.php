@@ -60,16 +60,16 @@
                             @csrf
 
                             <div class="mb-3">
-                                <label for="emailaddress" class="form-label">Email address</label>
-                                <input class="form-control" type="email" name="email" id="emailaddress" required=""
-                                       placeholder="Enter your email" value="demo@user.com">
+                                <label for="emailaddress" class="form-label">帳號</label>
+                                <input class="form-control" type="text" name="email" id="emailaddress" required=""
+                                       placeholder="帳號" value="">
                             </div>
 
                             <div class="mb-3">
-                                <label for="password" class="form-label">Password</label>
+                                <label for="password" class="form-label">密碼</label>
                                 <div class="input-group input-group-merge">
                                     <input type="password" name="password" id="password" class="form-control"
-                                           placeholder="Enter your password" value="password">
+                                           placeholder="密碼" value="">
                                     <div class="input-group-text" data-password="true">
                                         <span class="password-eye"></span>
                                     </div>
