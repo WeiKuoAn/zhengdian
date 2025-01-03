@@ -100,6 +100,13 @@
             </li>
 
             <li class="menu-item">
+                <a href="#" class="menu-link">
+                    <span class="menu-icon"><i data-feather="calendar"></i></span>
+                    <span class="menu-text"> 個人待辦    </span>
+                </a>
+            </li>
+
+            <li class="menu-item">
                 <a class="menu-link" href="#sidebarCrm" data-bs-toggle="collapse">
                     <span class="menu-icon"><i data-feather="users"></i></span>
                     <span class="menu-text"> 客戶管理 </span>
@@ -129,21 +136,12 @@
                     <span class="menu-arrow"></span>
                 </a>
                 <div class="collapse" id="project">
-                    <ul class="sub-menu">
+                    <ul class="sub-menu" id="dynamicProjectMenu">
                         <li class="menu-item">
-                            <a class="menu-link" href="#"><span class="menu-text">提案未過案</span></a>
-                        </li>
-                        <li class="menu-item">
-                            <a class="menu-link" href="#"><span class="menu-text">提案階段</span></a>
-                        </li>
-                        <li class="menu-item">
-                            <a class="menu-link" href="#"><span class="menu-text">簽約階段</span></a>
-                        </li>
-                        <li class="menu-item">
-                            <a class="menu-link" href="#"><span class="menu-text">期中</span></a>
-                        </li>
-                        <li class="menu-item">
-                            <a class="menu-link" href="#"><span class="menu-text">期末</span></a>
+                            <a class="menu-link" href="{{ route('projects') }}"
+                                class="{{ request()->is('projects') ? 'active' : '' }}">
+                                <span class="menu-text">專案列表</span>
+                            </a>
                         </li>
                     </ul>
                 </div>
@@ -188,7 +186,7 @@
                 <div class="collapse" id="work">
                     <ul class="sub-menu">
                         <li class="menu-item">
-                            <a class="menu-link" href="#"><span class="menu-text">派工列表</span></a>
+                            <a class="menu-link" href="{{route('task')}}"  class="{{ request()->is('task') ? 'active' : '' }}"><span class="menu-text">派工列表</span></a>
                         </li>
                     </ul>
                 </div>
@@ -211,6 +209,11 @@
                             <a class="menu-link" href="{{ route('checkStatus') }}"
                                 class="{{ request()->is('checkStatus') ? 'active' : '' }}"><span
                                     class="menu-text">計畫狀態類別設定</span></a>
+                        </li>
+                        <li class="menu-item">
+                            <a class="menu-link" href="{{ route('TaskTemplate') }}"
+                                class="{{ request()->is('TaskTemplate') ? 'active' : '' }}"><span
+                                    class="menu-text">派工類別設定</span></a>
                         </li>
                     </ul>
                 </div>
@@ -272,3 +275,31 @@
 
 </div>
 <!-- Left Sidebar End -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function () {
+        // 發送 AJAX 請求獲取資料
+        $.ajax({
+            url: '/get-sidebar-data',
+            type: 'GET',
+            success: function (data) {
+                // 將獲取的資料動態加入到側邊欄中
+                var menuHtml = '';
+                $.each(data, function (index, status) {
+                    menuHtml += `
+                        <li class="menu-item">
+                            <a class="menu-link" href="/project/${status.id}">
+                                <span class="menu-text">${status.name}</span>
+                            </a>
+                        </li>`;
+                });
+
+                // 插入到指定選單中
+                $('#dynamicProjectMenu').append(menuHtml);
+            },
+            error: function () {
+                alert('無法加載專案管理資料，請稍後再試');
+            }
+        });
+    });
+</script>

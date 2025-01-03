@@ -13,7 +13,7 @@
             <div class="col-xl-6">
                 <div class="card">
                     <div class="card-body">
-                        <form action="{{ route('checkStatus.create.data') }}" method="POST">
+                        <form action="{{ route('TaskTemplate.create.data') }}" method="POST">
                             @csrf
                             <div class="row">
                                 <div class="mb-3">
@@ -21,14 +21,14 @@
                                     <input type="text" class="form-control" name="name" value="" required>
                                 </div>
                                 <div class="mb-3">
-                                    <label class="form-label">排序<span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control" name="seq" value="0" required>
+                                    <label class="form-label">描述<span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" name="description" value="" required>
                                 </div>
                                 <div class="mb-3">
                                     <label for="project-priority" class="form-label">父項目<span
                                             class="text-danger">*</span></label>
                                     <select class="form-control" data-toggle="select" data-width="100%" name="parent_id">
-                                        <option value="null">無</option>
+                                        <option value="">無</option>
                                         @foreach ($datas as $key => $data)
                                             <option value="{{ $data->id }}">{{ $data->name }}</option>
                                         @endforeach

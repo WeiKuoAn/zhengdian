@@ -27,6 +27,7 @@
                                     <tr>
                                         <th scope="col">No</th>
                                         <th scope="col">名稱</th>
+                                        <th scope="col">排序</th>
                                         <th scope="col">狀態</th>
                                         <th scope="col">操作</th>
                                     </tr>
@@ -36,6 +37,7 @@
                                         <tr>
                                             <td>{{ $key + 1 }}</td>
                                             <td>{{ $data->name }}</td>
+                                            <td>{{ $data->seq }}</td>
                                             <td>
                                                 @if ($data->status == 'up')
                                                     啟用

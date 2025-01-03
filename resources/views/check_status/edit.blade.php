@@ -10,16 +10,28 @@
             <div class="col-xl-6">
                 <div class="card">
                     <div class="card-body">
-                        <form action="{{ route('contractStatus.edit.data',$data->id) }}" method="POST">
+                        <form action="{{ route('checkStatus.edit.data', $data->id) }}" method="POST">
                             @csrf
                             <div class="row">
                                 <div class="mb-3">
                                     <label class="form-label">名稱<span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control" name="name" value="{{$data->name}}" required>
+                                    <input type="text" class="form-control" name="name" value="{{ $data->name }}"
+                                        required>
                                 </div>
                                 <div class="mb-3">
                                     <label class="form-label">排序<span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control" name="seq" value="{{$data->seq}}" required>
+                                    <input type="text" class="form-control" name="seq" value="{{ $data->seq }}"
+                                        required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="project-priority" class="form-label">父項目<span
+                                            class="text-danger">*</span></label>
+                                    <select class="form-control" data-toggle="select" data-width="100%" name="parent_id">
+                                        <option value="null">無</option>
+                                        @foreach ($status_datas as $key => $status_data)
+                                            <option value="{{ $status_data->id }}" @if($data->parent_id == $status_data->parent_id) selected @endif>{{ $status_data->name }}</option>
+                                        @endforeach
+                                    </select>
                                 </div>
                                 <div class="mb-1">
                                     <label for="project-priority" class="form-label">狀態<span

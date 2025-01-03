@@ -9,7 +9,7 @@ class ContractStatusController extends Controller
 {
     public function index(Request $request)
     {
-        $datas = ContractStatus::get();
+        $datas = ContractStatus::orderby('seq', 'asc')->get();
 
         return view('contract_status.index')->with('datas', $datas);
     }

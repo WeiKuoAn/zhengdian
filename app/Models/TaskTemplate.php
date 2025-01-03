@@ -4,13 +4,14 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class CheckStatus extends Model
+class TaskTemplate extends Model
 {
-    protected $table = 'check_status';
+    protected $table = 'task_templates';
     protected $fillable = [
         'parent_id',
         'name',
-        'status',
-        'seq'
+        'description',
+        'seq',
+        'created_by'
     ];
 }

@@ -3,24 +3,15 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\CheckStatus;
+use App\Models\TaskTemplate;
+use Illuminate\Support\Facades\Auth;
 
-class CheckStatusController extends Controller
+class TaskTemplateController extends Controller
 {
-
-    public function getCheckStatus()
-    {
-        // 查詢 parent_id 為 null 的資料
-        $statuses = CheckStatus::whereNull('parent_id')->get();
-
-        // 回傳 JSON 格式
-        return response()->json($statuses);
-    }
-    
     public function index(Request $request)
     {
-        $datas = CheckStatus::orderby('seq', 'asc')->get();
-        return view('check_status.index')->with('datas', $datas);
+        $datas = TaskTemplate::orderby('seq', 'asc')->get();
+        return view('task_template.index')->with('datas', $datas);
     }
 
     /**
@@ -30,8 +21,8 @@ class CheckStatusController extends Controller
      */
     public function create()
     {
-        $datas = CheckStatus::get();
-        return view('check_status.create')->with('datas', $datas);
+        $datas = TaskTemplate::get();
+        return view('task_template.create')->with('datas',$datas);
     }
     /**
      * Store a newly created resource in storage.
@@ -42,13 +33,13 @@ class CheckStatusController extends Controller
 
     public function store(Request $request)
     {
-        $data = new CheckStatus;
-        $data->parent_id = $request->parent_id;
+        $data = new TaskTemplate;
         $data->name = $request->name;
-        $data->seq = $request->seq;
-        $data->status = $request->status;
+        $data->parent_id = $request->parent_id;
+        $data->description = $request->description;
+        $data->created_by = Auth::user()->id;
         $data->save();
-        return redirect()->route('checkStatus');
+        return redirect()->route('TaskTemplate');
     }
 
     /**
@@ -59,9 +50,9 @@ class CheckStatusController extends Controller
      */
     public function show($id)
     {
-        $data = CheckStatus::where('id', $id)->first();
-        $status_datas = CheckStatus::get();
-        return view('check_status.edit')->with('data', $data)->with('status_datas', $status_datas);
+        $data = TaskTemplate::where('id', $id)->first();
+        $TaskTemplate_datas = TaskTemplate::get();
+        return view('task_template.edit')->with('data', $data)->with('TaskTemplate_datas', $TaskTemplate_datas);
     }
 
 
@@ -85,13 +76,13 @@ class CheckStatusController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $data = CheckStatus::where('id', $id)->first();
-        $data->parent_id = $request->parent_id;
+        $data = TaskTemplate::where('id', $id)->first();
         $data->name = $request->name;
-        $data->seq = $request->seq;
-        $data->status = $request->status;
+        $data->parent_id = $request->parent_id;
+        $data->description = $request->description;
+        $data->created_by = Auth::user()->id;
         $data->save();
-        return redirect()->route('checkStatus');
+        return redirect()->route('TaskTemplate');
     }
 
     /**
