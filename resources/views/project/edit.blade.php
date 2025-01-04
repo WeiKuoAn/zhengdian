@@ -12,7 +12,7 @@
                     <div class="card-body">
                         <div class="d-flex align-items-start mb-3">
                             <div class="w-100 ">
-                                <h3 class="mt-1 mb-0">{{ $data->user_data->name }}【{{ $data->project_name }}】</h5>
+                                <h3 class="mt-1 mb-0">{{ $data->user_data->name }}【{{ $data->name }}】</h5>
                                     <p class="mb-1 mt-1 text-muted">計畫登入帳號：ＸＸＸ　計畫登入密碼：ＸＸＸ</p>
                             </div>
                         </div>
