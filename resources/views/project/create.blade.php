@@ -21,8 +21,8 @@
                                     <label for="project-priority" class="form-label">專案類型<span
                                             class="text-danger">*</span></label>
                                     <select class="form-control" data-toggle="select" data-width="100%" name="type">
-                                        <option value="up">商業服務業</option>
-                                        <option value="down">製造業</option>
+                                        <option value="0">商業服務業</option>
+                                        <option value="1">製造業</option>
                                     </select>
                                 </div>
                                 <div class="mb-3">

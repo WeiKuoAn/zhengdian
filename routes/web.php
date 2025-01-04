@@ -41,7 +41,7 @@ Route::post('user/edit/{id}', [UserController::class, 'update'])->name('user.edi
 Route::get('customers', [CustomerController::class, 'index'])->name('customers');
 Route::get('customer/create', [CustomerController::class, 'create'])->name('customer.create');
 Route::post('customer/create', [CustomerController::class, 'store'])->name('customer.create.data');
-Route::get('customer/edit/{id}', [CustomerController::class, 'show'])->name('customer.edit');
+Route::get('customer/edit/{id}', [CustomerController::class, 'edit'])->name('customer.edit');
 Route::post('customer/edit/{id}', [CustomerController::class, 'update'])->name('customer.edit.data');
 Route::get('customer/del/{id}', [CustomerController::class, 'delete'])->name('customer.del');
 Route::post('customer/del/{id}', [CustomerController::class, 'destroy'])->name('customer.del.data');
@@ -86,6 +86,8 @@ Route::get('project/create', [ProjectController::class, 'create'])->name('projec
 Route::post('project/create', [ProjectController::class, 'store'])->name('project.create.data');
 Route::get('project/edit/{id}', [ProjectController::class, 'edit'])->name('project.edit');
 Route::post('project/edit/{id}', [ProjectController::class, 'update'])->name('project.edit.data');
+Route::get('project/write/{id}', [ProjectController::class, 'write'])->name('project.write');
+Route::get('project/plan/{id}', [ProjectController::class, 'plan'])->name('project.plan');
 Route::get('/project/{id}', [ProjectController::class, 'show'])->name('project.show');
 
 Route::get('projectMilestones', [ProjectMilestonesController::class, 'index'])->name('projectMilestones');

@@ -14,4 +14,9 @@ class TaskTemplate extends Model
         'seq',
         'created_by'
     ];
+
+    public function task_template_data()
+    {
+        return $this->hasOne('App\Models\TaskTemplate', 'id', 'parent_id');
+    }
 }

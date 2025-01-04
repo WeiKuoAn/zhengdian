@@ -381,8 +381,10 @@ class CustomerController extends Controller
     public function edit(string $id)
     {
         $groups = UserGroup::whereNotIn('id', [2])->get();
-        $data = CustData::where('user_id', $id)->first();
-        return view('customer.edit')->with('hint', 0)->with('data', $data)->with('groups', $groups);
+        $data = User::where('id', $id)->first();
+        $contract_status = ContractStatus::where('status', 'up')->orderby('seq','desc')->get();
+        // dd($data);
+        return view('customer.edit')->with('hint', 0)->with('data', $data)->with('groups', $groups)->with('contract_status', $contract_status);
     }
 
     /**
@@ -400,46 +402,19 @@ class CustomerController extends Controller
         //編輯客戶資料
         $cust_data = CustData::where('user_id', $user->id)->first();
         $cust_data->nas_link = $request->nas_link;
+        $cust_data->capital = $request->capital;
+        $cust_data->county = $request->county;
+        $cust_data->district = $request->district;
+        $cust_data->address = $request->address;
         $cust_data->registration_no = $request->registration_no;
         $cust_data->principal_name = $request->principal_name;
         if (Auth::user()->group_id == 1) {
             $cust_data->limit_status = $request->limit_status;
         }
-        $cust_data->check_status = $request->check_status;
+        $cust_data->contract_status = $request->contract_status;
         $cust_data->save();
 
-        //驗證是否有商業類並有開通
-        $project_datas = CustProject::where('user_id', $user->id)->where('status', '0')->get();
-        foreach ($project_datas as $project_data) {
-            $project_data->status = 1;
-            $project_data->save();
-        }
-
-        $types = [];
-        if ($request->has('type0')) {
-            array_push($types, $request->input('type0'));
-        }
-        if ($request->has('type1')) {
-            array_push($types, $request->input('type1'));
-        }
-
-        foreach ($types as $type) {
-            $type_data = CustProject::where('user_id', $user->id)->where('type', $type)->where('status', '1')->first();
-            if (!isset($type_data)) {
-                $type_data = new CustProject();
-                $type_data->year = Carbon::now()->year;
-                $type_data->user_id = $id;
-                $type_data->type = $type;
-                $type_data->save();
-            } else {
-                $type_data->status = 0;
-                $type_data->save();
-            }
-        }
-
-        // dd($types);
-
-        return redirect()->route('customer.index');
+        return redirect()->route('customers');
     }
 
     /**

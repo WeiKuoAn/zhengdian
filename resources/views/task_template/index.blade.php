@@ -36,7 +36,11 @@
                                         <tr>
                                             <td>{{ $key + 1 }}</td>
                                             <td>{{ $data->name }}</td>
-                                            <td>{{ $data->parent_id }}</td>
+                                            <td>
+                                                @if(isset($data->task_template_data))
+                                                {{ $data->task_template_data->name }}
+                                                @endif
+                                            </td>
                                             <td>
                                                 <a href="{{ route('TaskTemplate.edit', $data->id) }}" class="action-icon"> <i
                                                         class="mdi mdi-square-edit-outline"></i></a>

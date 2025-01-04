@@ -25,6 +25,8 @@ use App\Models\ManufactureIso;
 use App\Models\ProjectAppendix;
 use SebastianBergmann\CodeCoverage\Report\Xml\Project;
 use Illuminate\Support\Facades\Auth;
+use App\Models\Word;
+use App\Models\ProjectMilestones;
 
 class ProjectController extends Controller
 {
@@ -36,20 +38,19 @@ class ProjectController extends Controller
         // 回傳 JSON 資料
         return response()->json($projects);
     }
-    
+
     public function index(Request $request)
     {
         $datas = CustProject::join('cust_data', 'cust_data.user_id', '=', 'cust_project.user_id')
-                              ->where('cust_project.status','0')
-                              ->orderby('cust_data.id','desc');
+            ->where('cust_project.status', '0')
+            ->orderby('cust_data.id', 'desc');
 
-        if(Auth::user()->group_id == 1)
-        {
+        if (Auth::user()->group_id == 1) {
             $datas = $datas->paginate(50);
-        }else{
-            $datas = $datas->whereIn('cust_data.limit_status',['all',Auth::user()->group_id])->paginate(50);
+        } else {
+            $datas = $datas->whereIn('cust_data.limit_status', ['all', Auth::user()->group_id])->paginate(50);
         }
-        return view('project.index')->with('datas', $datas)->with('request',$request);
+        return view('project.index')->with('datas', $datas)->with('request', $request);
     }
 
     /**
@@ -58,16 +59,16 @@ class ProjectController extends Controller
     public function create()
     {
         $cust_datas = User::where('status', 1)->where('group_id', 2)->get();
-        $check_statuss = CheckStatus::where('status','up')->get();
+        $check_statuss = CheckStatus::where('status', 'up')->get();
         return view('project.create')->with('cust_datas', $cust_datas)->with('check_statuss', $check_statuss);
     }
 
     public function store(Request $request)
     {
-        $cust_data = User::where('id',$request->user_id)->first();
+        $cust_data = User::where('id', $request->user_id)->first();
         $type = '';
-        if($request->type == 0) $type = '商業服務業';
-        if($request->type == 1) $type = '製造業';
+        if ($request->type == 0) $type = '商業服務業';
+        if ($request->type == 1) $type = '製造業';
 
         $data = new CustProject;
         $data->date = $request->date;
@@ -84,25 +85,25 @@ class ProjectController extends Controller
 
 
     public function BusinessCreate()
-    {   
-        $cust_data = CustData::where('user_id',Auth::user()->id)->first();
-        $project = CustProject::where('user_id',Auth::user()->id)->where('type','0')->first();
-        $project_host_data = ProjectHost::where('user_id',Auth::user()->id)->where('project_id',$project->id)->first();
-        $project_contact_data = ProjectContact::where('user_id',Auth::user()->id)->where('project_id',$project->id)->first();
+    {
+        $cust_data = CustData::where('user_id', Auth::user()->id)->first();
+        $project = CustProject::where('user_id', Auth::user()->id)->where('type', '0')->first();
+        $project_host_data = ProjectHost::where('user_id', Auth::user()->id)->where('project_id', $project->id)->first();
+        $project_contact_data = ProjectContact::where('user_id', Auth::user()->id)->where('project_id', $project->id)->first();
         // if(!isset($project)) $project = [];
         // if(!isset($project_host_data)) $project_host_data = [];
         // if(!isset($project_contact_data)) $project_contact_data = [];
         // dd($project_contact_data);
 
-        return view('project.business-create')->with('project',$project)->with('project_host_data',$project_host_data)
-                                              ->with('project_contact_data',$project_contact_data)
-                                              ->with('cust_data',$cust_data);
+        return view('project.business-create')->with('project', $project)->with('project_host_data', $project_host_data)
+            ->with('project_contact_data', $project_contact_data)
+            ->with('cust_data', $cust_data);
     }
-    
+
     public function BusinessStore(Request $request)
-    {   
-        $cust_data = CustData::where('user_id',Auth::user()->id)->first();
-        $project = CustProject::where('user_id',Auth::user()->id)->where('type','0')->first();
+    {
+        $cust_data = CustData::where('user_id', Auth::user()->id)->first();
+        $project = CustProject::where('user_id', Auth::user()->id)->where('type', '0')->first();
         //計畫主持人
         $project_host = ProjectHost::firstOrNew(['project_id' => $project->id]);
         $project_host->user_id = Auth::user()->id;
@@ -130,20 +131,17 @@ class ProjectController extends Controller
         $project_contact->save();
 
         //人事名單
-        $cust_personnel_datas = ProjectPersonnel::where('project_id',$project->id)->get();
-        if(count($cust_personnel_datas) > 0) {
-            $cust_personnel_datas = ProjectPersonnel::where('project_id',$project->id)->delete();
+        $cust_personnel_datas = ProjectPersonnel::where('project_id', $project->id)->get();
+        if (count($cust_personnel_datas) > 0) {
+            $cust_personnel_datas = ProjectPersonnel::where('project_id', $project->id)->delete();
         }
-        if(isset($request->personnel_names))
-        {
-            foreach($request->personnel_names as $key=>$personnel_name)
-            {
-                if(isset($personnel_name) && $personnel_name != null)
-                {
+        if (isset($request->personnel_names)) {
+            foreach ($request->personnel_names as $key => $personnel_name) {
+                if (isset($personnel_name) && $personnel_name != null) {
                     $cust_personnel = new ProjectPersonnel;
                     $cust_personnel->user_id = Auth::user()->id;
                     $cust_personnel->project_id = $project->id;
-                    $cust_personnel->name= $request->personnel_names[$key];
+                    $cust_personnel->name = $request->personnel_names[$key];
                     $cust_personnel->department = $request->personnel_departments[$key];
                     $cust_personnel->job = $request->personnel_jobs[$key];
                     $cust_personnel->context = $request->personnel_contexts[$key];
@@ -154,21 +152,18 @@ class ProjectController extends Controller
         }
 
         //五家被帶動的企業
-        $business_drive_datas = BusinessDrive::where('project_id',$project->id)->get();
-        if(count($business_drive_datas) > 0) {
-            $business_drive_datas = BusinessDrive::where('project_id',$project->id)->delete();
+        $business_drive_datas = BusinessDrive::where('project_id', $project->id)->get();
+        if (count($business_drive_datas) > 0) {
+            $business_drive_datas = BusinessDrive::where('project_id', $project->id)->delete();
         }
-        if(isset($request->drive_names))
-        {
-            foreach($request->drive_names as $key=>$drive_name)
-            {
-                if(isset($drive_name))
-                {
+        if (isset($request->drive_names)) {
+            foreach ($request->drive_names as $key => $drive_name) {
+                if (isset($drive_name)) {
                     $business_drive = new BusinessDrive;
                     $business_drive->user_id = Auth::user()->id;
                     $business_drive->project_id = $project->id;
-                    $business_drive->type= $request->drive_types[$key];
-                    $business_drive->name= $request->drive_names[$key];
+                    $business_drive->type = $request->drive_types[$key];
+                    $business_drive->name = $request->drive_names[$key];
                     $business_drive->numbers = $request->drive_numbers[$key];
                     $business_drive->principal = $request->drive_principals[$key];
                     $business_drive->employeecount = $request->drive_employeecounts[$key];
@@ -178,41 +173,35 @@ class ProjectController extends Controller
         }
 
         //現況
-        $business_situation_datas = BusinessSituation::where('project_id',$project->id)->get();
-        if(count($business_situation_datas) > 0) {
-            $business_situation_datas = BusinessSituation::where('project_id',$project->id)->delete();
+        $business_situation_datas = BusinessSituation::where('project_id', $project->id)->get();
+        if (count($business_situation_datas) > 0) {
+            $business_situation_datas = BusinessSituation::where('project_id', $project->id)->delete();
         }
-        if(isset($request->situation_contexts))
-        {
-            foreach($request->situation_contexts as $key=>$situation_context)
-            {
-                if(isset($situation_context))
-                {
+        if (isset($request->situation_contexts)) {
+            foreach ($request->situation_contexts as $key => $situation_context) {
+                if (isset($situation_context)) {
                     $business_situation = new BusinessSituation;
                     $business_situation->user_id = Auth::user()->id;
                     $business_situation->project_id = $project->id;
-                    $business_situation->context= $request->situation_contexts[$key];
+                    $business_situation->context = $request->situation_contexts[$key];
                     $business_situation->save();
                 }
             }
         }
 
         //需求
-        $business_need_datas = BusinessNeed::where('project_id',$project->id)->get();
-        if(count($business_need_datas) > 0) {
-            $business_need_datas = BusinessNeed::where('project_id',$project->id)->delete();
+        $business_need_datas = BusinessNeed::where('project_id', $project->id)->get();
+        if (count($business_need_datas) > 0) {
+            $business_need_datas = BusinessNeed::where('project_id', $project->id)->delete();
         }
-        if(isset($request->need_names))
-        {
-            foreach($request->need_names as $key=>$need_name)
-            {
-                if(isset($need_name))
-                {
+        if (isset($request->need_names)) {
+            foreach ($request->need_names as $key => $need_name) {
+                if (isset($need_name)) {
                     $business_need = new BusinessNeed;
                     $business_need->user_id = Auth::user()->id;
                     $business_need->project_id = $project->id;
-                    $business_need->name= $request->need_names[$key];
-                    $business_need->context= $request->need_contexts[$key];
+                    $business_need->name = $request->need_names[$key];
+                    $business_need->context = $request->need_contexts[$key];
                     $business_need->save();
                 }
             }
@@ -230,7 +219,6 @@ class ProjectController extends Controller
         $checkboxesStatus = $appendix ? json_encode($appendix->checkboxes_status) : json_encode([]);
 
         return view('project.business-appendix', compact('cust_data', 'appendix', 'checkboxesStatus'));
-
     }
 
     public function BusinessPreview()
@@ -241,15 +229,15 @@ class ProjectController extends Controller
         for ($i = 1; $i <= 3; $i++) {
             $years[] = $now->copy()->subYears($i)->year;
         }
-        $cust_data = CustData::where('user_id',Auth::user()->id)->first();
-        $project = CustProject::where('user_id',Auth::user()->id)->first();
-        $project_host_data = ProjectHost::where('user_id',Auth::user()->id)->first();
-        $project_contact_data = ProjectContact::where('user_id',Auth::user()->id)->first();
+        $cust_data = CustData::where('user_id', Auth::user()->id)->first();
+        $project = CustProject::where('user_id', Auth::user()->id)->first();
+        $project_host_data = ProjectHost::where('user_id', Auth::user()->id)->first();
+        $project_contact_data = ProjectContact::where('user_id', Auth::user()->id)->first();
         return view('project.business-preview')->with('project', $project)
-                                              ->with('project_host_data',$project_host_data)
-                                              ->with('project_contact_data',$project_contact_data)
-                                              ->with('cust_data',$cust_data)
-                                              ->with('years',$years);
+            ->with('project_host_data', $project_host_data)
+            ->with('project_contact_data', $project_contact_data)
+            ->with('cust_data', $cust_data)
+            ->with('years', $years);
     }
 
     public function updateAppendixStatus(Request $request)
@@ -259,9 +247,9 @@ class ProjectController extends Controller
         $project_id = $request->project_id;
         // dd($project_id);
 
-        if(Auth::user()->group_id==2){
+        if (Auth::user()->group_id == 2) {
             $project = CustProject::where('user_id', Auth::id())->first();
-        }else{
+        } else {
             $project = CustProject::where('id', $project_id)->first();
         }
 
@@ -296,20 +284,20 @@ class ProjectController extends Controller
 
     public function ManufacturingCreate()
     {
-        $cust_data = CustData::where('user_id',Auth::user()->id)->first();
-        $project = CustProject::where('user_id',Auth::user()->id)->where('type','1')->first();
-        $project_host_data = ProjectHost::where('user_id',Auth::user()->id)->where('project_id',$project->id)->first();
-        $project_contact_data = ProjectContact::where('user_id',Auth::user()->id)->where('project_id',$project->id)->first();
-        
-        return view('project.manufacturing-create')->with('project',$project)->with('project_host_data',$project_host_data)
-                                                   ->with('project_contact_data',$project_contact_data)
-                                                   ->with('cust_data',$cust_data);;
+        $cust_data = CustData::where('user_id', Auth::user()->id)->first();
+        $project = CustProject::where('user_id', Auth::user()->id)->where('type', '1')->first();
+        $project_host_data = ProjectHost::where('user_id', Auth::user()->id)->where('project_id', $project->id)->first();
+        $project_contact_data = ProjectContact::where('user_id', Auth::user()->id)->where('project_id', $project->id)->first();
+
+        return view('project.manufacturing-create')->with('project', $project)->with('project_host_data', $project_host_data)
+            ->with('project_contact_data', $project_contact_data)
+            ->with('cust_data', $cust_data);;
     }
 
     public function ManufacturingStore(Request $request)
-    {   
-        $cust_data = CustData::where('user_id',Auth::user()->id)->first();
-        $project = CustProject::where('user_id',Auth::user()->id)->where('type','1')->first();
+    {
+        $cust_data = CustData::where('user_id', Auth::user()->id)->first();
+        $project = CustProject::where('user_id', Auth::user()->id)->where('type', '1')->first();
         //計畫主持人
         $project_host = ProjectHost::firstOrNew(['project_id' => $project->id]);
         $project_host->user_id = Auth::user()->id;
@@ -340,20 +328,17 @@ class ProjectController extends Controller
         $project_contact->salary = $request->contact_salary;
         $project_contact->save();
         //人事名單
-        $cust_personnel_datas = ProjectPersonnel::where('project_id',$project->id)->get();
-        if(count($cust_personnel_datas) > 0) {
-            $cust_personnel_datas = ProjectPersonnel::where('project_id',$project->id)->delete();
+        $cust_personnel_datas = ProjectPersonnel::where('project_id', $project->id)->get();
+        if (count($cust_personnel_datas) > 0) {
+            $cust_personnel_datas = ProjectPersonnel::where('project_id', $project->id)->delete();
         }
-        if(isset($request->personnel_names))
-        {
-            foreach($request->personnel_names as $key=>$personnel_name)
-            {
-                if(isset($personnel_name) && $personnel_name != null)
-                {
+        if (isset($request->personnel_names)) {
+            foreach ($request->personnel_names as $key => $personnel_name) {
+                if (isset($personnel_name) && $personnel_name != null) {
                     $cust_personnel = new ProjectPersonnel;
                     $cust_personnel->user_id = Auth::user()->id;
                     $cust_personnel->project_id = $project->id;
-                    $cust_personnel->name= $request->personnel_names[$key];
+                    $cust_personnel->name = $request->personnel_names[$key];
                     $cust_personnel->department = $request->personnel_departments[$key];
                     $cust_personnel->job = $request->personnel_jobs[$key];
                     $cust_personnel->context = $request->personnel_contexts[$key];
@@ -365,74 +350,65 @@ class ProjectController extends Controller
             }
         }
 
-        
+
 
 
 
         //需求
-        $manufacture_need_datas = ManufactureNeed::where('project_id',$project->id)->get();
-        if(count($manufacture_need_datas) > 0) {
-            $manufacture_need_datas = ManufactureNeed::where('project_id',$project->id)->delete();
+        $manufacture_need_datas = ManufactureNeed::where('project_id', $project->id)->get();
+        if (count($manufacture_need_datas) > 0) {
+            $manufacture_need_datas = ManufactureNeed::where('project_id', $project->id)->delete();
         }
-        if(isset($request->need_contexts))
-        {
-            foreach($request->need_contexts as $key=>$need_context)
-            {
-                if(isset($need_context))
-                {
+        if (isset($request->need_contexts)) {
+            foreach ($request->need_contexts as $key => $need_context) {
+                if (isset($need_context)) {
                     $manufacture_need = new ManufactureNeed;
                     $manufacture_need->user_id = Auth::user()->id;
                     $manufacture_need->project_id = $project->id;
-                    $manufacture_need->context= $request->need_contexts[$key];
+                    $manufacture_need->context = $request->need_contexts[$key];
                     $manufacture_need->save();
                 }
             }
         }
 
         //預計購買設備
-        $manufacture_expected_datas = ManufactureExpected::where('project_id',$project->id)->get();
-        if(count($manufacture_expected_datas) > 0) {
-            $manufacture_expected_datas = ManufactureExpected::where('project_id',$project->id)->delete();
+        $manufacture_expected_datas = ManufactureExpected::where('project_id', $project->id)->get();
+        if (count($manufacture_expected_datas) > 0) {
+            $manufacture_expected_datas = ManufactureExpected::where('project_id', $project->id)->delete();
         }
-        if(isset($request->expected_names))
-        {
-            foreach($request->expected_names as $key=>$expected_name)
-            {
-                if(isset($expected_name))
-                {
+        if (isset($request->expected_names)) {
+            foreach ($request->expected_names as $key => $expected_name) {
+                if (isset($expected_name)) {
                     $manufacture_expected = new ManufactureExpected;
                     $manufacture_expected->user_id = Auth::user()->id;
                     $manufacture_expected->project_id = $project->id;
-                    $manufacture_expected->name= $request->expected_names[$key];
-                    $manufacture_expected->brand= $request->expected_brands[$key];
-                    $manufacture_expected->model= $request->expected_models[$key];
-                    $manufacture_expected->purpose= $request->expected_purposes[$key];
-                    $manufacture_expected->cost= $request->expected_costs[$key];
-                    $manufacture_expected->procurement= $request->expected_procurements[$key];
-                    $manufacture_expected->origin= $request->expected_origins[$key];
+                    $manufacture_expected->name = $request->expected_names[$key];
+                    $manufacture_expected->brand = $request->expected_brands[$key];
+                    $manufacture_expected->model = $request->expected_models[$key];
+                    $manufacture_expected->purpose = $request->expected_purposes[$key];
+                    $manufacture_expected->cost = $request->expected_costs[$key];
+                    $manufacture_expected->procurement = $request->expected_procurements[$key];
+                    $manufacture_expected->origin = $request->expected_origins[$key];
                     $manufacture_expected->save();
                 }
             }
         }
 
         //預計改善設備
-        $manufacture_impove_datas = ManufactureImprove::where('project_id',$project->id)->get();
-        if(count($manufacture_impove_datas) > 0) {
-            $manufacture_impove_datas = ManufactureImprove::where('project_id',$project->id)->delete();
+        $manufacture_impove_datas = ManufactureImprove::where('project_id', $project->id)->get();
+        if (count($manufacture_impove_datas) > 0) {
+            $manufacture_impove_datas = ManufactureImprove::where('project_id', $project->id)->delete();
         }
-        if(isset($request->improve_names))
-        {
-            foreach($request->improve_names as $key=>$improve_name)
-            {
-                if(isset($improve_name))
-                {
+        if (isset($request->improve_names)) {
+            foreach ($request->improve_names as $key => $improve_name) {
+                if (isset($improve_name)) {
                     $manufacture_improve = new ManufactureImprove;
                     $manufacture_improve->user_id = Auth::user()->id;
                     $manufacture_improve->project_id = $project->id;
-                    $manufacture_improve->name= $request->improve_names[$key];
-                    $manufacture_improve->focus= $request->improve_focuss[$key];
-                    $manufacture_improve->cost= $request->improve_costs[$key];
-                    $manufacture_improve->delegate_object= $request->improve_delegate_objects[$key];
+                    $manufacture_improve->name = $request->improve_names[$key];
+                    $manufacture_improve->focus = $request->improve_focuss[$key];
+                    $manufacture_improve->cost = $request->improve_costs[$key];
+                    $manufacture_improve->delegate_object = $request->improve_delegate_objects[$key];
                     $manufacture_improve->save();
                 }
             }
@@ -449,36 +425,35 @@ class ProjectController extends Controller
         for ($i = 1; $i <= 3; $i++) {
             $years[] = $now->copy()->subYears($i)->year;
         }
-        $cust_data = CustData::where('user_id',Auth::user()->id)->first();
-        $project = CustProject::where('user_id',Auth::user()->id)->first();
-        $project_host_data = ProjectHost::where('user_id',Auth::user()->id)->first();
-        $project_contact_data = ProjectContact::where('user_id',Auth::user()->id)->first();
+        $cust_data = CustData::where('user_id', Auth::user()->id)->first();
+        $project = CustProject::where('user_id', Auth::user()->id)->first();
+        $project_host_data = ProjectHost::where('user_id', Auth::user()->id)->first();
+        $project_contact_data = ProjectContact::where('user_id', Auth::user()->id)->first();
         return view('project.manufacturing-preview')->with('project', $project)
-                                                          ->with('project_host_data',$project_host_data)
-                                                           ->with('project_contact_data',$project_contact_data)
-                                                           ->with('cust_data',$cust_data)
-                                                           ->with('years',$years);
+            ->with('project_host_data', $project_host_data)
+            ->with('project_contact_data', $project_contact_data)
+            ->with('cust_data', $cust_data)
+            ->with('years', $years);
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    
+
     /**
      * Display the specified resource.
      */
-    public function show($id , Request $request)
+    public function show($id, Request $request)
     {
         // 查詢對應的專案
         $datas = CustProject::join('cust_data', 'cust_data.user_id', '=', 'cust_project.user_id')
-                              ->where('cust_project.status',$id)
-                              ->orderby('cust_data.id','desc');
+            ->where('cust_project.check_status', $id)
+            ->orderby('cust_data.id', 'desc');
 
-        if(Auth::user()->group_id == 1)
-        {
+        if (Auth::user()->group_id == 1) {
             $datas = $datas->paginate(50);
-        }else{
-            $datas = $datas->whereIn('cust_data.limit_status',['all',Auth::user()->group_id])->paginate(50);
+        } else {
+            $datas = $datas->whereIn('cust_data.limit_status', ['all', Auth::user()->group_id])->paginate(50);
         }
         // 如果專案不存在，返回 404
         if (!$datas) {
@@ -486,15 +461,19 @@ class ProjectController extends Controller
         }
 
         // 返回專案詳情頁面或視圖
-        return view('project.index', ['datas' => $datas , 'request' => $request]);
+        return view('project.index', ['datas' => $datas, 'request' => $request]);
     }
 
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(string $id)
+    public function edit(string $id, Request $request)
     {
-        //
+        // 查詢對應的專案
+        $data = CustProject::where('user_id', $id)->first();
+        $check_statuss = CheckStatus::where('status', 'up')->get();
+        // 返回專案詳情頁面或視圖
+        return view('project.edit', ['data' => $data, 'request' => $request, 'check_statuss' => $check_statuss]);
     }
 
     /**
@@ -502,7 +481,35 @@ class ProjectController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        // 查詢對應的專案
+        $data = CustProject::where('user_id', $id)->first();
+        // 更新專案資料
+        $data->date = $request->date;
+        $data->name = $request->name;
+        $data->check_status = $request->check_status;
+        $data->save();
+        // 返回專案列表頁面
+        return redirect()->route('projects');
+    }
+
+    public function write(string $id, Request $request)
+    {
+        // 查詢對應的專案
+        $data = CustProject::where('user_id', $id)->first();
+        $check_statuss = CheckStatus::where('status', 'up')->get();
+        // 返回專案詳情頁面或視圖
+        $project = CustProject::where('user_id', $id)->where('type', 0)->first();
+        $word_data = Word::where('user_id', $id)->where('project_id', $project->id)->first();
+        return view('project.write', ['data' => $data, 'request' => $request, 'check_statuss' => $check_statuss, 'word_data' => $word_data]);
+    }
+
+    public function plan(string $id, Request $request)
+    {
+        // 查詢對應的專案
+        $data = CustProject::where('user_id', $id)->first();
+        // 返回專案詳情頁面或視圖
+        $check_statuss = CheckStatus::where('parent_id', null)->where('status', 'up')->get();
+        return view('project.plan', ['data' => $data, 'request' => $request, 'check_statuss' => $check_statuss]);
     }
 
     /**

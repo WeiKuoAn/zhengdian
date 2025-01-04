@@ -126,7 +126,7 @@
                                                         data-bs-toggle="dropdown" aria-expanded="false">動作 <i
                                                             class="mdi mdi-arrow-down-drop-circle"></i></a>
                                                     <div class="dropdown-menu dropdown-menu-end">
-                                                        <a class="dropdown-item" href="#"><i
+                                                        <a class="dropdown-item" href="{{ route('customer.edit',$data->user_id) }}"><i
                                                                 class="mdi mdi-pencil me-2 text-muted font-18 vertical-middle"></i>編輯客戶帳戶資料</a>
                                                         {{-- <a class="dropdown-item" href="#"><i class="mdi mdi-delete me-2 text-muted font-18 vertical-middle"></i>刪除</a> --}}
                                                         <a class="dropdown-item" href="#"><i

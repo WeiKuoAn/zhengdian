@@ -150,12 +150,10 @@
                                                             aria-haspopup="true">動作
                                                             <i class="bx bxs-down-arrow"></i>
                                                         </a>
-                                                        {{-- <div class="dropdown-menu dropdown-menu-end">
+                                                        <div class="dropdown-menu dropdown-menu-end">
                                                             <a class="dropdown-item"
-                                                                @if ($data->type == 0) href="{{ route('user.project.business.create', $data->user_id) }}"
-                                                                @elseif($data->type == 1)
-                                                                    href="{{ route('user.project.Manufacturing.create', $data->user_id) }}" @endif>編輯</a>
-                                                            <a class="dropdown-item"
+                                                                    href="{{ route('project.edit', $data->user_id) }}" >編輯</a>
+                                                            {{-- <a class="dropdown-item"
                                                                 @if ($data->type == 0) href="{{ route('user.project.business.appendix', $data->user_id) }}"
                                                         @elseif($data->type == 1)
                                                             href="{{ route('user.project.Manufacturing.appendix', $data->user_id) }}" @endif>附件</a>
@@ -166,8 +164,8 @@
                                                             <a class="dropdown-item"
                                                                 @if ($data->type == 0) href="{{ route('business-export-word', $data->user_id) }}"
                                                             @elseif($data->type == 1)
-                                                                href="{{ route('user.project.Manufacturing.preview', $data->user_id) }}" @endif>填寫計畫內容</a>
-                                                        </div> --}}
+                                                                href="{{ route('user.project.Manufacturing.preview', $data->user_id) }}" @endif>填寫計畫內容</a> --}}
+                                                        </div>
                                                     </li>
                                                 </ul>
                                             </td>
