@@ -16,6 +16,11 @@ class CustProject extends Model
         return $this->hasOne('App\Models\User', 'id', 'user_id');
     }
 
+    public function check_data()
+    {
+        return $this->hasOne('App\Models\CheckStatus', 'id', 'check_status');
+    }
+
     public function cust_data()
     {
         return $this->hasOne('App\Models\CustData', 'user_id', 'user_id');

@@ -100,10 +100,10 @@
                                         <th scope="col">No</th>
                                         <th scope="col">申請年度</th>
                                         <th scope="col">客戶名稱</th>
-                                        <th scope="col">申請類別</th>
-                                        <th scope="col">主要聯絡人</th>
+                                        <th scope="col">專案名稱</th>
+                                        {{-- <th scope="col">主要聯絡人</th>
                                         <th scope="col">聯絡人職稱</th>
-                                        <th scope="col">聯絡人電話</th>
+                                        <th scope="col">聯絡人電話</th> --}}
                                         <th scope="col">狀態</th>
                                         <th scope="col" style="width: 200px;">操作</th>
                                     </tr>
@@ -116,15 +116,18 @@
                                             <td>
                                                 {{ $data->user_data->name }}
                                             </td>
-                                            <td>
+                                            {{-- <td>
                                                 @if ($data->type == 0)
                                                     商業服務業
                                                 @endif
                                                 @if ($data->type == 1)
                                                     製造業
                                                 @endif
-                                            </td>
+                                            </td> --}}
                                             <td>
+                                                {{$data->name}}
+                                            </td>
+                                            {{-- <td>
                                                 @if (isset($data->project_host))
                                                     {{ $data->project_host->name }}
                                                 @endif
@@ -138,11 +141,14 @@
                                                 @if (isset($data->project_host))
                                                     {{ $data->project_host->mobile }}
                                                 @endif
+                                            </td> --}}
+                                            {{-- <td>{{ $data->cust_data->county . $data->cust_data->district . $data->cust_data->address }} --}}
+                                            <td align="center">
+                                                @if(isset($data->check_data))
+                                                {{$data->check_data->name}}
+                                                @endif
                                             </td>
-                                            <td>{{ $data->cust_data->county . $data->cust_data->district . $data->cust_data->address }}
-                                            </td>
-                                            <td></td>
-                                            <td>
+                                            <td align="center">
                                                 <ul class="list-inline mb-0">
                                                     <li class="list-inline-item dropdown">
                                                         <a class="table-action-btn dropdown-toggle arrow-none btn btn-outline-dark waves-effect"

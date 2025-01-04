@@ -43,7 +43,7 @@ class ProjectController extends Controller
     {
         $datas = CustProject::join('cust_data', 'cust_data.user_id', '=', 'cust_project.user_id')
             ->where('cust_project.status', '0')
-            ->orderby('cust_data.id', 'desc');
+            ->orderby('cust_project.date', 'desc');
 
         if (Auth::user()->group_id == 1) {
             $datas = $datas->paginate(50);
