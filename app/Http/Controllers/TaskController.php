@@ -26,7 +26,7 @@ class TaskController extends Controller
     public function create()
     {
         $task_templates = TaskTemplate::get();
-        $check_statuss = CheckStatus::get();
+        $check_statuss = CheckStatus::where('status', 'up')->orderby('seq','asc')->get();
         $users = User::where('status', 1)->where('group_id', 1)->get();
         return view('task.create')->with('task_templates', $task_templates)->with('check_statuss', $check_statuss)->with('users', $users);
     }
