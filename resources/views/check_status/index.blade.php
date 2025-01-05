@@ -27,7 +27,7 @@
                                     <tr>
                                         <th scope="col">No</th>
                                         <th scope="col">名稱</th>
-                                        <th scope="col">父項目</th>
+                                        <th scope="col">所屬類別</th>
                                         <th scope="col">排序</th>
                                         <th scope="col">狀態</th>
                                         <th scope="col">操作</th>

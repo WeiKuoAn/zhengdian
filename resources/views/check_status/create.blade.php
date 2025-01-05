@@ -25,7 +25,7 @@
                                     <input type="text" class="form-control" name="seq" value="0" required>
                                 </div>
                                 <div class="mb-3">
-                                    <label for="project-priority" class="form-label">父項目<span
+                                    <label for="project-priority" class="form-label">所屬類別<span
                                             class="text-danger">*</span></label>
                                     <select class="form-control" data-toggle="select" data-width="100%" name="parent_id">
                                         <option value="">無</option>
