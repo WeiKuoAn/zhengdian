@@ -59,7 +59,7 @@ class ProjectController extends Controller
     public function create()
     {
         $cust_datas = User::where('status', 1)->where('group_id', 2)->get();
-        $check_statuss = CheckStatus::where('status', 'up')->get();
+        $check_statuss = CheckStatus::where('status', 'up')->orderby('seq','asc')->get();
         return view('project.create')->with('cust_datas', $cust_datas)->with('check_statuss', $check_statuss);
     }
 
@@ -471,7 +471,7 @@ class ProjectController extends Controller
     {
         // 查詢對應的專案
         $data = CustProject::where('user_id', $id)->first();
-        $check_statuss = CheckStatus::where('status', 'up')->get();
+        $check_statuss = CheckStatus::where('status', 'up')->orderby('seq','asc')->get();
         // 返回專案詳情頁面或視圖
         return view('project.edit', ['data' => $data, 'request' => $request, 'check_statuss' => $check_statuss]);
     }
@@ -496,7 +496,7 @@ class ProjectController extends Controller
     {
         // 查詢對應的專案
         $data = CustProject::where('user_id', $id)->first();
-        $check_statuss = CheckStatus::where('status', 'up')->get();
+        $check_statuss = CheckStatus::where('status', 'up')->orderby('seq','asc')->get();
         // 返回專案詳情頁面或視圖
         $project = CustProject::where('user_id', $id)->where('type', 0)->first();
         $word_data = Word::where('user_id', $id)->where('project_id', $project->id)->first();
