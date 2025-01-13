@@ -7,8 +7,8 @@
     <div class="container-fluid">
 
         @include('layouts.shared.page-title', [
-            'title' => '計畫狀態類別新增',
-            'subtitle' => '計畫狀態類別新增',
+            'title' => '專案狀態類別新增',
+            'subtitle' => '專案狀態類別新增',
         ])
 
         <div class="row">
@@ -18,10 +18,10 @@
                         <form action="{{ route('task.create.data') }}" method="POST">
                             @csrf
                             <div class="row">
-                                <div class="mb-3">
+                                {{-- <div class="mb-3">
                                     <label class="form-label">專案/任務名稱：<span class="text-danger">*</span></label>
                                     <input type="text" class="form-control" name="name" value="" required>
-                                </div>
+                                </div> --}}
                                 <div class="mb-3">
                                     <label for="project-priority" class="form-label">任務類型<span
                                             class="text-danger">*</span></label>
@@ -70,6 +70,7 @@
                                     <label for="project-priority" class="form-label">優先序<span
                                             class="text-danger">*</span></label>
                                     <select class="form-control" data-toggle="select" data-width="100%" name="priority">
+                                        <option value="0">緊急</option>
                                         <option value="1">高</option>
                                         <option value="2">中</option>
                                         <option value="3">低</option>
@@ -83,7 +84,6 @@
                                     <label for="project-priority" class="form-label">狀態<span
                                             class="text-danger">*</span></label>
                                     <select class="form-control" data-toggle="select" data-width="100%" name="status">
-                                        <option value="0">待派工</option>
                                         <option value="1">送出派工</option>
                                         <option value="2">接收派工</option>
                                         <option value="3">進行中</option>

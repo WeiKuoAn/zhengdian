@@ -50,7 +50,8 @@ class ProjectController extends Controller
         } else {
             $datas = $datas->whereIn('cust_data.limit_status', ['all', Auth::user()->group_id])->paginate(50);
         }
-        return view('project.index')->with('datas', $datas)->with('request', $request);
+        $check_statuss = CheckStatus::where('status', 'up')->orderby('seq','asc')->get();
+        return view('project.index')->with('datas', $datas)->with('request', $request)->with('check_statuss', $check_statuss);
     }
 
     /**

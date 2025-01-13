@@ -27,14 +27,6 @@
                                             @endforeach
                                         </select>
                                     </div>
-                                    <label for="status-select" class="me-2">申請計畫</label>
-                                    <div class="me-sm-3">
-                                        <select class="form-select" name="type" onchange="this.form.submit()">
-                                            <option value="null" @if(!isset($request->type) && $request->type=='null') selected @endif>不限</option>
-                                            <option value="0" @if($request->type == '0') selected @endif>商業服務業</option>
-                                            <option value="1" @if($request->type == '1') selected @endif>製造業</option>
-                                        </select>
-                                    </div>
                                     <label for="status-select" class="me-2">帳號狀態</label>
                                     <div class="me-sm-3">
                                         <select class="form-select" name="status" onchange="this.form.submit()">
@@ -70,12 +62,8 @@
                                         <th scope="col">客戶名稱</th>
                                         <th scope="col">負責人</th>
                                         <th scope="col">統編</th>
-                                        <th scope="col">商業服務業</th>
-                                        <th scope="col">製造業</th>
                                         <th scope="col">主要聯絡人</th>
-                                        <th scope="col">聯絡人職稱</th>
-                                        <th scope="col">聯絡人電話</th>
-                                        <th scope="col">nas連結</th>
+                                        <th scope="col">簽約狀態</th>
                                         <th scope="col">權限</th>
                                         <th scope="col" style="width: 200px;">操作</th>
                                     </tr>
@@ -89,32 +77,14 @@
                                             </td>
                                             <td>{{ $data->principal_name }}</td>
                                             <td>{{ $data->registration_no }}</td>
-                                            <td align="center">
-                                                @if (!empty($types) && $types[$data->user_id]['type'] == 0)
-                                                    <i class="mdi mdi-check" style="color: red;"></i>
-                                                @endif
-                                            </td>
-                                            <td align="center">
-                                                @if (!empty($types) && $types[$data->user_id]['type'] == 1)
-                                                    <i class="mdi mdi-check" style="color: red;"></i>
-                                                @endif
-                                            </td>
-                                            <td>{{ $data->contact_name }}</td>
-                                            <td>{{ $data->contact_job }}</td>
-                                            <td>{{ $data->contact_phone }}</td>
-                                            {{-- <td>{{ $data->contact_email  }}</td> --}}
-                                            {{-- <td>{{ $data->county.$data->district.$data->address  }}</td> --}}
+                                            <td>{{ $data->contact_name.' / '.$data->contact_job }}</td>
                                             <td>
-                                                <a href="{{ $data->nas_link }}" target="_blank">
-                                                    <button type="button"
-                                                        class="btn btn-sm btn-link text-dark text-decoration-none font-size-20">
-                                                        <i class="bx bx-link"></i>連結</button>
-                                                </a>
+                                                簽約狀態
                                             </td>
                                             <td>
                                                 {{-- {{ dd($data) }} --}}
                                                 @if ($data->status == 0)
-                                                    啟動
+                                                    開通
                                                 @elseif($data->status == 1)
                                                     <span class="text-danger"><b>關閉</b></span>
                                                 @endif

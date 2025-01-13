@@ -14,7 +14,7 @@
                             <div class="col-sm-4">
                                 <a href="{{ route('TaskTemplate.create') }}">
                                     <button type="button" class="btn btn-danger waves-effect waves-light"><i
-                                            class="mdi mdi-plus-circle me-1"></i> 新增計畫狀態類別</button>
+                                            class="mdi mdi-plus-circle me-1"></i> 新增專案狀態類別</button>
                                 </a>
                             </div>
                             <div class="col-sm-8">

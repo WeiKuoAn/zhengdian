@@ -154,15 +154,40 @@
             </li>
 
             <li class="menu-item">
-                <a class="menu-link" href="#plan" data-bs-toggle="collapse">
+                <a class="menu-link" href="#work" data-bs-toggle="collapse">
                     <span class="menu-icon"><i data-feather="users"></i></span>
-                    <span class="menu-text"> 方案管理 </span>
+                    <span class="menu-text"> 派工管理 </span>
                     <span class="menu-arrow"></span>
                 </a>
-                <div class="collapse" id="plan">
+                <div class="collapse" id="work">
                     <ul class="sub-menu">
                         <li class="menu-item">
-                            <a class="menu-link" href="#"><span class="menu-text">方案列表</span></a>
+                            <a class="menu-link" href="{{ route('task') }}"
+                                class="{{ request()->is('task') ? 'active' : '' }}"><span
+                                    class="menu-text">派工列表</span></a>
+                        </li>
+                    </ul>
+                </div>
+            </li>
+
+            <li class="menu-item">
+                <a class="menu-link" href="#meet" data-bs-toggle="collapse">
+                    <span class="menu-icon"><i data-feather="users"></i></span>
+                    <span class="menu-text"> 會議管理 </span>
+                    <span class="menu-arrow"></span>
+                </a>
+                <div class="collapse" id="meet">
+                    <ul class="sub-menu">
+                        <li class="menu-item">
+                            <a class="menu-link" href="{{ route('meetData.create') }}"
+                                class="{{ request()->is('meetData.create') ? 'active' : '' }}">
+                                <span class="menu-text">新增會議</span>
+                            </a>
+                        </li>
+                        <li class="menu-item">
+                            <a class="menu-link" href="{{ route('meetDatas') }}"
+                                class="{{ request()->is('meetDatas') ? 'active' : '' }}"><span
+                                    class="menu-text">會議列表</span></a>
                         </li>
                     </ul>
                 </div>
@@ -186,22 +211,7 @@
                 </div>
             </li>
 
-            <li class="menu-item">
-                <a class="menu-link" href="#work" data-bs-toggle="collapse">
-                    <span class="menu-icon"><i data-feather="users"></i></span>
-                    <span class="menu-text"> 派工管理 </span>
-                    <span class="menu-arrow"></span>
-                </a>
-                <div class="collapse" id="work">
-                    <ul class="sub-menu">
-                        <li class="menu-item">
-                            <a class="menu-link" href="{{ route('task') }}"
-                                class="{{ request()->is('task') ? 'active' : '' }}"><span
-                                    class="menu-text">派工列表</span></a>
-                        </li>
-                    </ul>
-                </div>
-            </li>
+            
 
             <li class="menu-item">
                 <a class="menu-link" href="#setting" data-bs-toggle="collapse">
@@ -219,7 +229,7 @@
                         <li class="menu-item">
                             <a class="menu-link" href="{{ route('checkStatus') }}"
                                 class="{{ request()->is('checkStatus') ? 'active' : '' }}"><span
-                                    class="menu-text">計畫狀態類別設定</span></a>
+                                    class="menu-text">專案狀態類別設定</span></a>
                         </li>
                         <li class="menu-item">
                             <a class="menu-link" href="{{ route('TaskTemplate') }}"
@@ -228,16 +238,16 @@
                         </li>
                     </ul>
                 </div>
-                <div class="collapse" id="setting">
+                {{-- <div class="collapse" id="setting">
                     <ul class="sub-menu">
                         <li class="menu-item">
                             <a class="menu-link" href="#"><span class="menu-text">繳資料列表</span></a>
                         </li>
                     </ul>
-                </div>
+                </div> --}}
             </li>
 
-            <li class="menu-item">
+            {{-- <li class="menu-item">
                 <a class="menu-link" href="#rpg" data-bs-toggle="collapse">
                     <span class="menu-icon"><i data-feather="users"></i></span>
                     <span class="menu-text"> 報表管理 </span>
@@ -250,7 +260,22 @@
                         </li>
                     </ul>
                 </div>
-            </li>
+            </li> --}}
+
+            {{-- <li class="menu-item">
+                <a class="menu-link" href="#plan" data-bs-toggle="collapse">
+                    <span class="menu-icon"><i data-feather="users"></i></span>
+                    <span class="menu-text"> 方案管理 </span>
+                    <span class="menu-arrow"></span>
+                </a>
+                <div class="collapse" id="plan">
+                    <ul class="sub-menu">
+                        <li class="menu-item">
+                            <a class="menu-link" href="#"><span class="menu-text">方案列表</span></a>
+                        </li>
+                    </ul>
+                </div>
+            </li> --}}
 
             <li class="menu-item">
                 <a class="menu-link" href="#sidebarCrm" data-bs-toggle="collapse">
@@ -287,32 +312,4 @@
 </div>
 <!-- Left Sidebar End -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script>
-    $(document).ready(function() {
-        // 發送 AJAX 請求獲取資料
-        $.ajax({
-            url: '/get-sidebar-data',
-            type: 'GET',
-            success: function(data) {
-                // 將獲取的資料動態加入到側邊欄中
-                var menuHtml = '';
-                $.each(data, function(index, status) {
-                    menuHtml += `
-                       <li class="menu-item ${window.location.pathname === '/project/' + status.id ? 'active' : ''}">
-    <a class="menu-link ${window.location.pathname === '/project/' + status.id ? 'active' : ''}" href="/project/${status.id}">
-        <span class="menu-text">${status.name}</span>
-    </a>
-</li>
 
-`;
-                });
-
-                // 插入到指定選單中
-                $('#dynamicProjectMenu').append(menuHtml);
-            },
-            error: function() {
-                alert('無法加載專案管理資料，請稍後再試');
-            }
-        });
-    });
-</script>

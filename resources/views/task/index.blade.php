@@ -1,5 +1,9 @@
 @extends('layouts.vertical', ['title' => 'CRM Customers'])
 
+@section('css')
+    @vite('node_modules/tippy.js/dist/tippy.css')
+@endsection
+
 @section('content')
     <!-- Start Content-->
     <div class="container-fluid">
@@ -43,7 +47,9 @@
                                             <td>{{ $data->task_template_data->name }}</td>
                                             <td>{{ $data->check_status_data->name }}</td>
                                             <td>
-                                                @if ($data->priority == 1)
+                                                @if ($data->priority == 0)
+                                                    <span class="badge bg-danger p-1">緊急</span>
+                                                @elseif($data->priority == 1)
                                                     <span class="badge bg-primary p-1">高</span>
                                                 @elseif($data->priority == 2)
                                                     <span class="badge bg-warning p-1">中</span>
@@ -54,7 +60,8 @@
                                             <td>
                                                 @foreach ($data->task_user as $task_user)
                                                     <span
-                                                        class="badge bg-primary p-1 mb-1">{{ $task_user->user_data->name }} - {{ $task_user->context }}</span><br>
+                                                        class="badge bg-primary p-1 mb-1">{{ $task_user->user_data->name }}
+                                                        - {{ $task_user->context }}(已完成)</span><br>
                                                 @endforeach
                                             </td>
                                             <td>
@@ -71,6 +78,15 @@
                                                 @else
                                                     <span class="badge bg-danger p-1">完成</span>
                                                 @endif
+                                                <div class="button-list" id="tooltip-container">
+                                                    <button type="button" class="btn btn-light"
+                                                        data-bs-container="#tooltip-container" data-bs-toggle="tooltip"
+                                                        data-bs-placement="top"
+                                                        title="魏國安(已完成)、
+                                                        黃茹椿(待確認)">
+                                                        進行中
+                                                    </button>
+                                                </div>
                                             </td>
                                             <td>
                                                 <a href="{{ route('contractStatus.edit', $data->id) }}" class="action-icon">

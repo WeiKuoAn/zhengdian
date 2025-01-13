@@ -13,6 +13,7 @@ use App\Http\Controllers\TaskTemplateController;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\ProjectMilestonesController;
+use App\Http\Controllers\MeetDataController;
 
 
 require __DIR__ . '/auth.php';
@@ -58,7 +59,7 @@ Route::post('contractStatus/create', [ContractStatusController::class, 'store'])
 Route::get('contractStatus/edit/{id}', [ContractStatusController::class, 'show'])->name('contractStatus.edit');
 Route::post('contractStatus/edit/{id}', [ContractStatusController::class, 'update'])->name('contractStatus.edit.data');
 
-/*計畫狀態設定 */
+/*專案狀態設定 */
 Route::get('checkStatus', [CheckStatusController::class, 'index'])->name('checkStatus');
 Route::get('checkStatus/create', [CheckStatusController::class, 'create'])->name('checkStatus.create');
 Route::post('checkStatus/create', [CheckStatusController::class, 'store'])->name('checkStatus.create.data');
@@ -66,14 +67,14 @@ Route::get('checkStatus/edit/{id}', [CheckStatusController::class, 'show'])->nam
 Route::post('checkStatus/edit/{id}', [CheckStatusController::class, 'update'])->name('checkStatus.edit.data');
 Route::get('/get-sidebar-data', [CheckStatusController::class, 'getCheckStatus']);
 
-/*計畫狀態設定 */
+/*專案狀態設定 */
 Route::get('TaskTemplate', [TaskTemplateController::class, 'index'])->name('TaskTemplate');
 Route::get('TaskTemplate/create', [TaskTemplateController::class, 'create'])->name('TaskTemplate.create');
 Route::post('TaskTemplate/create', [TaskTemplateController::class, 'store'])->name('TaskTemplate.create.data');
 Route::get('TaskTemplate/edit/{id}', [TaskTemplateController::class, 'show'])->name('TaskTemplate.edit');
 Route::post('TaskTemplate/edit/{id}', [TaskTemplateController::class, 'update'])->name('TaskTemplate.edit.data');
 
-/*計畫狀態設定 */
+/*專案狀態設定 */
 Route::get('task', [TaskController::class, 'index'])->name('task');
 Route::get('task/create', [TaskController::class, 'create'])->name('task.create');
 Route::post('task/create', [TaskController::class, 'store'])->name('task.create.data');
@@ -95,6 +96,12 @@ Route::get('projectMilestones/create', [ProjectMilestonesController::class, 'cre
 Route::post('projectMilestones/create', [ProjectMilestonesController::class, 'store'])->name('projectMilestones.create.data');
 Route::get('projectMilestones/edit/{id}', [ProjectMilestonesController::class, 'show'])->name('projectMilestones.edit');
 Route::post('projectMilestones/edit/{id}', [ProjectMilestonesController::class, 'update'])->name('projectMilestones.edit.data');
+
+Route::get('meetData', [MeetDataController::class, 'index'])->name('meetDatas');
+Route::get('meetData/create', [MeetDataController::class, 'create'])->name('meetData.create');
+Route::post('meetData/create', [MeetDataController::class, 'store'])->name('meetData.create.data');
+Route::get('meetData/edit/{id}', [MeetDataController::class, 'show'])->name('meetData.edit');
+Route::post('meetData/edit/{id}', [MeetDataController::class, 'update'])->name('meetData.edit.data');
 
 // routes/web.php
 Route::get('/api/projects/{user_id}', [ProjectController::class, 'getProjectsByUser']);
