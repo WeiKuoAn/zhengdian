@@ -23,6 +23,15 @@
                                     <input type="text" class="form-control" name="name" value="" required>
                                 </div> --}}
                                 <div class="mb-3">
+                                    <label class="form-label">專案執行階段：<span class="text-danger">*</span></label>
+                                    <select class="form-control" data-toggle="select" data-width="100%" name="check_status_id">
+                                        @foreach ($check_statuss as $key => $check_status)
+                                            <option value="{{ $check_status->id }}">{{ $check_status->name }}</option>
+                                        @endforeach
+                                        <option value="">無</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
                                     <label for="project-priority" class="form-label">任務類型<span
                                             class="text-danger">*</span></label>
                                     <select class="form-control" data-toggle="select" data-width="100%" name="template_id">
@@ -32,15 +41,7 @@
                                         <option value="">無</option>
                                     </select>
                                 </div>
-                                <div class="mb-3">
-                                    <label class="form-label">專案執行階段：<span class="text-danger">*</span></label>
-                                    <select class="form-control" data-toggle="select" data-width="100%" name="check_status_id">
-                                        @foreach ($check_statuss as $key => $check_status)
-                                            <option value="{{ $check_status->id }}">{{ $check_status->name }}</option>
-                                        @endforeach
-                                        <option value="">無</option>
-                                    </select>
-                                </div>
+                                
                                 <div class="mb-3">
                                     <label class="form-label">負責執行人員：<span class="text-danger">*</span></label>
                                     <div id="executor-container">
