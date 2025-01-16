@@ -9,6 +9,7 @@ class Task extends Model
     protected $table = 'task';
     protected $fillable = [
         'name',
+        'project_id',
         'template_id',
         'check_status_id',
         'created_by',
@@ -30,8 +31,13 @@ class Task extends Model
     {
         return $this->hasOne('App\Models\CheckStatus', 'id', 'check_status_id');
     }
-    public function task_user()
+    public function items()
     {
         return $this->hasMany('App\Models\TaskItem', 'task_id', 'id');
+    }
+
+    public function project_data()
+    {
+        return $this->hasOne('App\Models\CustProject', 'id', 'project_id');
     }
 }

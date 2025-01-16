@@ -9,6 +9,58 @@
     <div class="container-fluid">
 
         @include('layouts.shared.page-title', ['title' => '派工列表', 'subtitle' => '派工管理'])
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body">
+                        <ul class="nav nav-tabs nav-bordered nav-justified">
+                            <li class="nav-item">
+                                <a href="{{ route('project.edit', $data->user_id) }}" aria-expanded="true"
+                                    class="nav-link active">
+                                    專案基本設定
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="#" aria-expanded="false" class="nav-link ">
+                                    專案背景調查
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{{ route('project.write', $data->user_id) }}" aria-expanded="false"
+                                    class="nav-link">
+                                    內容撰寫
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="#" aria-expanded="false" class="nav-link">
+                                    送件作業
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{{ route('project.plan', $data->user_id) }}" aria-expanded="false" class="nav-link">
+                                    排程作業
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="" aria-expanded="false" class="nav-link">
+                                    派工作業
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="#" aria-expanded="false" class="nav-link">
+                                    期中報告/檢核
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="#" aria-expanded="false" class="nav-link">
+                                    期末報告/結案
+                                </a>
+                            </li>
+                        </ul>
+                    </div> <!-- end card-body-->
+                </div> <!-- end card-->
+            </div> <!-- end col -->
+        </div>
 
         <div class="row">
             <div class="col-12">
@@ -43,11 +95,7 @@
                                     @foreach ($datas as $key => $data)
                                         <tr>
                                             <td>{{ $key + 1 }}</td>
-                                            <td>
-                                                @if(isset($data->project_data))
-                                                    【{{ $data->project_data->user_data->name }}】{{ $data->project_data->name }}
-                                                @endif
-                                            </td>
+                                            <td>{{ $data->name }}</td>
                                             <td>{{ $data->task_template_data->name }}</td>
                                             <td>{{ $data->check_status_data->name }}</td>
                                             <td>
@@ -62,10 +110,10 @@
                                                 @endif
                                             </td>
                                             <td>
-                                                @foreach ($data->items as $item)
+                                                @foreach ($data->task_user as $task_user)
                                                     <span
-                                                        class="badge bg-primary p-1 mb-1">{{ $item->user_data->name }}
-                                                        - {{ $item->context }}(已完成)</span><br>
+                                                        class="badge bg-primary p-1 mb-1">{{ $task_user->user_data->name }}
+                                                        - {{ $task_user->context }}(已完成)</span><br>
                                                 @endforeach
                                             </td>
                                             <td>
@@ -93,7 +141,8 @@
                                                 </div>
                                             </td>
                                             <td>
-                                                <a href="{{ route('task.edit', $data->id) }}" class="action-icon">
+                                                <a href="{{ route('contractStatus.edit', $data->id) }}"
+                                                    class="action-icon">
                                                     <i class="mdi mdi-square-edit-outline"></i></a>
                                                 {{-- <a href="javascript:void(0);" class="action-icon"> <i class="mdi mdi-delete"></i></a> --}}
                                             </td>

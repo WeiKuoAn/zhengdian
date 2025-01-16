@@ -4,7 +4,7 @@
     <!-- Start Content-->
     <div class="container-fluid">
 
-        @include('layouts.shared.page-title', ['title' => '設定管理', 'subtitle' => '專案狀態類別設定'])
+        @include('layouts.shared.page-title', ['title' => '專案狀態類別設定', 'subtitle' => '設定管理'])
 
         <div class="row">
             <div class="col-12">
@@ -62,7 +62,7 @@
                                             <td>
                                                 <a href="{{ route('checkStatus.edit', $data->id) }}" class="action-icon"> <i
                                                         class="mdi mdi-square-edit-outline"></i></a>
-                                                {{-- <a href="javascript:void(0);" class="action-icon"> <i class="mdi mdi-delete"></i></a> --}}
+                                                <a href="{{ route('checkStatus.del', $data->id) }}" class="action-icon"> <i class="mdi mdi-trash-can-outline"></i></a>
                                             </td>
                                         </tr>
                                     @endforeach
@@ -86,6 +86,7 @@
                                 <table class="table table-centered table-nowrap table-striped" id="products-datatable">
                                     <thead>
                                         <tr>
+                                            <th scope="col">No</th>
                                             <th scope="col">流程項目</th>
                                             <th scope="col">排序</th>
                                             <th scope="col">狀態</th>
@@ -93,26 +94,29 @@
                                         </tr>
                                     </thead>
                                     <tbody>
+                                        @foreach($data->check_childrens as $num=>$check_children)
                                         <tr>
+                                            <td>{{ $num + 1 }}</td>
                                             <td>
-                                                @if (isset($data->check_data))
-                                                    {{ $data->check_data->name }}
+                                                @if (isset($check_children->check_data))
+                                                    {{ $check_children->name }}
                                                 @endif
                                             </td>
-                                            <td>{{ $data->seq }}</td>
+                                            <td>{{ $check_children->seq }}</td>
                                             <td>
-                                                @if ($data->status == 'up')
+                                                @if ($check_children->status == 'up')
                                                     啟用
                                                 @else
                                                     <b style="color:red;">停用</b>
                                                 @endif
                                             </td>
                                             <td>
-                                                <a href="{{ route('checkStatus.edit', $data->id) }}" class="action-icon">
+                                                <a href="{{ route('checkStatus.edit', $check_children->id) }}" class="action-icon">
                                                     <i class="mdi mdi-square-edit-outline"></i></a>
                                                 {{-- <a href="javascript:void(0);" class="action-icon"> <i class="mdi mdi-delete"></i></a> --}}
                                             </td>
                                         </tr>
+                                        @endforeach
                                     </tbody>
                                 </table>
                             </div>

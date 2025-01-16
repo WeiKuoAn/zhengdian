@@ -6,7 +6,7 @@
 
         @include('layouts.shared.page-title', [
             'title' => '專案狀態類別新增',
-            'subtitle' => '專案狀態類別新增',
+            'subtitle' => '設定管理',
         ])
 
         <div class="row">

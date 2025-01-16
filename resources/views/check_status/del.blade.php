@@ -4,13 +4,13 @@
     <!-- Start Content-->
     <div class="container-fluid">
 
-        @include('layouts.shared.page-title', ['title' => '專案狀態類別編輯', 'subtitle' => '設定管理'])
+        @include('layouts.shared.page-title', ['title' => '專案狀態類別刪除', 'subtitle' => '設定管理'])
 
         <div class="row">
             <div class="col-xl-6">
                 <div class="card">
                     <div class="card-body">
-                        <form action="{{ route('checkStatus.edit.data', $data->id) }}" method="POST">
+                        <form action="{{ route('checkStatus.del.data', $data->id) }}" method="POST">
                             @csrf
                             <div class="row">
                                 <div class="mb-3">
@@ -47,7 +47,7 @@
                     <div class="row mb-3">
                         <div class="col-12 text-center">
                             <button type="submit" class="btn btn-success waves-effect waves-light m-1"><i
-                                    class="fe-check-circle me-1"></i>編輯</button>
+                                    class="fe-check-circle me-1"></i>刪除</button>
                             <button type="reset" class="btn btn-secondary waves-effect waves-light m-1"
                                 onclick="history.go(-1)"><i class="fe-x me-1"></i>回上一頁</button>
                         </div>

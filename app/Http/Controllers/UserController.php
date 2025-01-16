@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\UserGroup;
+use App\Models\Job;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 
@@ -25,8 +26,9 @@ class UserController extends Controller
      */
     public function create()
     {
+        $jobs = Job::where('status', 'up')->get();
         $groups = UserGroup::whereNotIn('id', [2])->get();
-        return view('user.create')->with('groups', $groups);
+        return view('user.create')->with('groups', $groups)->with('jobs', $jobs);
     }
 
     /**
@@ -34,6 +36,7 @@ class UserController extends Controller
      */
     public function store(Request $request)
     {
+        // 创建用户
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
@@ -41,6 +44,16 @@ class UserController extends Controller
             'level' => $request->level,
             'group_id' => $request->group_id,
         ]);
+
+        
+        $user_data = User::orderby('id','desc')->first();
+        // dd($user_data);
+        // 创建 Job 并关联 user_id
+        // $job = new Job;
+        // $job->user_id = $user_data->id; // 从 $user 对象中获取 user_id
+        // $job->job_id = $request->job_id;
+        // $job->save();
+
 
         return redirect()->route('users');
     }
@@ -85,8 +98,9 @@ class UserController extends Controller
     public function edit(string $id)
     {
         $groups = UserGroup::whereNotIn('id', [2])->get();
+        $jobs = Job::where('status', 'up')->get();
         $data = User::where('id', $id)->first();
-        return view('user.edit')->with('data', $data)->with('groups', $groups);
+        return view('user.edit')->with('data', $data)->with('groups', $groups)->with('jobs', $jobs);
     }
 
     /**

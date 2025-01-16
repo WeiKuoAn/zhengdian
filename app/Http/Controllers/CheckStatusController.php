@@ -11,7 +11,7 @@ class CheckStatusController extends Controller
     public function getCheckStatus()
     {
         // 查詢 parent_id 為 null 的資料
-        $statuses = CheckStatus::whereNull('parent_id')->get();
+        $statuses = CheckStatus::orderby('seq', 'asc')->whereNull('parent_id')->get();
 
         // 回傳 JSON 格式
         return response()->json($statuses);
@@ -19,7 +19,7 @@ class CheckStatusController extends Controller
     
     public function index(Request $request)
     {
-        $datas = CheckStatus::orderby('seq', 'asc')->get();
+        $datas = CheckStatus::orderby('seq', 'asc')->whereNull('parent_id')->get();
         return view('check_status.index')->with('datas', $datas);
     }
 
@@ -30,7 +30,7 @@ class CheckStatusController extends Controller
      */
     public function create()
     {
-        $datas = CheckStatus::get();
+        $datas = CheckStatus::orderby('seq', 'asc')->whereNull('parent_id')->get();
         return view('check_status.create')->with('datas', $datas);
     }
     /**
@@ -59,8 +59,8 @@ class CheckStatusController extends Controller
      */
     public function show($id)
     {
-        $data = CheckStatus::where('id', $id)->first();
-        $status_datas = CheckStatus::get();
+        $data = CheckStatus::orderby('seq', 'asc')->where('id', $id)->first();
+        $status_datas = CheckStatus::whereNull('parent_id')->get();
         return view('check_status.edit')->with('data', $data)->with('status_datas', $status_datas);
     }
 
@@ -100,8 +100,16 @@ class CheckStatusController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
+    public function delete($id)
+    {
+        $data = CheckStatus::orderby('seq', 'asc')->where('id', $id)->first();
+        $status_datas = CheckStatus::whereNull('parent_id')->get();
+        return view('check_status.del')->with('data', $data)->with('status_datas', $status_datas);
+    }
     public function destroy($id)
     {
-        //
+        $data = CheckStatus::where('id', $id)->first();
+        $data->delete();
+        return redirect()->route('checkStatus');
     }
 }

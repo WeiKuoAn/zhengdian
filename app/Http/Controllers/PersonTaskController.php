@@ -11,12 +11,12 @@ use App\Models\CheckStatus;
 use App\Models\CustProject;
 use Illuminate\Support\Facades\Auth;
 
-class TaskController extends Controller
+class PersonTaskController extends Controller
 {
     public function index(Request $request)
     {
-        $datas = Task::orderby('priority', 'asc')->get();
-        return view('task.index')->with('datas', $datas);
+        $datas = TaskItem::where('user_id', Auth::user()->id)->get();
+        return view('person_task.index')->with('datas', $datas);
     }
 
     /**

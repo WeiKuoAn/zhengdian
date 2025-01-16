@@ -15,6 +15,7 @@ use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\ProjectMilestonesController;
 use App\Http\Controllers\MeetDataController;
 use App\Http\Controllers\JobController;
+use App\Http\Controllers\PersonTaskController;
 
 
 require __DIR__ . '/auth.php';
@@ -66,6 +67,8 @@ Route::get('checkStatus/create', [CheckStatusController::class, 'create'])->name
 Route::post('checkStatus/create', [CheckStatusController::class, 'store'])->name('checkStatus.create.data');
 Route::get('checkStatus/edit/{id}', [CheckStatusController::class, 'show'])->name('checkStatus.edit');
 Route::post('checkStatus/edit/{id}', [CheckStatusController::class, 'update'])->name('checkStatus.edit.data');
+Route::get('checkStatus/del/{id}', [CheckStatusController::class, 'delete'])->name('checkStatus.del');
+Route::post('checkStatus/del/{id}', [CheckStatusController::class, 'destroy'])->name('checkStatus.del.data');
 Route::get('/get-sidebar-data', [CheckStatusController::class, 'getCheckStatus']);
 
 /*專案狀態設定 */
@@ -112,6 +115,13 @@ Route::get('/job/create', [JobController::class, 'create'])->name('job.create');
 Route::post('/job/create', [JobController::class, 'store'])->name('job.create.data');
 Route::get('/job/edit/{id}', [JobController::class, 'show'])->name('job.edit');
 Route::post('/job/edit/{id}', [JobController::class, 'update'])->name('job.edit.data');
+
+Route::get('/person/task', [PersonTaskController::class, 'index'])->middleware(['auth'])->name('person.task');
+Route::get('/person/task/create', [PersonTaskController::class, 'create'])->name('person.task.create');
+Route::post('/person/task/create', [PersonTaskController::class, 'store'])->name('person.task.create.data');
+Route::get('/person/task/edit/{id}', [PersonTaskController::class, 'show'])->name('person.task.edit');
+Route::post('/person/task/edit/{id}', [PersonTaskController::class, 'update'])->name('person.task.edit.data');
+
 
 // routes/web.php
 Route::get('/api/projects/{user_id}', [ProjectController::class, 'getProjectsByUser']);

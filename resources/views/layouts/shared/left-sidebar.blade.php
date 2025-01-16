@@ -100,7 +100,7 @@
             </li>
 
             <li class="menu-item">
-                <a href="#" class="menu-link">
+                <a href="{{ route('person.task') }}" class="menu-link">
                     <span class="menu-icon"><i data-feather="calendar"></i></span>
                     <span class="menu-text"> 個人待辦 </span>
                 </a>
@@ -119,11 +119,11 @@
                                 class="{{ request()->is('customers') ? 'active' : '' }}"><span
                                     class="menu-text">客戶列表</span></a>
                         </li>
-                        <li class="menu-item">
+                        {{-- <li class="menu-item">
                             <a class="menu-link" href="{{ route('customer.create') }}"
                                 class="{{ request()->is('customer.create') ? 'active' : '' }}"><span
                                     class="menu-text">新增客戶</span></a>
-                        </li>
+                        </li> --}}
                     </ul>
                 </div>
             </li>
@@ -137,12 +137,12 @@
                 </a>
                 <div class="collapse" id="project">
                     <ul class="sub-menu" id="dynamicProjectMenu">
-                        <li class="menu-item">
+                        {{-- <li class="menu-item">
                             <a class="menu-link" href="{{ route('project.create') }}"
                                 class="{{ request()->is('project.create') ? 'active' : '' }}">
                                 <span class="menu-text">新增專案</span>
                             </a>
-                        </li>
+                        </li> --}}
                         <li class="menu-item">
                             <a class="menu-link" href="{{ route('projects') }}"
                                 class="{{ request()->is('projects') ? 'active' : '' }}">
@@ -178,12 +178,12 @@
                 </a>
                 <div class="collapse" id="meet">
                     <ul class="sub-menu">
-                        <li class="menu-item">
+                        {{-- <li class="menu-item">
                             <a class="menu-link" href="{{ route('meetData.create') }}"
                                 class="{{ request()->is('meetData.create') ? 'active' : '' }}">
                                 <span class="menu-text">新增會議</span>
                             </a>
-                        </li>
+                        </li> --}}
                         <li class="menu-item">
                             <a class="menu-link" href="{{ route('meetDatas') }}"
                                 class="{{ request()->is('meetDatas') ? 'active' : '' }}"><span
@@ -206,11 +206,11 @@
                                 class="{{ request()->is('projectMilestones') ? 'active' : '' }}"><span
                                     class="menu-text">排程列表</span></a>
                         </li>
-                        <li class="menu-item">
+                        {{-- <li class="menu-item">
                             <a class="menu-link" href="{{ route('projectMilestones.create') }}"
                                 class="{{ request()->is('projectMilestones.create') ? 'active' : '' }}"><span
                                     class="menu-text">新增排程</span></a>
-                        </li>
+                        </li> --}}
                     </ul>
                 </div>
             </li>

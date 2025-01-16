@@ -71,31 +71,8 @@
                                             <td>{{ $data->cust_to_do }}</td>
                                             <td><a href="{{ $data->nas_link }}">連結</a></td>
                                             <td align="center">
-                                                <ul class="list-inline mb-0">
-                                                    <li class="list-inline-item dropdown">
-                                                        <a class="table-action-btn dropdown-toggle arrow-none btn btn-outline-dark waves-effect"
-                                                            href="#" role="button" data-bs-toggle="dropdown"
-                                                            aria-haspopup="true">動作
-                                                            <i class="bx bxs-down-arrow"></i>
-                                                        </a>
-                                                        <div class="dropdown-menu dropdown-menu-end">
-                                                            <a class="dropdown-item"
-                                                                href="{{ route('meetData.edit', $data->id) }}">編輯</a>
-                                                            {{-- <a class="dropdown-item"
-                                                                @if ($data->type == 0) href="{{ route('user.project.business.appendix', $data->user_id) }}"
-                                                        @elseif($data->type == 1)
-                                                            href="{{ route('user.project.Manufacturing.appendix', $data->user_id) }}" @endif>附件</a>
-                                                            <a class="dropdown-item"
-                                                                @if ($data->type == 0) href="{{ route('user.project.business.preview', $data->user_id) }}"
-                                                        @elseif($data->type == 1)
-                                                            href="{{ route('user.project.Manufacturing.preview', $data->user_id) }}" @endif>預覽</a>
-                                                            <a class="dropdown-item"
-                                                                @if ($data->type == 0) href="{{ route('business-export-word', $data->user_id) }}"
-                                                            @elseif($data->type == 1)
-                                                                href="{{ route('user.project.Manufacturing.preview', $data->user_id) }}" @endif>填寫計畫內容</a> --}}
-                                                        </div>
-                                                    </li>
-                                                </ul>
+                                                <a href="{{ route('meetData.edit', $data->id) }}" class="action-icon"> <i class="mdi mdi-square-edit-outline"></i></a>
+                                                <a href="{{ route('meetData.del', $data->id) }}" class="action-icon"> <i class="mdi mdi-trash-can-outline"></i></a>
                                             </td>
                                         </tr>
                                     @endforeach

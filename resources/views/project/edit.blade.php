@@ -43,6 +43,11 @@
                                 </a>
                             </li>
                             <li class="nav-item">
+                                <a href="" aria-expanded="false" class="nav-link">
+                                    派工作業
+                                </a>
+                            </li>
+                            <li class="nav-item">
                                 <a href="#" aria-expanded="false" class="nav-link">
                                     期中報告/檢核
                                 </a>

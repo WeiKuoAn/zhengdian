@@ -18,4 +18,9 @@ class CheckStatus extends Model
     {
         return $this->hasOne('App\Models\CheckStatus', 'id', 'parent_id');
     }
+
+    public function check_childrens()
+    {
+        return $this->hasMany('App\Models\CheckStatus', 'parent_id', 'id');
+    }
 }

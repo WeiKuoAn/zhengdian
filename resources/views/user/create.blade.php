@@ -15,6 +15,14 @@
                             <div class="row">
                                 <div class="col-xl-12">
                                     <div class="mb-3">
+                                        <label class="form-label">職稱</label>
+                                        <select class="form-select" name="job_id">
+                                            @foreach ($jobs as $job)
+                                                <option value="{{ $job->id }}">{{ $job->name }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    <div class="mb-3">
                                         <label class="form-label" for="AddNew-Username">姓名</label>
                                         <input type="text" class="form-control" id="AddNew-Username" name="name">
                                     </div>
@@ -46,10 +54,10 @@
                                 </div>
                                 <div class="row mt-2">
                                     <div class="text-center">
-                                        <button type="button" class="btn btn-danger me-1"
-                                            data-bs-dismiss="modal">回上一頁</button>
                                         <button type="submit" class="btn btn-success" data-bs-toggle="modal"
                                             data-bs-target="#success-btn" id="btn-save-event">新增用戶</button>
+                                        <button type="button" class="btn btn-danger me-1"
+                                            data-bs-dismiss="modal">回上一頁</button>
                                     </div>
                                 </div>
                             </div>
