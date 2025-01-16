@@ -1,5 +1,7 @@
 @extends('layouts.vertical', ['title' => 'CRM Customers'])
-
+@section('css')
+    @vite(['node_modules/selectize/dist/css/selectize.bootstrap3.css', 'node_modules/mohithg-switchery/dist/switchery.min.css', 'node_modules/bootstrap-touchspin/dist/jquery.bootstrap-touchspin.min.css', 'node_modules/select2/dist/css/select2.min.css', 'node_modules/multiselect/css/multi-select.css'])
+@endsection
 @section('content')
     <!-- Start Content-->
     <div class="container-fluid">
@@ -44,11 +46,17 @@
                                     <input type="text" class="form-control" name="password" value="" required>
                                 </div>
                                 <div class="mb-3">
-                                    <label for="project-priority" class="form-label">專案狀態<span
-                                            class="text-danger">*</span></label>
-                                    <select class="form-control" data-toggle="select" data-width="100%" name="check_status">
+                                    <label class="form-label">專案執行階段：<span class="text-danger">*</span></label>
+                                    <select class="form-control" data-toggle="select2" data-width="100%"
+                                        name="check_status" required>
+                                        <option value="" selected>請選擇</option>
                                         @foreach ($check_statuss as $key => $check_status)
-                                            <option value="{{ $check_status->id }}">{{ $check_status->name }}</option>
+                                            <optgroup label="{{ $check_status->name }}">
+                                                @foreach ($check_status->check_childrens as $num => $check_children)
+                                                    <option value="{{ $check_children->id }}">{{ $check_children->name }}
+                                                    </option>
+                                                @endforeach
+                                            </optgroup>
                                         @endforeach
                                     </select>
                                 </div>
@@ -71,3 +79,7 @@
 
     </div> <!-- container -->
 @endsection
+@section('script')
+    @vite(['resources/js/pages/form-advanced.init.js'])
+@endsection
+

@@ -19,7 +19,7 @@
                         <ul class="nav nav-tabs nav-bordered nav-justified">
                             <li class="nav-item">
                                 <a href="{{ route('project.edit', $data->user_id) }}" aria-expanded="true"
-                                    class="nav-link active">
+                                    class="nav-link">
                                     專案基本設定
                                 </a>
                             </li>
@@ -51,7 +51,7 @@
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a href="{{ route('project.midterm', $data->user_id) }}" aria-expanded="false" class="nav-link">
+                                <a href="{{ route('project.midterm', $data->user_id) }}" aria-expanded="false" class="nav-link active">
                                     期中報告/檢核
                                 </a>
                             </li>

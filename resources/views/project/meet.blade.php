@@ -19,7 +19,7 @@
                         <ul class="nav nav-tabs nav-bordered nav-justified">
                             <li class="nav-item">
                                 <a href="{{ route('project.edit', $data->user_id) }}" aria-expanded="true"
-                                    class="nav-link ">
+                                    class="nav-link">
                                     專案基本設定
                                 </a>
                             </li>
@@ -30,7 +30,7 @@
                             </li>
                             <li class="nav-item">
                                 <a href="{{ route('project.write', $data->user_id) }}" aria-expanded="false"
-                                    class="nav-link active">
+                                    class="nav-link">
                                     內容撰寫
                                 </a>
                             </li>
@@ -61,7 +61,7 @@
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a href="{{ route('project.meet', $data->user_id) }}" aria-expanded="false" class="nav-link">
+                                <a href="{{ route('project.meet', $data->user_id) }}" aria-expanded="false" class="nav-link active">
                                     會議瀏覽
                                 </a>
                             </li>

@@ -11,24 +11,24 @@
                     <div class="card-body">
                         <div class="row justify-content-between">
                             <div class="col-md-10">
-                                <form class="d-flex flex-wrap align-items-center" action="{{ route('customers') }}" method="GET">
+                                <form class="d-flex flex-wrap align-items-center" action="{{ route('projects') }}" method="GET">
                                     @csrf
                                     <label for="inputPassword2" class="visually-hidden">Search</label>
                                     <div class="me-3">
                                         <input type="search" class="form-control my-1 my-md-0" id="inputPassword2"
-                                            placeholder="客戶名稱..." name="name" value="{{ $request->name }}">
+                                            placeholder="客戶名稱..." name="cust_name" value="{{ $request->cust_name }}">
                                     </div>
                                     <label for="inputPassword2" class="visually-hidden">Search</label>
                                     <div class="me-3">
                                         <input type="search" class="form-control my-1 my-md-0" id="inputPassword2"
-                                            placeholder="專案名稱..." name="name" value="{{ $request->name }}">
+                                            placeholder="專案名稱..." name="project_name" value="{{ $request->project_name }}">
                                     </div>
                                     <label for="status-select" class="me-2">專案狀態</label>
                                     <div class="me-sm-3">
                                         <select class="form-select my-1 my-md-0" id="status-select" name="check_status" onchange="this.form.submit()">
                                             <option value="null" selected>不限</option>
                                             @foreach($check_statuss as $check_status)
-                                                <option value="{{ $check_status->id }}" @if($request->check_statuss == $check_status->id) selected @endif>{{ $check_status->name }}</option>
+                                                <option value="{{ $check_status->id }}" @if($request->check_status == $check_status->id) selected @endif>{{ $check_status->name }}</option>
                                             @endforeach
                                         </select>
                                     </div>

@@ -16,4 +16,8 @@ class TaskItem extends Model
     {
         return $this->hasOne('App\Models\User', 'id', 'user_id');
     }
+    public function task_data()
+    {
+        return $this->hasOne('App\Models\Task', 'id', 'task_id');
+    }
 }

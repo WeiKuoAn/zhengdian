@@ -60,14 +60,13 @@
                                     <div id="executor-container">
                                         <div class="input-group mb-2 executor-entry">
                                             <select class="form-control" data-toggle="select" data-width="100%"
-                                                name="user_ids[]">
+                                                name="user_ids[]" required> 
                                                 @foreach ($users as $key => $user)
                                                     <option value="{{ $user->id }}">{{ $user->name }}</option>
                                                 @endforeach
                                                 <option value="">無</option>
                                             </select>
-                                            <input type="text" class="form-control" name="contexts[]" placeholder="執行內容"
-                                                required>
+                                            <input type="text" class="form-control" name="contexts[]" placeholder="執行內容">
                                             <button type="button" class="btn btn-danger remove-executor">-</button>
                                         </div>
                                     </div>
@@ -138,13 +137,13 @@
             $('#add-executor').off('click').on('click', function() {
                 var newRow = `
                 <div class="input-group mb-2 executor-entry">
-                    <select class="form-control" data-toggle="select" data-width="100%" name="user_ids[]">
+                    <select class="form-control" data-toggle="select" data-width="100%" name="user_ids[]" required>
                         @foreach ($users as $key => $user)
                             <option value="{{ $user->id }}">{{ $user->name }}</option>
                         @endforeach
                         <option value="">無</option>
                     </select>
-                    <input type="text" class="form-control" name="contexts[]" placeholder="執行內容" required>
+                    <input type="text" class="form-control" name="contexts[]" placeholder="執行內容">
                     <button type="button" class="btn btn-danger remove-executor">-</button>
                 </div>
             `;

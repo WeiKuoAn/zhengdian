@@ -8,7 +8,7 @@
     <!-- Start Content-->
     <div class="container-fluid">
 
-        @include('layouts.shared.page-title', ['title' => '派工列表', 'subtitle' => '派工管理'])
+        @include('layouts.shared.page-title', ['title' => '【'. Auth::user()->name .'】'. '個人待辦', 'subtitle' =>'個人待辦'])
 
         <div class="row">
             <div class="col-12">
@@ -18,7 +18,7 @@
                             <div class="col-sm-4">
                                 <a href="{{ route('task.create') }}">
                                     <button type="button" class="btn btn-danger waves-effect waves-light"><i
-                                            class="mdi mdi-plus-circle me-1"></i> 新增派工</button>
+                                            class="mdi mdi-plus-circle me-1"></i> 新增個人派工</button>
                                 </a>
                             </div>
                             <div class="col-sm-8">
@@ -34,9 +34,8 @@
                                         <th scope="col">派工類別</th>
                                         <th scope="col">執行階段</th>
                                         <th scope="col">優先序</th>
-                                        <th scope="col">負責執行人員</th>
                                         <th scope="col">狀態</th>
-                                        <th scope="col">操作</th>
+                                        <th scope="col">回報</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -44,32 +43,35 @@
                                         <tr>
                                             <td>{{ $key + 1 }}</td>
                                             <td>
-                                                @if(isset($data->project_data))
-                                                    【{{ $data->project_data->user_data->name }}】{{ $data->project_data->name }}
-                                                @endif
-                                            </td>
-                                            <td>{{ $data->task_template_data->name }}</td>
-                                            <td>{{ $data->check_status_data->name }}</td>
-                                            <td>
-                                                @if ($data->priority == 0)
-                                                    <span class="badge bg-danger p-1">緊急</span>
-                                                @elseif($data->priority == 1)
-                                                    <span class="badge bg-primary p-1">高</span>
-                                                @elseif($data->priority == 2)
-                                                    <span class="badge bg-warning p-1">中</span>
-                                                @else
-                                                    <span class="badge bg-success p-1">低</span>
+                                                @if (isset($data->task_data->project_data))
+                                                    【{{ $data->task_data->project_data->user_data->name }}】{{ $data->task_data->project_data->name }}
                                                 @endif
                                             </td>
                                             <td>
-                                                @foreach ($data->items as $item)
-                                                    <span
-                                                        class="badge bg-primary p-1 mb-1">{{ $item->user_data->name }}
-                                                        - {{ $item->context }}(已完成)</span><br>
-                                                @endforeach
+                                                @if(isset($data->task_data))
+                                                {{ $data->task_data->task_template_data->name }}
+                                                @endif
                                             </td>
                                             <td>
-                                                @if ($data->status == 0)
+                                                @if(isset($data->task_data))
+                                                {{ $data->task_data->check_status_data->name }}
+                                                @endif
+                                            </td>
+                                            <td>
+                                                @if (isset($data->task_data->priority))
+                                                    @if ($data->task_data->priority == 0)
+                                                        <span class="badge bg-danger p-1">緊急</span>
+                                                    @elseif($data->task_data->priority == 1)
+                                                        <span class="badge bg-primary p-1">高</span>
+                                                    @elseif($data->task_data->priority == 2)
+                                                        <span class="badge bg-warning p-1">中</span>
+                                                    @else
+                                                        <span class="badge bg-success p-1">低</span>
+                                                    @endif
+                                                @endif
+                                            </td>
+                                            <td>
+                                                {{-- @if ($data->status == 0)
                                                     <span class="badge bg-primary p-1">進行中</span>
                                                 @elseif($data->status == 1)
                                                     <span class="badge bg-success p-1">送出派工</span>
@@ -81,7 +83,7 @@
                                                     <span class="badge bg-success p-1">移轉</span>
                                                 @else
                                                     <span class="badge bg-danger p-1">完成</span>
-                                                @endif
+                                                @endif --}}
                                                 <div class="button-list" id="tooltip-container">
                                                     <button type="button" class="btn btn-light"
                                                         data-bs-container="#tooltip-container" data-bs-toggle="tooltip"

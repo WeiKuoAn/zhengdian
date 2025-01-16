@@ -90,9 +90,25 @@ Route::get('projects', [ProjectController::class,'index'])->name('projects');
 Route::get('project/create', [ProjectController::class, 'create'])->name('project.create');
 Route::post('project/create', [ProjectController::class, 'store'])->name('project.create.data');
 Route::get('project/edit/{id}', [ProjectController::class, 'edit'])->name('project.edit');
-Route::post('project/edit/{id}', [ProjectController::class, 'update'])->name('project.edit.data');
+Route::post('project/edit/{id}', [ProjectController::class, 'update'])->name('project.edit.data');//01
+Route::get('project/background/{id}', [ProjectController::class, 'background'])->name('project.background');
+// Route::post('project/background/{id}', [ProjectController::class, 'background_update'])->name('project.background.data');//02
 Route::get('project/write/{id}', [ProjectController::class, 'write'])->name('project.write');
+// Route::get('project/write/{id}', [ProjectController::class, 'write_update'])->name('project.write.data');
+
+Route::get('project/send/{id}', [ProjectController::class, 'send'])->name('project.send');
+// Route::get('project/send/{id}', [ProjectController::class, 'send_update'])->name('project.send.data');
 Route::get('project/plan/{id}', [ProjectController::class, 'plan'])->name('project.plan');
+// Route::get('project/plan/{id}', [ProjectController::class, 'plan_update'])->name('project.plan.data');
+Route::get('project/task/{id}', [ProjectController::class, 'task'])->name('project.task');
+Route::get('project/task/{id}', [ProjectController::class, 'task_update'])->name('project.task');
+Route::get('project/midterm/{id}', [ProjectController::class, 'midterm'])->name('project.midterm');
+Route::get('project/midterm/{id}', [ProjectController::class, 'midterm_update'])->name('project.midterm');
+Route::get('project/final/{id}', [ProjectController::class, 'final'])->name('project.final');
+Route::get('project/final/{id}', [ProjectController::class, 'final_update'])->name('project.final');
+Route::get('project/meet/{id}', [ProjectController::class, 'meet'])->name('project.meet');
+Route::get('project/meet/{id}', [ProjectController::class, 'meet_update'])->name('project.meet');
+
 Route::get('/project/{id}', [ProjectController::class, 'show'])->name('project.show');
 
 Route::get('projectMilestones', [ProjectMilestonesController::class, 'index'])->name('projectMilestones');

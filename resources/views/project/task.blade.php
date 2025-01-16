@@ -21,7 +21,7 @@
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a href="#" aria-expanded="false" class="nav-link ">
+                                <a href="{{ route('project.background', $data->user_id) }}" aria-expanded="false" class="nav-link ">
                                     專案背景調查
                                 </a>
                             </li>
@@ -32,28 +32,34 @@
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a href="#" aria-expanded="false" class="nav-link">
+                                <a href="{{ route('project.send', $data->user_id) }}" aria-expanded="false" class="nav-link">
                                     送件作業
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a href="{{ route('project.plan', $data->user_id) }}" aria-expanded="false" class="nav-link">
+                                <a href="{{ route('project.plan', $data->user_id) }}" aria-expanded="false"
+                                    class="nav-link">
                                     排程作業
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a href="" aria-expanded="false" class="nav-link">
+                                <a href="{{ route('project.task', $data->user_id) }}" aria-expanded="false" class="nav-link active">
                                     派工作業
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a href="#" aria-expanded="false" class="nav-link">
+                                <a href="{{ route('project.midterm', $data->user_id) }}" aria-expanded="false" class="nav-link">
                                     期中報告/檢核
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a href="#" aria-expanded="false" class="nav-link">
+                                <a href="{{ route('project.final', $data->user_id) }}" aria-expanded="false" class="nav-link">
                                     期末報告/結案
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{{ route('project.meet', $data->user_id) }}" aria-expanded="false" class="nav-link">
+                                    會議瀏覽
                                 </a>
                             </li>
                         </ul>
