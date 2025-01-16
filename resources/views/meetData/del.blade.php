@@ -6,13 +6,13 @@
     <!-- Start Content-->
     <div class="container-fluid">
 
-        @include('layouts.shared.page-title', ['title' => '會議管理', 'subtitle' => '編輯會議'])
+        @include('layouts.shared.page-title', ['title' => '會議管理', 'subtitle' => '刪除會議'])
 
         <div class="row">
             <div class="col-xl-7">
                 <div class="card">
                     <div class="card-body">
-                        <form class="form-horizontal" method="POST" action="{{ route('meetData.edit.data',$data->id) }}">
+                        <form class="form-horizontal" method="POST" action="{{ route('meetData.del.data',$data->id) }}">
                             @csrf
                             <div class="row mb-3">
                                 <label for="inputEmail3" class="col-4 col-xl-3 col-form-label"
@@ -96,7 +96,7 @@
                             <div class="row mb-1">
                                 <div class="col-12 text-center">
                                     <button type="submit" class="btn btn-success waves-effect waves-light m-1"><i
-                                            class="fe-check-circle me-1"></i>編輯</button>
+                                            class="fe-check-circle me-1"></i>刪除</button>
                                     <button type="reset" class="btn btn-secondary waves-effect waves-light m-1"
                                         onclick="history.go(-1)"><i class="fe-x me-1"></i>回上一頁</button>
                                 </div>

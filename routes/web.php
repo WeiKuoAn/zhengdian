@@ -14,6 +14,7 @@ use App\Http\Controllers\TaskController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\ProjectMilestonesController;
 use App\Http\Controllers\MeetDataController;
+use App\Http\Controllers\JobController;
 
 
 require __DIR__ . '/auth.php';
@@ -35,7 +36,7 @@ Route::get('/home', function () {
 Route::get('users', [UserController::class, 'index'])->name('users');
 Route::get('user/create', [UserController::class, 'create'])->name('user.create');
 Route::post('user/create', [UserController::class, 'store'])->name('user.create.data');
-Route::get('user/edit/{id}', [UserController::class, 'show'])->name('user.edit');
+Route::get('user/edit/{id}', [UserController::class, 'edit'])->name('user.edit');
 Route::post('user/edit/{id}', [UserController::class, 'update'])->name('user.edit.data');
 
 /*客戶管理 */
@@ -102,6 +103,15 @@ Route::get('meetData/create', [MeetDataController::class, 'create'])->name('meet
 Route::post('meetData/create', [MeetDataController::class, 'store'])->name('meetData.create.data');
 Route::get('meetData/edit/{id}', [MeetDataController::class, 'show'])->name('meetData.edit');
 Route::post('meetData/edit/{id}', [MeetDataController::class, 'update'])->name('meetData.edit.data');
+Route::get('meetData/del/{id}', [MeetDataController::class, 'delete'])->name('meetData.del');
+Route::post('meetData/del/{id}', [MeetDataController::class, 'destroy'])->name('meetData.del.data');
+
+/*職稱管理*/
+Route::get('/jobs', [JobController::class, 'index'])->middleware(['auth'])->name('jobs');
+Route::get('/job/create', [JobController::class, 'create'])->name('job.create');
+Route::post('/job/create', [JobController::class, 'store'])->name('job.create.data');
+Route::get('/job/edit/{id}', [JobController::class, 'show'])->name('job.edit');
+Route::post('/job/edit/{id}', [JobController::class, 'update'])->name('job.edit.data');
 
 // routes/web.php
 Route::get('/api/projects/{user_id}', [ProjectController::class, 'getProjectsByUser']);

@@ -202,21 +202,25 @@
                 <div class="collapse" id="task">
                     <ul class="sub-menu">
                         <li class="menu-item">
-                            <a class="menu-link" href="{{route('projectMilestones')}}" class="{{ request()->is('projectMilestones') ? 'active' : '' }}"><span class="menu-text">排程列表</span></a>
+                            <a class="menu-link" href="{{ route('projectMilestones') }}"
+                                class="{{ request()->is('projectMilestones') ? 'active' : '' }}"><span
+                                    class="menu-text">排程列表</span></a>
                         </li>
                         <li class="menu-item">
-                            <a class="menu-link" href="{{route('projectMilestones.create')}}" class="{{ request()->is('projectMilestones.create') ? 'active' : '' }}"><span class="menu-text">新增排程</span></a>
+                            <a class="menu-link" href="{{ route('projectMilestones.create') }}"
+                                class="{{ request()->is('projectMilestones.create') ? 'active' : '' }}"><span
+                                    class="menu-text">新增排程</span></a>
                         </li>
                     </ul>
                 </div>
             </li>
 
-            
+
 
             <li class="menu-item">
                 <a class="menu-link" href="#setting" data-bs-toggle="collapse">
                     <span class="menu-icon"><i data-feather="users"></i></span>
-                    <span class="menu-text"> 其他設定 </span>
+                    <span class="menu-text"> 設定管理 </span>
                     <span class="menu-arrow"></span>
                 </a>
                 <div class="collapse" id="setting">
@@ -235,6 +239,16 @@
                             <a class="menu-link" href="{{ route('TaskTemplate') }}"
                                 class="{{ request()->is('TaskTemplate') ? 'active' : '' }}"><span
                                     class="menu-text">派工類別設定</span></a>
+                        </li>
+                        <li class="menu-item">
+                            <a class="menu-link" href="{{ route('TaskTemplate') }}"
+                                class="{{ request()->is('TaskTemplate') ? 'active' : '' }}"><span
+                                    class="menu-text">專案類別設定</span></a>
+                        </li>
+                        <li class="menu-item">
+                            <a class="menu-link" href="{{ route('jobs') }}"
+                                class="{{ request()->is('jobs') ? 'active' : '' }}"><span
+                                    class="menu-text">職稱設定</span></a>
                         </li>
                     </ul>
                 </div>
@@ -276,28 +290,29 @@
                     </ul>
                 </div>
             </li> --}}
-
-            <li class="menu-item">
-                <a class="menu-link" href="#sidebarCrm" data-bs-toggle="collapse">
-                    <span class="menu-icon"><i data-feather="users"></i></span>
-                    <span class="menu-text"> 用戶管理 </span>
-                    <span class="menu-arrow"></span>
-                </a>
-                <div class="collapse" id="sidebarCrm">
-                    <ul class="sub-menu">
-                        <li class="menu-item">
-                            <a class="menu-link" href="{{ route('users') }}"
-                                class="{{ request()->is('users') ? 'active' : '' }}"><span
-                                    class="menu-text">用戶列表</span></a>
-                        </li>
-                        <li class="menu-item">
-                            <a class="menu-link" href="{{ route('user.create') }}"
-                                class="{{ request()->is('user.create') ? 'active' : '' }}"><span
-                                    class="menu-text">新增用戶</span></a>
-                        </li>
-                    </ul>
-                </div>
-            </li>
+            @if (Auth::user()->level != 2)
+                <li class="menu-item">
+                    <a class="menu-link" href="#sidebarUser" data-bs-toggle="collapse">
+                        <span class="menu-icon"><i data-feather="users"></i></span>
+                        <span class="menu-text"> 用戶管理 </span>
+                        <span class="menu-arrow"></span>
+                    </a>
+                    <div class="collapse" id="sidebarUser">
+                        <ul class="sub-menu">
+                            <li class="menu-item">
+                                <a class="menu-link" href="{{ route('users') }}"
+                                    class="{{ request()->is('users') ? 'active' : '' }}"><span
+                                        class="menu-text">用戶列表</span></a>
+                            </li>
+                            <li class="menu-item">
+                                <a class="menu-link" href="{{ route('user.create') }}"
+                                    class="{{ request()->is('user.create') ? 'active' : '' }}"><span
+                                        class="menu-text">新增用戶</span></a>
+                            </li>
+                        </ul>
+                    </div>
+                </li>
+            @endif
 
         </ul>
 
@@ -312,4 +327,3 @@
 </div>
 <!-- Left Sidebar End -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-

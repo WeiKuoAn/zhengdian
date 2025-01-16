@@ -1,5 +1,7 @@
 @extends('layouts.vertical', ['title' => 'CRM Customers'])
-
+@section('css')
+    @vite(['node_modules/spectrum-colorpicker2/dist/spectrum.min.css', 'node_modules/flatpickr/dist/flatpickr.min.css', 'node_modules/clockpicker/dist/bootstrap-clockpicker.min.css', 'node_modules/bootstrap-datepicker/dist/css/bootstrap-datepicker.min.css'])
+@endsection
 @section('content')
     <!-- Start Content-->
     <div class="container-fluid">
@@ -42,7 +44,11 @@
                                 <label for="inputPassword5" class="col-4 col-xl-3 col-form-label"
                                     style="text-align: right;">時間：</label>
                                 <div class="col-8 col-xl-9">
-                                    <input type="date" class="form-control" id="inputPassword5" name="date">
+                                    <div class="input-group mb-2">
+                                        <input type="date" class="form-control" name="date" required>
+                                        <input type="text" id="24hours-timepicker" name="datetime"
+                                            class="form-control" placeholder="時：分" required>
+                                    </div>
                                 </div>
                             </div>
                             <div class="row mb-3">
@@ -105,4 +111,7 @@
         <!-- end row -->
 
     </div> <!-- container -->
+@endsection
+@section('script')
+    @vite(['resources/js/pages/form-pickers.init.js'])
 @endsection

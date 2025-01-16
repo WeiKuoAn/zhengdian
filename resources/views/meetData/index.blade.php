@@ -11,17 +11,18 @@
                     <div class="card-body">
                         <div class="row justify-content-between">
                             <div class="col-md-10">
-                                <form class="d-flex flex-wrap align-items-center" action="{{ route('meetDatas') }}" method="GET">
+                                <form class="d-flex flex-wrap align-items-center" action="{{ route('meetDatas') }}"
+                                    method="GET">
                                     @csrf
                                     <label for="inputPassword2" class="visually-hidden">Search</label>
                                     <div class="me-3">
                                         <input type="search" class="form-control my-1 my-md-0" id="inputPassword2"
-                                            placeholder="客戶名稱..." name="name" value="{{ $request->name }}">
+                                            placeholder="客戶名稱..." name="cust_name" value="{{ $request->cust_name }}">
                                     </div>
                                     <label for="inputPassword2" class="visually-hidden">Search</label>
                                     <div class="me-3">
                                         <input type="search" class="form-control my-1 my-md-0" id="inputPassword2"
-                                            placeholder="會議名稱..." name="name" value="{{ $request->name }}">
+                                            placeholder="會議名稱..." name="meet_name" value="{{ $request->meet_name }}">
                                     </div>
                                     <button type="submit" class="btn btn-success waves-effect waves-light me-1">搜尋</button>
                                 </form>
@@ -51,7 +52,10 @@
                                         <th scope="col">客戶名稱</th>
                                         <th scope="col">會議時間</th>
                                         <th scope="col">會議名稱</th>
-                                        <th scope="col">狀態</th>
+                                        <th scope="col">地點</th>
+                                        <th scope="col">錚典待辦</th>
+                                        <th scope="col">客戶待辦</th>
+                                        <th scope="col">NAS連結</th>
                                         <th scope="col" style="width: 200px;">操作</th>
                                     </tr>
                                 </thead>
@@ -59,10 +63,13 @@
                                     @foreach ($datas as $key => $data)
                                         <tr align="center">
                                             <td>{{ $key + 1 }}</td>
-                                            <td>{{ $data->user_data->name}}</td>
+                                            <td>{{ $data->user_data->name }}</td>
                                             <td>{{ $data->date }}</td>
                                             <td>{{ $data->name }}</td>
-                                            <td align="center"></td>
+                                            <td>{{ $data->agenda }}</td>
+                                            <td>{{ $data->to_do }}</td>
+                                            <td>{{ $data->cust_to_do }}</td>
+                                            <td><a href="{{ $data->nas_link }}">連結</a></td>
                                             <td align="center">
                                                 <ul class="list-inline mb-0">
                                                     <li class="list-inline-item dropdown">
@@ -73,7 +80,7 @@
                                                         </a>
                                                         <div class="dropdown-menu dropdown-menu-end">
                                                             <a class="dropdown-item"
-                                                                    href="{{ route('project.edit', $data->user_id) }}" >編輯</a>
+                                                                href="{{ route('meetData.edit', $data->id) }}">編輯</a>
                                                             {{-- <a class="dropdown-item"
                                                                 @if ($data->type == 0) href="{{ route('user.project.business.appendix', $data->user_id) }}"
                                                         @elseif($data->type == 1)
