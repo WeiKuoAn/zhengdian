@@ -18,7 +18,7 @@
                                         <input type="search" class="form-control my-1 my-md-0" id="inputPassword2"
                                             placeholder="客戶名稱..." name="name" value="{{ $request->name }}">
                                     </div>
-                                    <label for="status-select" class="me-2">簽約狀態</label>
+                                    <label for="status-select" class="me-2">專案狀態</label>
                                     <div class="me-sm-3">
                                         <select class="form-select my-1 my-md-0" id="status-select" name="contract_status" onchange="this.form.submit()">
                                             <option value="null" selected>不限</option>
@@ -63,7 +63,7 @@
                                         <th scope="col">負責人</th>
                                         <th scope="col">統編</th>
                                         <th scope="col">主要聯絡人</th>
-                                        <th scope="col">簽約狀態</th>
+                                        <th scope="col">專案狀態</th>
                                         <th scope="col">權限</th>
                                         <th scope="col" style="width: 200px;">操作</th>
                                     </tr>
@@ -79,7 +79,7 @@
                                             <td>{{ $data->registration_no }}</td>
                                             <td>{{ $data->contact_name.' / '.$data->contact_job }}</td>
                                             <td>
-                                                簽約狀態
+                                                專案狀態
                                             </td>
                                             <td>
                                                 {{-- {{ dd($data) }} --}}

@@ -5,7 +5,7 @@
     <div class="container-fluid">
 
         @include('layouts.shared.page-title', [
-            'title' => '專案狀態類別新增',
+            'title' => '專案階段新增',
             'subtitle' => '設定管理',
         ])
 

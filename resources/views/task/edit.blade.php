@@ -23,7 +23,7 @@
                                     <select class="form-control" data-toggle="select" data-width="100%" name="project_id">
                                         <option value="" selected>請選擇</option>
                                         @foreach ($cust_projects as $key => $cust_project)
-                                            <option value="{{ $cust_project->id }}">
+                                            <option value="{{ $cust_project->id }}"  {{ $data->project_id == $cust_project->id ? 'selected' : '' }}>
                                                 【{{ $cust_project->user_data->name }}】{{ $cust_project->name }}</option>
                                         @endforeach
                                     </select>
@@ -59,7 +59,7 @@
                                         @foreach ($data->items as $item)
                                             <div class="input-group mb-2 executor-entry">
                                                 <select class="form-control" data-toggle="select" data-width="100%"
-                                                    name="user_ids[]">
+                                                    name="user_ids[]" required>
                                                     @foreach ($users as $key => $user)
                                                         <option value="{{ $user->id }}"
                                                             {{ $item->user_id == $user->id ? 'selected' : '' }}>
@@ -68,7 +68,7 @@
                                                     <option value="">無</option>
                                                 </select>
                                                 <input type="text" class="form-control" name="contexts[]"
-                                                    placeholder="執行內容" value="{{ $item->context }}" required>
+                                                    placeholder="執行內容" value="{{ $item->context }}">
                                                 <button type="button" class="btn btn-danger remove-executor">-</button>
                                             </div>
                                         @endforeach
@@ -137,13 +137,13 @@
             $('#add-executor').off('click').on('click', function() {
                 var newRow = `
                 <div class="input-group mb-2 executor-entry">
-                    <select class="form-control" data-toggle="select" data-width="100%" name="user_ids[]">
+                    <select class="form-control" data-toggle="select" data-width="100%" name="user_ids[]" required>
                         @foreach ($users as $key => $user)
                             <option value="{{ $user->id }}">{{ $user->name }}</option>
                         @endforeach
                         <option value="">無</option>
                     </select>
-                    <input type="text" class="form-control" name="contexts[]" placeholder="執行內容" required>
+                    <input type="text" class="form-control" name="contexts[]" placeholder="執行內容">
                     <button type="button" class="btn btn-danger remove-executor">-</button>
                 </div>
             `;

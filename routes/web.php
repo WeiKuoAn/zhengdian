@@ -54,12 +54,14 @@ Route::post('customer/{id}/introduce-edit', [PresonCustomerController::class,'In
 
 Route::get('projects/{id}', [PresonProjectController::class,'index'])->name('user.project.index');
 
-/*簽約狀態設定 */
+/*專案狀態設定 */
 Route::get('contractStatus', [ContractStatusController::class, 'index'])->name('contractStatus');
 Route::get('contractStatus/create', [ContractStatusController::class, 'create'])->name('contractStatus.create');
 Route::post('contractStatus/create', [ContractStatusController::class, 'store'])->name('contractStatus.create.data');
 Route::get('contractStatus/edit/{id}', [ContractStatusController::class, 'show'])->name('contractStatus.edit');
 Route::post('contractStatus/edit/{id}', [ContractStatusController::class, 'update'])->name('contractStatus.edit.data');
+Route::get('contractStatus/del/{id}', [ContractStatusController::class, 'delete'])->name('contractStatus.del');
+Route::post('contractStatus/del/{id}', [ContractStatusController::class, 'destroy'])->name('contractStatus.del.data');
 
 /*專案狀態設定 */
 Route::get('checkStatus', [CheckStatusController::class, 'index'])->name('checkStatus');
@@ -101,13 +103,13 @@ Route::get('project/send/{id}', [ProjectController::class, 'send'])->name('proje
 Route::get('project/plan/{id}', [ProjectController::class, 'plan'])->name('project.plan');
 // Route::get('project/plan/{id}', [ProjectController::class, 'plan_update'])->name('project.plan.data');
 Route::get('project/task/{id}', [ProjectController::class, 'task'])->name('project.task');
-Route::get('project/task/{id}', [ProjectController::class, 'task_update'])->name('project.task');
+// Route::get('project/task/{id}', [ProjectController::class, 'task_update'])->name('project.task.data');
 Route::get('project/midterm/{id}', [ProjectController::class, 'midterm'])->name('project.midterm');
-Route::get('project/midterm/{id}', [ProjectController::class, 'midterm_update'])->name('project.midterm');
+// Route::get('project/midterm/{id}', [ProjectController::class, 'midterm_update'])->name('project.midterm.data');
 Route::get('project/final/{id}', [ProjectController::class, 'final'])->name('project.final');
-Route::get('project/final/{id}', [ProjectController::class, 'final_update'])->name('project.final');
+// Route::get('project/final/{id}', [ProjectController::class, 'final_update'])->name('project.final.data');
 Route::get('project/meet/{id}', [ProjectController::class, 'meet'])->name('project.meet');
-Route::get('project/meet/{id}', [ProjectController::class, 'meet_update'])->name('project.meet');
+// Route::get('project/meet/{id}', [ProjectController::class, 'meet_update'])->name('project.meet.data');
 
 Route::get('/project/{id}', [ProjectController::class, 'show'])->name('project.show');
 

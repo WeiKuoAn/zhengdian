@@ -4,7 +4,7 @@
     <!-- Start Content-->
     <div class="container-fluid">
 
-        @include('layouts.shared.page-title', ['title' => '設定管理', 'subtitle' => '簽約類別設定'])
+        @include('layouts.shared.page-title', ['title' => '專案狀態設定', 'subtitle' => '設定管理'])
 
         <div class="row">
             <div class="col-12">
@@ -14,7 +14,7 @@
                             <div class="col-sm-4">
                                 <a href="{{ route('contractStatus.create') }}">
                                     <button type="button" class="btn btn-danger waves-effect waves-light"><i
-                                            class="mdi mdi-plus-circle me-1"></i> 新增簽約類別</button>
+                                            class="mdi mdi-plus-circle me-1"></i> 新增專案狀態</button>
                                 </a>
                             </div>
                             <div class="col-sm-8">
@@ -26,7 +26,7 @@
                                 <thead>
                                     <tr>
                                         <th scope="col">No</th>
-                                        <th scope="col">名稱</th>
+                                        <th scope="col">專案狀態名稱</th>
                                         <th scope="col">排序</th>
                                         <th scope="col">狀態</th>
                                         <th scope="col">操作</th>
@@ -48,7 +48,7 @@
                                             <td>
                                                 <a href="{{ route('contractStatus.edit', $data->id) }}" class="action-icon"> <i
                                                         class="mdi mdi-square-edit-outline"></i></a>
-                                                {{-- <a href="javascript:void(0);" class="action-icon"> <i class="mdi mdi-delete"></i></a> --}}
+                                                <a href="{{ route('contractStatus.del', $data->id) }}" class="action-icon"> <i class="mdi mdi-trash-can-outline"></i></a>
                                             </td>
                                         </tr>
                                     @endforeach

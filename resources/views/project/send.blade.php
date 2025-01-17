@@ -70,43 +70,17 @@
                             @csrf
                             <div class="row mt-3">
                                 <div class="mb-3">
-                                    <label class="form-label">專案起始日期<span class="text-danger">*</span></label>
+                                    <label class="form-label">送件日期<span class="text-danger">*</span></label>
                                     <input type="date" class="form-control" name="date" value="{{ $data->date }}">
                                 </div>
                                 <div class="mb-3">
-                                    <label for="project-priority" class="form-label">專案類型<span
-                                            class="text-danger">*</span></label>
-                                    <select class="form-control" data-toggle="select" data-width="100%" name="type">
-                                        <option value="0" @if ($data->type == 0) selected @endif>商業服務業
-                                        </option>
-                                        <option value="1" @if ($data->type == 1) selected @endif>製造業
-                                        </option>
-                                    </select>
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label">NAS連結<span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control" name="nas_link" value="{{ $data->nas_link }}" required>
+                                    <label class="form-label">送件編號<span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" name="nas_link" value="123" >
                                 </div>
                                 {{-- <div class="mb-3">
                                     <label class="form-label">計畫登入密碼<span class="text-danger">*</span></label>
                                     <input type="text" class="form-control" name="password" value="" required>
                                 </div> --}}
-                                <div class="mb-3">
-                                    <label class="form-label">專案執行階段：<span class="text-danger">*</span></label>
-                                    <select class="form-control" data-toggle="select2" data-width="100%"
-                                        name="check_status">
-                                        <option value="" selected>請選擇</option>
-                                        @foreach ($check_statuss as $key => $check_status)
-                                            <optgroup label="{{ $check_status->name }}">
-                                                @foreach ($check_status->check_childrens as $num => $check_children)
-                                                    <option value="{{ $check_children->id }}"
-                                                        {{ $data->check_status == $check_children->id ? 'selected' : '' }}>
-                                                        {{ $check_children->name }}</option>
-                                                @endforeach
-                                            </optgroup>
-                                        @endforeach
-                                    </select>
-                                </div>
                             </div> <!-- end col-->
                             <div class="row mt-3">
                                 <div class="col-12 text-center">

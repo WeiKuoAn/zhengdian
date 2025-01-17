@@ -26,16 +26,18 @@
                         </div>
 
                         <div class="table-responsive">
-                            <table class="table table-centered table-nowrap table-striped" id="products-datatable">
+                            <table class="table table-centered  table-striped" id="products-datatable">
                                 <thead>
                                     <tr>
                                         <th scope="col">No</th>
-                                        <th scope="col">專案/任務名稱</th>
-                                        <th scope="col">派工類別</th>
-                                        <th scope="col">執行階段</th>
+                                        <th scope="col">專案名稱</th>
+                                        <th scope="col">派工項目</th>
+                                        <th scope="col">專案階段</th>
                                         <th scope="col">優先序</th>
                                         <th scope="col">負責執行人員</th>
-                                        <th scope="col">狀態</th>
+                                        <th scope="col">派工進度</th>
+                                        <th scope="col">預計完成時間</th>
+                                        <th scope="col">派工主管</th>
                                         <th scope="col">操作</th>
                                     </tr>
                                 </thead>
@@ -43,9 +45,9 @@
                                     @foreach ($datas as $key => $data)
                                         <tr>
                                             <td>{{ $key + 1 }}</td>
-                                            <td>
+                                            <td width="20%">
                                                 @if(isset($data->project_data))
-                                                    【{{ $data->project_data->user_data->name }}】{{ $data->project_data->name }}
+                                                    {{ $data->project_data->user_data->name }}{{ $data->project_data->name }}
                                                 @endif
                                             </td>
                                             <td>{{ $data->task_template_data->name }}</td>
@@ -69,7 +71,7 @@
                                                 @endforeach
                                             </td>
                                             <td>
-                                                @if ($data->status == 0)
+                                                {{-- @if ($data->status == 0)
                                                     <span class="badge bg-primary p-1">進行中</span>
                                                 @elseif($data->status == 1)
                                                     <span class="badge bg-success p-1">送出派工</span>
@@ -81,7 +83,7 @@
                                                     <span class="badge bg-success p-1">移轉</span>
                                                 @else
                                                     <span class="badge bg-danger p-1">完成</span>
-                                                @endif
+                                                @endif --}}
                                                 <div class="button-list" id="tooltip-container">
                                                     <button type="button" class="btn btn-light"
                                                         data-bs-container="#tooltip-container" data-bs-toggle="tooltip"
@@ -92,6 +94,8 @@
                                                     </button>
                                                 </div>
                                             </td>
+                                            <td>2025-01-17</td>
+                                            <td>{{ $data->user_data->name }}</td>
                                             <td>
                                                 <a href="{{ route('task.edit', $data->id) }}" class="action-icon">
                                                     <i class="mdi mdi-square-edit-outline"></i></a>

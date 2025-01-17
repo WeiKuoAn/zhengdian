@@ -127,7 +127,7 @@
                                 
                                 <div class="col-md-6">
                                     <div class="mb-3">
-                                        <label class="form-label">簽約狀態</label>
+                                        <label class="form-label">專案狀態</label>
                                         <select class="form-select" name="contract_status">
                                             @foreach ($contract_status as $status)
                                                 <option value="{{ $status->id }}" @if($data->contract_status == $status->id) selected @endif>{{ $status->name }}</option>

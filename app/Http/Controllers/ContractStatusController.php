@@ -87,8 +87,16 @@ class ContractStatusController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
+    public function delete($id)
+    {
+        $data = ContractStatus::where('id', $id)->first();
+        return view('contract_status.del')->with('data', $data);
+    }
+
     public function destroy($id)
     {
-        //
+        $data = ContractStatus::where('id', $id);
+        $data->delete();
+        return redirect()->route('contractStatus');
     }
 }

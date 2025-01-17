@@ -4,7 +4,7 @@
     <!-- Start Content-->
     <div class="container-fluid">
 
-        @include('layouts.shared.page-title', ['title' => '專案狀態類別設定', 'subtitle' => '設定管理'])
+        @include('layouts.shared.page-title', ['title' => '專案階段設定', 'subtitle' => '設定管理'])
 
         <div class="row">
             <div class="col-12">
@@ -14,7 +14,7 @@
                             <div class="col-sm-4">
                                 <a href="{{ route('checkStatus.create') }}">
                                     <button type="button" class="btn btn-danger waves-effect waves-light"><i
-                                            class="mdi mdi-plus-circle me-1"></i> 新增專案狀態類別</button>
+                                            class="mdi mdi-plus-circle me-1"></i> 新增專案階段</button>
                                 </a>
                             </div>
                             <div class="col-sm-8">

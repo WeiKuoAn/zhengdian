@@ -13,6 +13,12 @@
             <div class="col-12">
                 <div class="card">
                     <div class="card-body">
+                        <div class="d-flex align-items-start mb-3">
+                            <div class="w-100 ">
+                                <h3 class="mt-1 mb-0">{{ $data->user_data->name }}【{{ $data->name }}】</h5>
+                                    <p class="mb-1 mt-1 text-muted">計畫登入帳號：ＸＸＸ　計畫登入密碼：ＸＸＸ</p>
+                            </div>
+                        </div>
                         <ul class="nav nav-tabs nav-bordered nav-justified">
                             <li class="nav-item">
                                 <a href="{{ route('project.edit', $data->user_id) }}" aria-expanded="true"
@@ -21,7 +27,8 @@
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a href="{{ route('project.background', $data->user_id) }}" aria-expanded="false" class="nav-link ">
+                                <a href="{{ route('project.background', $data->user_id) }}" aria-expanded="false"
+                                    class="nav-link ">
                                     專案背景調查
                                 </a>
                             </li>
@@ -32,7 +39,8 @@
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a href="{{ route('project.send', $data->user_id) }}" aria-expanded="false" class="nav-link">
+                                <a href="{{ route('project.send', $data->user_id) }}" aria-expanded="false"
+                                    class="nav-link">
                                     送件作業
                                 </a>
                             </li>
@@ -43,27 +51,32 @@
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a href="{{ route('project.task', $data->user_id) }}" aria-expanded="false" class="nav-link active">
+                                <a href="{{ route('project.task', $data->user_id) }}" aria-expanded="false"
+                                    class="nav-link ">
                                     派工作業
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a href="{{ route('project.midterm', $data->user_id) }}" aria-expanded="false" class="nav-link">
+                                <a href="{{ route('project.midterm', $data->user_id) }}" aria-expanded="false"
+                                    class="nav-link">
                                     期中報告/檢核
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a href="{{ route('project.final', $data->user_id) }}" aria-expanded="false" class="nav-link">
+                                <a href="{{ route('project.final', $data->user_id) }}" aria-expanded="false"
+                                    class="nav-link">
                                     期末報告/結案
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a href="{{ route('project.meet', $data->user_id) }}" aria-expanded="false" class="nav-link">
+                                <a href="{{ route('project.meet', $data->user_id) }}" aria-expanded="false"
+                                    class="nav-link">
                                     會議瀏覽
                                 </a>
                             </li>
                         </ul>
                     </div> <!-- end card-body-->
+
                 </div> <!-- end card-->
             </div> <!-- end col -->
         </div>
@@ -84,76 +97,23 @@
                         </div>
 
                         <div class="table-responsive">
-                            <table class="table table-centered table-nowrap table-striped" id="products-datatable">
+                            <table class="table table-centered  table-striped" id="products-datatable">
                                 <thead>
                                     <tr>
                                         <th scope="col">No</th>
-                                        <th scope="col">專案/任務名稱</th>
-                                        <th scope="col">派工類別</th>
-                                        <th scope="col">執行階段</th>
+                                        <th scope="col">專案名稱</th>
+                                        <th scope="col">派工項目</th>
+                                        <th scope="col">專案階段</th>
                                         <th scope="col">優先序</th>
                                         <th scope="col">負責執行人員</th>
-                                        <th scope="col">狀態</th>
+                                        <th scope="col">派工進度</th>
+                                        <th scope="col">預計完成時間</th>
+                                        <th scope="col">派工主管</th>
                                         <th scope="col">操作</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach ($datas as $key => $data)
-                                        <tr>
-                                            <td>{{ $key + 1 }}</td>
-                                            <td>{{ $data->name }}</td>
-                                            <td>{{ $data->task_template_data->name }}</td>
-                                            <td>{{ $data->check_status_data->name }}</td>
-                                            <td>
-                                                @if ($data->priority == 0)
-                                                    <span class="badge bg-danger p-1">緊急</span>
-                                                @elseif($data->priority == 1)
-                                                    <span class="badge bg-primary p-1">高</span>
-                                                @elseif($data->priority == 2)
-                                                    <span class="badge bg-warning p-1">中</span>
-                                                @else
-                                                    <span class="badge bg-success p-1">低</span>
-                                                @endif
-                                            </td>
-                                            <td>
-                                                @foreach ($data->task_user as $task_user)
-                                                    <span
-                                                        class="badge bg-primary p-1 mb-1">{{ $task_user->user_data->name }}
-                                                        - {{ $task_user->context }}(已完成)</span><br>
-                                                @endforeach
-                                            </td>
-                                            <td>
-                                                @if ($data->status == 0)
-                                                    <span class="badge bg-primary p-1">進行中</span>
-                                                @elseif($data->status == 1)
-                                                    <span class="badge bg-success p-1">送出派工</span>
-                                                @elseif($data->status == 2)
-                                                    <span class="badge bg-success p-1">接收派工</span>
-                                                @elseif($data->status == 3)
-                                                    <span class="badge bg-success p-1">進行中</span>
-                                                @elseif($data->status == 4)
-                                                    <span class="badge bg-success p-1">移轉</span>
-                                                @else
-                                                    <span class="badge bg-danger p-1">完成</span>
-                                                @endif
-                                                <div class="button-list" id="tooltip-container">
-                                                    <button type="button" class="btn btn-light"
-                                                        data-bs-container="#tooltip-container" data-bs-toggle="tooltip"
-                                                        data-bs-placement="top"
-                                                        title="魏國安(已完成)、
-                                                        黃茹椿(待確認)">
-                                                        進行中
-                                                    </button>
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <a href="{{ route('contractStatus.edit', $data->id) }}"
-                                                    class="action-icon">
-                                                    <i class="mdi mdi-square-edit-outline"></i></a>
-                                                {{-- <a href="javascript:void(0);" class="action-icon"> <i class="mdi mdi-delete"></i></a> --}}
-                                            </td>
-                                        </tr>
-                                    @endforeach
+
                                 </tbody>
                             </table>
                         </div>

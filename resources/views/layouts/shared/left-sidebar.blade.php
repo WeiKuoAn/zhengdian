@@ -228,28 +228,28 @@
                         <li class="menu-item">
                             <a class="menu-link" href="{{ route('contractStatus') }}"
                                 class="{{ request()->is('contractStatus') ? 'active' : '' }}"><span
-                                    class="menu-text">簽約類別設定</span></a>
+                                    class="menu-text">專案狀態設定</span></a>
                         </li>
                         <li class="menu-item">
                             <a class="menu-link" href="{{ route('checkStatus') }}"
                                 class="{{ request()->is('checkStatus') ? 'active' : '' }}"><span
-                                    class="menu-text">專案狀態類別設定</span></a>
+                                    class="menu-text">專案階段設定</span></a>
                         </li>
                         <li class="menu-item">
                             <a class="menu-link" href="{{ route('TaskTemplate') }}"
                                 class="{{ request()->is('TaskTemplate') ? 'active' : '' }}"><span
-                                    class="menu-text">派工類別設定</span></a>
+                                    class="menu-text">派工項目設定</span></a>
                         </li>
                         <li class="menu-item">
                             <a class="menu-link" href="{{ route('TaskTemplate') }}"
                                 class="{{ request()->is('TaskTemplate') ? 'active' : '' }}"><span
                                     class="menu-text">專案類別設定</span></a>
                         </li>
-                        <li class="menu-item">
+                        {{-- <li class="menu-item">
                             <a class="menu-link" href="{{ route('jobs') }}"
                                 class="{{ request()->is('jobs') ? 'active' : '' }}"><span
                                     class="menu-text">職稱設定</span></a>
-                        </li>
+                        </li> --}}
                     </ul>
                 </div>
                 {{-- <div class="collapse" id="setting">

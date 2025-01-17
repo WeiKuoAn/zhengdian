@@ -23,12 +23,16 @@
                                         <input type="search" class="form-control my-1 my-md-0" id="inputPassword2"
                                             placeholder="專案名稱..." name="project_name" value="{{ $request->project_name }}">
                                     </div>
-                                    <label for="status-select" class="me-2">專案狀態</label>
-                                    <div class="me-sm-3">
-                                        <select class="form-select my-1 my-md-0" id="status-select" name="check_status" onchange="this.form.submit()">
-                                            <option value="null" selected>不限</option>
-                                            @foreach($check_statuss as $check_status)
-                                                <option value="{{ $check_status->id }}" @if($request->check_status == $check_status->id) selected @endif>{{ $check_status->name }}</option>
+                                    <label for="status-select" class="me-2">專案階段</label>
+                                    <div class="me-3">
+                                        <select class="form-control" data-toggle="select2" data-width="100%" name="check_status_id" onchange="this.form.submit()">
+                                            <option value="" selected>請選擇</option>
+                                            @foreach ($check_statuss as $key => $check_status)
+                                                <optgroup label="{{ $check_status->name }}">
+                                                    @foreach ($check_status->check_childrens as $num => $check_children)
+                                                        <option value="{{ $check_children->id }}" {{ $request->check_status_id == $check_children->id ? 'selected' : '' }}>{{ $check_children->name }}</option>
+                                                    @endforeach
+                                                </optgroup>
                                             @endforeach
                                         </select>
                                     </div>
