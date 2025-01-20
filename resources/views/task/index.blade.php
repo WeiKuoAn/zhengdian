@@ -37,7 +37,7 @@
                                         <th scope="col">負責執行人員</th>
                                         <th scope="col">派工進度</th>
                                         <th scope="col">預計完成時間</th>
-                                        <th scope="col">派工主管</th>
+                                        {{-- <th scope="col">派工主管</th> --}}
                                         <th scope="col">操作</th>
                                     </tr>
                                 </thead>
@@ -95,11 +95,11 @@
                                                 </div>
                                             </td>
                                             <td>2025-01-17</td>
-                                            <td>{{ $data->user_data->name }}</td>
+                                            {{-- <td>{{ $data->user_data->name }}</td> --}}
                                             <td>
                                                 <a href="{{ route('task.edit', $data->id) }}" class="action-icon">
                                                     <i class="mdi mdi-square-edit-outline"></i></a>
-                                                {{-- <a href="javascript:void(0);" class="action-icon"> <i class="mdi mdi-delete"></i></a> --}}
+                                                    <a href="{{ route('task.del', $data->id) }}" class="action-icon"> <i class="mdi mdi-trash-can-outline"></i></a>
                                             </td>
                                         </tr>
                                     @endforeach

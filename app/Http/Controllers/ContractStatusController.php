@@ -4,12 +4,13 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\ContractStatus;
+use App\Models\CheckStatus;
 
 class ContractStatusController extends Controller
 {
     public function index(Request $request)
     {
-        $datas = ContractStatus::orderby('seq', 'asc')->get();
+        $datas = CheckStatus::orderby('seq', 'asc')->whereNull('parent_id')->get();
 
         return view('contract_status.index')->with('datas', $datas);
     }
@@ -32,7 +33,7 @@ class ContractStatusController extends Controller
 
     public function store(Request $request)
     {
-        $data = new ContractStatus;
+        $data = new CheckStatus;
         $data->name = $request->name;
         $data->seq = $request->seq;
         $data->status = $request->status;
@@ -48,7 +49,7 @@ class ContractStatusController extends Controller
      */
     public function show($id)
     {
-        $data = ContractStatus::where('id', $id)->first();
+        $data = CheckStatus::where('id', $id)->first();
         return view('contract_status.edit')->with('data', $data);
     }
 
@@ -73,7 +74,7 @@ class ContractStatusController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $data = ContractStatus::where('id', $id)->first();
+        $data = CheckStatus::where('id', $id)->first();
         $data->name = $request->name;
         $data->seq = $request->seq;
         $data->status = $request->status;
@@ -89,13 +90,13 @@ class ContractStatusController extends Controller
      */
     public function delete($id)
     {
-        $data = ContractStatus::where('id', $id)->first();
+        $data = CheckStatus::where('id', $id)->first();
         return view('contract_status.del')->with('data', $data);
     }
 
     public function destroy($id)
     {
-        $data = ContractStatus::where('id', $id);
+        $data = CheckStatus::where('id', $id);
         $data->delete();
         return redirect()->route('contractStatus');
     }

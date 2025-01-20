@@ -12,14 +12,20 @@ class CheckStatusController extends Controller
     {
         // 查詢 parent_id 為 null 的資料
         $statuses = CheckStatus::orderby('seq', 'asc')->whereNull('parent_id')->get();
-
         // 回傳 JSON 格式
         return response()->json($statuses);
     }
-    
+
+    public function getCheckStatus_child_id(Request $request)
+    {
+        $parentId = $request->input('parent_id');
+        $statuses = CheckStatus::where('parent_id', $parentId)->orderby('seq', 'asc')->get();
+        return response()->json($statuses);
+    }
+
     public function index(Request $request)
     {
-        $datas = CheckStatus::orderby('seq', 'asc')->whereNull('parent_id')->get();
+        $datas = CheckStatus::orderby('seq', 'asc')->whereNotNull('parent_id')->get();
         return view('check_status.index')->with('datas', $datas);
     }
 

@@ -29,7 +29,7 @@
                                     <select class="form-control" data-toggle="select" data-width="100%" name="parent_id">
                                         <option value="">無</option>
                                         @foreach ($status_datas as $key => $status_data)
-                                            <option value="{{ $status_data->id }}" @if($data->parent_id == $status_data->parent_id) selected @endif>{{ $status_data->name }}</option>
+                                            <option value="{{ $status_data->id }}" @if($data->parent_id == $status_data->id) selected @endif>{{ $status_data->name }}</option>
                                         @endforeach
                                     </select>
                                 </div>

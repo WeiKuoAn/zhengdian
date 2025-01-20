@@ -4,7 +4,7 @@
     <!-- Start Content-->
     <div class="container-fluid">
 
-        @include('layouts.shared.page-title', ['title' => '派工類別設定', 'subtitle' => '設定管理'])
+        @include('layouts.shared.page-title', ['title' => '派工項目設定', 'subtitle' => '設定管理'])
 
         <div class="row">
             <div class="col-12">
@@ -14,7 +14,7 @@
                             <div class="col-sm-4">
                                 <a href="{{ route('TaskTemplate.create') }}">
                                     <button type="button" class="btn btn-danger waves-effect waves-light"><i
-                                            class="mdi mdi-plus-circle me-1"></i> 新增專案狀態類別</button>
+                                            class="mdi mdi-plus-circle me-1"></i> 新增派工項目</button>
                                 </a>
                             </div>
                             <div class="col-sm-8">
@@ -26,8 +26,9 @@
                                 <thead>
                                     <tr>
                                         <th scope="col">No</th>
-                                        <th scope="col">名稱</th>
-                                        <th scope="col">所屬類別</th>
+                                        <th scope="col">專案狀態</th>
+                                        <th scope="col">專案階段</th>
+                                        <th scope="col">派工項目</th>
                                         <th scope="col">操作</th>
                                     </tr>
                                 </thead>
@@ -35,16 +36,13 @@
                                     @foreach ($datas as $key => $data)
                                         <tr>
                                             <td>{{ $key + 1 }}</td>
+                                            <td>{{ $data->check_status_data->name }}</td>
+                                            <td>{{ $data->check_status_parent_data->name }}</td>
                                             <td>{{ $data->name }}</td>
-                                            <td>
-                                                @if(isset($data->task_template_data))
-                                                {{ $data->task_template_data->name }}
-                                                @endif
-                                            </td>
                                             <td>
                                                 <a href="{{ route('TaskTemplate.edit', $data->id) }}" class="action-icon"> <i
                                                         class="mdi mdi-square-edit-outline"></i></a>
-                                                {{-- <a href="javascript:void(0);" class="action-icon"> <i class="mdi mdi-delete"></i></a> --}}
+                                                        <a href="{{ route('TaskTemplate.del', $data->id) }}" class="action-icon"> <i class="mdi mdi-trash-can-outline"></i></a>
                                             </td>
                                         </tr>
                                     @endforeach

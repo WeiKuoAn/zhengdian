@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\TaskTemplate;
 use Illuminate\Support\Facades\Auth;
+use App\Models\CheckStatus;
 
 class TaskTemplateController extends Controller
 {
@@ -21,8 +22,8 @@ class TaskTemplateController extends Controller
      */
     public function create()
     {
-        $datas = TaskTemplate::get();
-        return view('task_template.create')->with('datas',$datas);
+        $check_status_parent_ids = CheckStatus::orderby('seq', 'asc')->whereNull('parent_id')->get();
+        return view('task_template.create')->with('check_status_parent_ids',$check_status_parent_ids);
     }
     /**
      * Store a newly created resource in storage.
@@ -35,7 +36,8 @@ class TaskTemplateController extends Controller
     {
         $data = new TaskTemplate;
         $data->name = $request->name;
-        $data->parent_id = $request->parent_id;
+        $data->check_status_parent_id = $request->check_status_parent_id;
+        $data->check_status_id = $request->check_status_id;
         $data->description = $request->description;
         $data->created_by = Auth::user()->id;
         $data->save();
@@ -51,8 +53,9 @@ class TaskTemplateController extends Controller
     public function show($id)
     {
         $data = TaskTemplate::where('id', $id)->first();
-        $TaskTemplate_datas = TaskTemplate::get();
-        return view('task_template.edit')->with('data', $data)->with('TaskTemplate_datas', $TaskTemplate_datas);
+        $check_status_parent_ids = CheckStatus::orderby('seq', 'asc')->whereNull('parent_id')->get();
+        $check_status_ids = CheckStatus::orderby('seq', 'asc')->whereNotNull('parent_id')->get();
+        return view('task_template.edit')->with('data', $data)->with('check_status_parent_ids', $check_status_parent_ids)->with('check_status_ids', $check_status_ids);
     }
 
 
@@ -78,7 +81,8 @@ class TaskTemplateController extends Controller
     {
         $data = TaskTemplate::where('id', $id)->first();
         $data->name = $request->name;
-        $data->parent_id = $request->parent_id;
+        $data->check_status_parent_id = $request->check_status_parent_id;
+        $data->check_status_id = $request->check_status_id;
         $data->description = $request->description;
         $data->created_by = Auth::user()->id;
         $data->save();
@@ -91,8 +95,17 @@ class TaskTemplateController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
+    public function delete($id)
+    {
+        $data = TaskTemplate::where('id', $id)->first();
+        $check_status_parent_ids = CheckStatus::orderby('seq', 'asc')->whereNull('parent_id')->get();
+        $check_status_ids = CheckStatus::orderby('seq', 'asc')->whereNotNull('parent_id')->get();
+        return view('task_template.del')->with('data', $data)->with('check_status_parent_ids', $check_status_parent_ids)->with('check_status_ids', $check_status_ids);
+    }
     public function destroy($id)
     {
-        //
+        $data = TaskTemplate::where('id', $id)->first();
+        $data->delete();
+        return redirect()->route('TaskTemplate');
     }
 }

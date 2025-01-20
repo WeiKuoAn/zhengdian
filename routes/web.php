@@ -71,7 +71,8 @@ Route::get('checkStatus/edit/{id}', [CheckStatusController::class, 'show'])->nam
 Route::post('checkStatus/edit/{id}', [CheckStatusController::class, 'update'])->name('checkStatus.edit.data');
 Route::get('checkStatus/del/{id}', [CheckStatusController::class, 'delete'])->name('checkStatus.del');
 Route::post('checkStatus/del/{id}', [CheckStatusController::class, 'destroy'])->name('checkStatus.del.data');
-Route::get('/get-sidebar-data', [CheckStatusController::class, 'getCheckStatus']);
+Route::get('/get-parent-id', [CheckStatusController::class, 'getCheckStatus']);
+Route::get('/get-child-id', [CheckStatusController::class, 'getCheckStatus_child_id']);
 
 /*專案狀態設定 */
 Route::get('TaskTemplate', [TaskTemplateController::class, 'index'])->name('TaskTemplate');
@@ -79,6 +80,8 @@ Route::get('TaskTemplate/create', [TaskTemplateController::class, 'create'])->na
 Route::post('TaskTemplate/create', [TaskTemplateController::class, 'store'])->name('TaskTemplate.create.data');
 Route::get('TaskTemplate/edit/{id}', [TaskTemplateController::class, 'show'])->name('TaskTemplate.edit');
 Route::post('TaskTemplate/edit/{id}', [TaskTemplateController::class, 'update'])->name('TaskTemplate.edit.data');
+Route::get('TaskTemplate/del/{id}', [TaskTemplateController::class, 'delete'])->name('TaskTemplate.del');
+Route::post('TaskTemplate/del/{id}', [TaskTemplateController::class, 'destroy'])->name('TaskTemplate.del.data');
 
 /*專案狀態設定 */
 Route::get('task', [TaskController::class, 'index'])->name('task');
@@ -86,6 +89,8 @@ Route::get('task/create', [TaskController::class, 'create'])->name('task.create'
 Route::post('task/create', [TaskController::class, 'store'])->name('task.create.data');
 Route::get('task/edit/{id}', [TaskController::class, 'show'])->name('task.edit');
 Route::post('task/edit/{id}', [TaskController::class, 'update'])->name('task.edit.data');
+Route::get('task/del/{id}', [TaskController::class, 'delete'])->name('task.del');
+Route::post('task/del/{id}', [TaskController::class, 'destroy'])->name('task.del.data');
 
 
 Route::get('projects', [ProjectController::class,'index'])->name('projects');
