@@ -16,6 +16,7 @@ use App\Http\Controllers\ProjectMilestonesController;
 use App\Http\Controllers\MeetDataController;
 use App\Http\Controllers\JobController;
 use App\Http\Controllers\PersonTaskController;
+use App\Http\Controllers\ProjectTypeController;
 
 
 require __DIR__ . '/auth.php';
@@ -92,6 +93,14 @@ Route::post('task/edit/{id}', [TaskController::class, 'update'])->name('task.edi
 Route::get('task/del/{id}', [TaskController::class, 'delete'])->name('task.del');
 Route::post('task/del/{id}', [TaskController::class, 'destroy'])->name('task.del.data');
 
+/*專案類別設定 */
+Route::get('projectType', [ProjectTypeController::class, 'index'])->name('projectTypes');
+Route::get('projectType/create', [projectTypeController::class, 'create'])->name('projectType.create');
+Route::post('projectType/create', [projectTypeController::class, 'store'])->name('projectType.create.data');
+Route::get('projectType/edit/{id}', [projectTypeController::class, 'show'])->name('projectType.edit');
+Route::post('projectType/edit/{id}', [projectTypeController::class, 'update'])->name('projectType.edit.data');
+Route::get('projectType/del/{id}', [projectTypeController::class, 'delete'])->name('projectType.del');
+Route::post('projectType/del/{id}', [projectTypeController::class, 'destroy'])->name('projectType.del.data');
 
 Route::get('projects', [ProjectController::class,'index'])->name('projects');
 Route::get('project/create', [ProjectController::class, 'create'])->name('project.create');

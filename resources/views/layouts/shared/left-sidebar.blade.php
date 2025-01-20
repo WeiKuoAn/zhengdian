@@ -241,8 +241,8 @@
                                     class="menu-text">派工項目設定</span></a>
                         </li>
                         <li class="menu-item">
-                            <a class="menu-link" href="{{ route('TaskTemplate') }}"
-                                class="{{ request()->is('TaskTemplate') ? 'active' : '' }}"><span
+                            <a class="menu-link" href="{{ route('projectTypes') }}"
+                                class="{{ request()->is('projectTypes') ? 'active' : '' }}"><span
                                     class="menu-text">專案類別設定</span></a>
                         </li>
                         {{-- <li class="menu-item">
