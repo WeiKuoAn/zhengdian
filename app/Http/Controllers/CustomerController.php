@@ -39,8 +39,8 @@ class CustomerController extends Controller
      */
     public function index(Request $request)
     {
-        $contract_status = ContractStatus::where('status', 'up')->orderby('seq','desc')->get();
-        $check_status_datas = CheckStatus::orderby('seq', 'asc')->whereNotNull('parent_id')->get();
+        $contract_status = CheckStatus::orderby('seq', 'asc')->whereNull('parent_id')->get();
+        $check_status_datas = CheckStatus::orderby('seq', 'asc')->whereNull('parent_id')->get();
         $check_status = [];
         foreach ($check_status_datas as $check_status_data) {
             $check_status[0] = '尚未設定';
@@ -108,7 +108,7 @@ class CustomerController extends Controller
 
     public function Create()
     {
-        $contract_status = ContractStatus::where('status', 'up')->orderby('seq','desc')->get();
+        $contract_status = CheckStatus::orderby('seq', 'asc')->whereNull('parent_id')->get();
         $groups = UserGroup::whereNotIn('id', [2])->get();
         return view('customer.create')->with('hint', 0)->with('groups', $groups)->with('contract_status', $contract_status);
     }
@@ -391,7 +391,7 @@ class CustomerController extends Controller
     {
         $groups = UserGroup::whereNotIn('id', [2])->get();
         $data = User::where('id', $id)->first();
-        $contract_status = ContractStatus::where('status', 'up')->orderby('seq','desc')->get();
+        $contract_status = CheckStatus::orderby('seq', 'asc')->whereNull('parent_id')->get();
         // dd($data);
         return view('customer.edit')->with('hint', 0)->with('data', $data)->with('groups', $groups)->with('contract_status', $contract_status);
     }
