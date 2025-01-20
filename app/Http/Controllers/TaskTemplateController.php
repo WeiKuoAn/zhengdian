@@ -9,6 +9,13 @@ use App\Models\CheckStatus;
 
 class TaskTemplateController extends Controller
 {
+    public function getTaskTemplate(Request $request)
+    {
+        $check_status_id = $request->input('check_status_id');
+        $task_template_ids = TaskTemplate::where('check_status_id', $check_status_id)->orderby('seq', 'asc')->get();
+        return response()->json($task_template_ids);
+    }
+
     public function index(Request $request)
     {
         $datas = TaskTemplate::orderby('seq', 'asc')->get();

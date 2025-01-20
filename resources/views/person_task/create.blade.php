@@ -45,7 +45,7 @@
                                     </select>
                                 </div>
                                 <div class="mb-3">
-                                    <label for="project-priority" class="form-label">任務類型<span
+                                    <label for="project-priority" class="form-label">任務項目<span
                                             class="text-danger">*</span></label>
                                     <select class="form-control" data-toggle="select" data-width="100%" name="template_id">
                                         @foreach ($task_templates as $key => $task_template)

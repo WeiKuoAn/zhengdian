@@ -83,6 +83,7 @@ Route::get('TaskTemplate/edit/{id}', [TaskTemplateController::class, 'show'])->n
 Route::post('TaskTemplate/edit/{id}', [TaskTemplateController::class, 'update'])->name('TaskTemplate.edit.data');
 Route::get('TaskTemplate/del/{id}', [TaskTemplateController::class, 'delete'])->name('TaskTemplate.del');
 Route::post('TaskTemplate/del/{id}', [TaskTemplateController::class, 'destroy'])->name('TaskTemplate.del.data');
+Route::get('/get-tasktemplate-id', [TaskTemplateController::class, 'getTaskTemplate']);
 
 /*專案狀態設定 */
 Route::get('task', [TaskController::class, 'index'])->name('task');
@@ -92,6 +93,7 @@ Route::get('task/edit/{id}', [TaskController::class, 'show'])->name('task.edit')
 Route::post('task/edit/{id}', [TaskController::class, 'update'])->name('task.edit.data');
 Route::get('task/del/{id}', [TaskController::class, 'delete'])->name('task.del');
 Route::post('task/del/{id}', [TaskController::class, 'destroy'])->name('task.del.data');
+
 
 /*專案類別設定 */
 Route::get('projectType', [ProjectTypeController::class, 'index'])->name('projectTypes');

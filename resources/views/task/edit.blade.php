@@ -42,7 +42,7 @@
                                     </select>
                                 </div>
                                 <div class="mb-3">
-                                    <label for="project-priority" class="form-label">任務類型<span
+                                    <label for="project-priority" class="form-label">任務項目<span
                                             class="text-danger">*</span></label>
                                     <select class="form-control" data-toggle="select" data-width="100%" name="template_id">
                                         @foreach ($task_templates as $key => $task_template)
@@ -96,7 +96,7 @@
                                     </select>
                                 </div>
                                 <div class="mb-3">
-                                    <label class="form-label">備註<span class="text-danger"></span></label>
+                                    <label class="form-label">任務項目描述<span class="text-danger"></span></label>
                                     <textarea class="form-control" id="floatingTextarea" name="comments" rows="3">{{ $data->comments }}</textarea>
                                 </div>
                                 <div class="mb-3">

@@ -22,7 +22,8 @@
                             <div class="row">
                                 <div class="mb-3">
                                     <label for="inputEmail3" class="col-4 col-xl-3 col-form-label">專案名稱：</label>
-                                    <select class="form-control" data-toggle="select" data-width="100%" name="project_id" required>
+                                    <select class="form-control" data-toggle="select" data-width="100%" name="project_id"
+                                        required>
                                         <option value="" selected>請選擇</option>
                                         @foreach ($cust_projects as $key => $cust_project)
                                             <option value="{{ $cust_project->id }}">
@@ -32,7 +33,8 @@
                                 </div>
                                 <div class="mb-3">
                                     <label class="form-label">專案執行階段：<span class="text-danger">*</span></label>
-                                    <select class="form-control" data-toggle="select2" data-width="100%" name="check_status_id" required>
+                                    <select class="form-control" data-toggle="select2" data-width="100%"
+                                        name="check_status_id" required>
                                         <option value="" selected>請選擇</option>
                                         @foreach ($check_statuss as $key => $check_status)
                                             <optgroup label="{{ $check_status->name }}">
@@ -45,13 +47,10 @@
                                     </select>
                                 </div>
                                 <div class="mb-3">
-                                    <label for="project-priority" class="form-label">任務類型<span
+                                    <label for="project-priority" class="form-label">任務項目<span
                                             class="text-danger">*</span></label>
                                     <select class="form-control" data-toggle="select" data-width="100%" name="template_id">
-                                        @foreach ($task_templates as $key => $task_template)
-                                            <option value="{{ $task_template->id }}">{{ $task_template->name }}</option>
-                                        @endforeach
-                                        <option value="">無</option>
+                                            <option value="">請選擇...</option>
                                     </select>
                                 </div>
 
@@ -60,7 +59,7 @@
                                     <div id="executor-container">
                                         <div class="input-group mb-2 executor-entry">
                                             <select class="form-control" data-toggle="select" data-width="100%"
-                                                name="user_ids[]" required> 
+                                                name="user_ids[]" required>
                                                 @foreach ($users as $key => $user)
                                                     <option value="{{ $user->id }}">{{ $user->name }}</option>
                                                 @endforeach
@@ -94,7 +93,7 @@
                                     </select>
                                 </div>
                                 <div class="mb-3">
-                                    <label class="form-label">備註<span class="text-danger"></span></label>
+                                    <label class="form-label">任務項目描述<span class="text-danger"></span></label>
                                     <textarea class="form-control" id="floatingTextarea" name="comments" rows="3"></textarea>
                                 </div>
                                 <div class="mb-3">
@@ -155,6 +154,41 @@
                 if ($('.executor-entry').length > 1) {
                     $(this).closest('.executor-entry').remove();
                 }
+            });
+        });
+
+        $(document).ready(function() {
+            // 當 check_status_id 改變時執行 AJAX 請求
+            $('select[name="check_status_id"]').change(function() {
+                let checkStatusId = $(this).val(); // 獲取選中的 check_status_id 值
+                let templateSelect = $('select[name="template_id"]'); // 目標 template_id 的 <select>
+
+                // 清空現有選項
+                templateSelect.empty().append('<option value="">請選擇...</option>');
+
+                // 若 check_status_id 為空，停止執行
+                if (!checkStatusId) {
+                    return;
+                }
+
+                // 發送 AJAX 請求
+                $.ajax({
+                    url: '/get-tasktemplate-id', // 請求的路由
+                    method: 'GET',
+                    data: {
+                        check_status_id: checkStatusId
+                    }, // 傳遞的參數
+                    success: function(response) {
+                        // 動態添加回傳的資料到 <select> 選單
+                        response.forEach(function(item) {
+                            templateSelect.append('<option value="' + item.id + '">' +
+                                item.name + '</option>');
+                        });
+                    },
+                    error: function() {
+                        alert('無法加載資料，請稍後再試！');
+                    }
+                });
             });
         });
     </script>

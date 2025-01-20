@@ -32,7 +32,6 @@
                                         <th scope="col">No</th>
                                         <th scope="col">專案名稱</th>
                                         <th scope="col">派工項目</th>
-                                        <th scope="col">專案階段</th>
                                         <th scope="col">優先序</th>
                                         <th scope="col">負責執行人員</th>
                                         <th scope="col">派工進度</th>
@@ -46,12 +45,15 @@
                                         <tr>
                                             <td>{{ $key + 1 }}</td>
                                             <td width="20%">
-                                                @if(isset($data->project_data))
+                                                @if (isset($data->project_data))
                                                     {{ $data->project_data->user_data->name }}{{ $data->project_data->name }}
                                                 @endif
                                             </td>
-                                            <td>{{ $data->task_template_data->name }}</td>
-                                            <td>{{ $data->check_status_data->name }}</td>
+                                            <td>
+                                                @if (isset($data->task_template_data))
+                                                    {{ $data->task_template_data->name }}
+                                                @endif
+                                            </td>
                                             <td>
                                                 @if ($data->priority == 0)
                                                     <span class="badge bg-danger p-1">緊急</span>
@@ -65,8 +67,7 @@
                                             </td>
                                             <td>
                                                 @foreach ($data->items as $item)
-                                                    <span
-                                                        class="badge bg-primary p-1 mb-1">{{ $item->user_data->name }}
+                                                    <span class="badge bg-primary p-1 mb-1">{{ $item->user_data->name }}
                                                         - {{ $item->context }}(已完成)</span><br>
                                                 @endforeach
                                             </td>
@@ -94,12 +95,13 @@
                                                     </button>
                                                 </div>
                                             </td>
-                                            <td>2025-01-17</td>
+                                            <td>{{ substr($data->estimated_end, 0, 11) }}</td>
                                             {{-- <td>{{ $data->user_data->name }}</td> --}}
                                             <td>
                                                 <a href="{{ route('task.edit', $data->id) }}" class="action-icon">
                                                     <i class="mdi mdi-square-edit-outline"></i></a>
-                                                    <a href="{{ route('task.del', $data->id) }}" class="action-icon"> <i class="mdi mdi-trash-can-outline"></i></a>
+                                                <a href="{{ route('task.del', $data->id) }}" class="action-icon"> <i
+                                                        class="mdi mdi-trash-can-outline"></i></a>
                                             </td>
                                         </tr>
                                     @endforeach
