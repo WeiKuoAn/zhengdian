@@ -13,7 +13,7 @@
             <div class="col-xl-6">
                 <div class="card">
                     <div class="card-body">
-                        <form action="{{ route('TaskTemplate.edit', $data->id) }}" method="POST">
+                        <form action="{{ route('TaskTemplate.del', $data->id) }}" method="POST">
                             @csrf
                             <div class="row">
                                 <div class="mb-3">
