@@ -11,7 +11,8 @@
                     <div class="card-body">
                         <div class="row justify-content-between">
                             <div class="col-md-10">
-                                <form class="d-flex flex-wrap align-items-center" action="{{ route('customers') }}" method="GET">
+                                <form class="d-flex flex-wrap align-items-center" action="{{ route('customers') }}"
+                                    method="GET">
                                     @csrf
                                     <label for="inputPassword2" class="visually-hidden">Search</label>
                                     <div class="me-3">
@@ -20,19 +21,24 @@
                                     </div>
                                     <label for="status-select" class="me-2">專案狀態</label>
                                     <div class="me-sm-3">
-                                        <select class="form-select my-1 my-md-0" id="status-select" name="contract_status" onchange="this.form.submit()">
+                                        <select class="form-select my-1 my-md-0" id="status-select" name="contract_status"
+                                            onchange="this.form.submit()">
                                             <option value="null" selected>不限</option>
-                                            @foreach($contract_status as $contract_statu)
-                                                <option value="{{ $contract_statu->id }}" @if($request->contract_status == $contract_statu->id) selected @endif>{{ $contract_statu->name }}</option>
+                                            @foreach ($contract_status as $contract_statu)
+                                                <option value="{{ $contract_statu->id }}"
+                                                    @if ($request->contract_status == $contract_statu->id) selected @endif>
+                                                    {{ $contract_statu->name }}</option>
                                             @endforeach
                                         </select>
                                     </div>
                                     <label for="status-select" class="me-2">帳號狀態</label>
                                     <div class="me-sm-3">
                                         <select class="form-select" name="status" onchange="this.form.submit()">
-                                            <option value="0" @if(!isset($request->status) && $request->status=='0') selected @endif>開通</option>
-                                            <option value="1" @if($request->status == '1') selected @endif>關閉</option>
-                                         </select>
+                                            <option value="0" @if (!isset($request->status) && $request->status == '0') selected @endif>開通
+                                            </option>
+                                            <option value="1" @if ($request->status == '1') selected @endif>關閉
+                                            </option>
+                                        </select>
                                     </div>
                                     <button type="submit" class="btn btn-success waves-effect waves-light me-1">搜尋</button>
                                 </form>
@@ -77,8 +83,14 @@
                                             </td>
                                             <td>{{ $data->principal_name }}</td>
                                             <td>{{ $data->registration_no }}</td>
-                                            <td>{{ $data->contact_name.' / '.$data->contact_job }}</td>
-                                            <td>{{ $check_status[$data->contract_status] }}</td>
+                                            <td>{{ $data->contact_name . ' / ' . $data->contact_job }}</td>
+                                            <td>
+                                                @if (isset($check_status[$data->contract_status]))
+                                                    {{ $check_status[$data->contract_status] }}
+                                                @else
+                                                    {{ $data->contract_status }}
+                                                @endif
+                                            </td>
                                             <td>
                                                 {{-- {{ dd($data) }} --}}
                                                 @if ($data->status == 0)
@@ -94,7 +106,8 @@
                                                         data-bs-toggle="dropdown" aria-expanded="false">動作 <i
                                                             class="mdi mdi-arrow-down-drop-circle"></i></a>
                                                     <div class="dropdown-menu dropdown-menu-end">
-                                                        <a class="dropdown-item" href="{{ route('customer.edit',$data->user_id) }}"><i
+                                                        <a class="dropdown-item"
+                                                            href="{{ route('customer.edit', $data->user_id) }}"><i
                                                                 class="mdi mdi-pencil me-2 text-muted font-18 vertical-middle"></i>編輯客戶帳戶資料</a>
                                                         {{-- <a class="dropdown-item" href="#"><i class="mdi mdi-delete me-2 text-muted font-18 vertical-middle"></i>刪除</a> --}}
                                                         <a class="dropdown-item" href="#"><i
