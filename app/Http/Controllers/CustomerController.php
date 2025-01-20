@@ -43,8 +43,8 @@ class CustomerController extends Controller
         $check_status_datas = CheckStatus::orderby('seq', 'asc')->whereNotNull('parent_id')->get();
         $check_status = [];
         foreach ($check_status_datas as $check_status_data) {
-            $parent_id = $check_status_data->parent_id - 1;
-            $check_status[$parent_id] = $check_status_data->name;
+            $check_status[0] = '尚未設定';
+            $check_status[$check_status_data->parent_id] = $check_status_data->name;
         }
         $datas = User::where('group_id', '2')
             ->join('cust_data', 'cust_data.user_id', '=', 'users.id');
