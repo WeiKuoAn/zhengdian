@@ -68,4 +68,9 @@ class CustData extends Model
     {
         return $this->hasMany('App\Models\ManufactureSubsidy', 'user_id', 'user_id');
     }
+
+    public function checkstatus()
+    {
+        return $this->hasOne('App\Models\CheckStatus', 'contract_status', 'id');
+    }
 }

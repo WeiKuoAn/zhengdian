@@ -78,9 +78,7 @@
                                             <td>{{ $data->principal_name }}</td>
                                             <td>{{ $data->registration_no }}</td>
                                             <td>{{ $data->contact_name.' / '.$data->contact_job }}</td>
-                                            <td>
-                                                專案狀態
-                                            </td>
+                                            <td>{{ $check_status[$data->contract_status] }}</td>
                                             <td>
                                                 {{-- {{ dd($data) }} --}}
                                                 @if ($data->status == 0)

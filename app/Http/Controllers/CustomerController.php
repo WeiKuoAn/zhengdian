@@ -16,6 +16,7 @@ use App\Models\ManufactureNorm;
 use App\Models\ManufactureThreeIncome;
 use App\Models\ManufactureAvoid;
 use App\Models\ManufactureIso;
+use App\Models\CheckStatus;
 use Illuminate\Support\Facades\Auth;
 
 class CustomerController extends Controller
@@ -39,6 +40,12 @@ class CustomerController extends Controller
     public function index(Request $request)
     {
         $contract_status = ContractStatus::where('status', 'up')->orderby('seq','desc')->get();
+        $check_status_datas = CheckStatus::orderby('seq', 'asc')->whereNotNull('parent_id')->get();
+        $check_status = [];
+        foreach ($check_status_datas as $check_status_data) {
+            $parent_id = $check_status_data->parent_id - 1;
+            $check_status[$parent_id] = $check_status_data->name;
+        }
         $datas = User::where('group_id', '2')
             ->join('cust_data', 'cust_data.user_id', '=', 'users.id');
 
@@ -93,8 +100,10 @@ class CustomerController extends Controller
                 $types[$data->user_id]['type'] = $project->type;
             }
         }
+
+
         // dd($types);
-        return view('customer.index')->with('datas', $datas)->with('types', $types)->with('request', $request)->with('contract_status', $contract_status);
+        return view('customer.index')->with('datas', $datas)->with('types', $types)->with('request', $request)->with('contract_status', $contract_status)->with('check_status', $check_status);
     }
 
     public function Create()
