@@ -104,6 +104,7 @@
                 <a href="{{ route('person.task') }}" class="menu-link">
                     <span class="menu-icon"><i data-feather="calendar"></i></span>
                     <span class="menu-text"> 個人待辦 </span>
+                    <span class="badge bg-success rounded-pill ms-auto">4</span>
                 </a>
             </li>
 

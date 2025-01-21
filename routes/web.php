@@ -93,6 +93,8 @@ Route::get('task/edit/{id}', [TaskController::class, 'show'])->name('task.edit')
 Route::post('task/edit/{id}', [TaskController::class, 'update'])->name('task.edit.data');
 Route::get('task/del/{id}', [TaskController::class, 'delete'])->name('task.del');
 Route::post('task/del/{id}', [TaskController::class, 'destroy'])->name('task.del.data');
+Route::post('/tasks/{task}/update-status', [TaskController::class, 'updateStatus'])->name('tasks.updateStatus');
+
 
 
 /*專案類別設定 */

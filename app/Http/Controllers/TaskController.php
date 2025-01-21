@@ -10,9 +10,55 @@ use App\Models\User;
 use App\Models\CheckStatus;
 use App\Models\CustProject;
 use Illuminate\Support\Facades\Auth;
+use Carbon\Carbon;
 
 class TaskController extends Controller
 {
+    public function updateStatus(Request $request, TaskItem $task)
+    {
+        $validated = $request->validate([
+            'status' => 'required|string',
+            'end_date' => 'nullable|date',
+            'end_time' => 'nullable|string',
+            'execution_time' => 'nullable|string',
+            'order' => 'nullable|array',
+        ]);
+
+        $statusMapping = [
+            'not-started' => 0,
+            'in-progress' => 1,
+            'completed' => 9,
+        ];
+
+        if (array_key_exists($validated['status'], $statusMapping)) {
+            $updateData = ['status' => $statusMapping[$validated['status']]];
+
+            if ($statusMapping[$validated['status']] === 1 && $task->status !== 1) {
+                $updateData['start_time'] = Carbon::now();
+            }
+
+            if ($statusMapping[$validated['status']] === 9) {
+                $doneDateTime = Carbon::parse($validated['end_date'] . ' ' . $validated['end_time']);
+                $updateData['end_time'] = $doneDateTime;
+                $updateData['done_time'] = $validated['execution_time'];
+            }
+
+            $task->update($updateData);
+
+            if (isset($validated['order'])) {
+                foreach ($validated['order'] as $item) {
+                    TaskItem::where('id', $item['id'])->update(['seq' => $item['seq']]);
+                }
+            }
+
+            return response()->json(['success' => true]);
+        }
+
+        return response()->json(['success' => false, 'message' => 'Invalid status'], 400);
+    }
+
+
+
     public function index(Request $request)
     {
         $datas = Task::orderby('priority', 'asc')->get();
@@ -28,9 +74,9 @@ class TaskController extends Controller
     {
         $cust_projects = CustProject::get();
         $task_templates = TaskTemplate::get();
-        $check_statuss = CheckStatus::where('status', 'up')->orderby('seq','asc')->whereNull('parent_id')->get();
+        $check_statuss = CheckStatus::where('status', 'up')->orderby('seq', 'asc')->whereNull('parent_id')->get();
         $users = User::where('status', 1)->where('group_id', 1)->get();
-        return view('task.create')->with('task_templates', $task_templates)->with('check_statuss', $check_statuss)->with('cust_projects',$cust_projects)->with('users', $users);
+        return view('task.create')->with('task_templates', $task_templates)->with('check_statuss', $check_statuss)->with('cust_projects', $cust_projects)->with('users', $users);
     }
     /**
      * Store a newly created resource in storage.
@@ -64,7 +110,9 @@ class TaskController extends Controller
             TaskItem::create([
                 'user_id' => $user_id,
                 'context' => $contexts[$index],
-                'task_id' => $task_id  // 假設任務ID已存在
+                'task_id' => $task_id,  // 假設任務ID已存在
+                'status' => '0',
+                'start_time' => Carbon::now()->locale('zh-tw'),
             ]);
         }
         return redirect()->route('task');
@@ -81,9 +129,9 @@ class TaskController extends Controller
         $cust_projects = CustProject::get();
         $data = Task::where('id', $id)->first();
         $task_templates = TaskTemplate::get();
-        $check_statuss = CheckStatus::where('status', 'up')->orderby('seq','asc')->whereNull('parent_id')->get();
+        $check_statuss = CheckStatus::where('status', 'up')->orderby('seq', 'asc')->whereNull('parent_id')->get();
         $users = User::where('status', 1)->where('group_id', 1)->get();
-        return view('task.edit')->with('data', $data)->with('task_templates', $task_templates)->with('cust_projects',$cust_projects)->with('check_statuss', $check_statuss)->with('users', $users);
+        return view('task.edit')->with('data', $data)->with('task_templates', $task_templates)->with('cust_projects', $cust_projects)->with('check_statuss', $check_statuss)->with('users', $users);
     }
 
 
@@ -119,13 +167,13 @@ class TaskController extends Controller
         $data->status = $request->status;
         $data->comments = $request->comments;
         $data->save();
-    
+
         $user_ids = $request->input('user_ids');
         $contexts = $request->input('contexts');
-    
+
         // 刪除舊的 TaskItem 資料
         TaskItem::where('task_id', $id)->delete();
-    
+
         // 更新新的 TaskItem 資料
         foreach ($user_ids as $index => $user_id) {
             TaskItem::create([
@@ -134,7 +182,7 @@ class TaskController extends Controller
                 'task_id' => $id
             ]);
         }
-    
+
         return redirect()->route('task')->with('success', '任務已更新成功');
     }
 
@@ -146,7 +194,12 @@ class TaskController extends Controller
      */
     public function delete($id)
     {
-        //
+        $cust_projects = CustProject::get();
+        $data = Task::where('id', $id)->first();
+        $task_templates = TaskTemplate::get();
+        $check_statuss = CheckStatus::where('status', 'up')->orderby('seq', 'asc')->whereNull('parent_id')->get();
+        $users = User::where('status', 1)->where('group_id', 1)->get();
+        return view('task.del')->with('data', $data)->with('task_templates', $task_templates)->with('cust_projects', $cust_projects)->with('check_statuss', $check_statuss)->with('users', $users);
     }
 
     public function destroy($id)

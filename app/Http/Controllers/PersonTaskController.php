@@ -16,6 +16,7 @@ class PersonTaskController extends Controller
     public function index(Request $request)
     {
         $datas = TaskItem::where('user_id', Auth::user()->id)->get();
+        // dd($datas);
         return view('person_task.index')->with('datas', $datas);
     }
 
@@ -76,14 +77,14 @@ class PersonTaskController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
+    public function show(TaskItem $task)
     {
-        $cust_projects = CustProject::get();
-        $data = Task::where('id', $id)->first();
-        $task_templates = TaskTemplate::get();
-        $check_statuss = CheckStatus::where('status', 'up')->orderby('seq','asc')->whereNull('parent_id')->get();
-        $users = User::where('status', 1)->where('group_id', 1)->get();
-        return view('task.edit')->with('data', $data)->with('task_templates', $task_templates)->with('cust_projects',$cust_projects)->with('check_statuss', $check_statuss)->with('users', $users);
+        return response()->json([
+            'status' => $task->status,
+            'end_date' => optional($task->done_time)->toDateString(),
+            'end_time' => optional($task->done_time)->format('H:i'),
+            'execution_time' => $task->execution_time,
+        ]);
     }
 
 

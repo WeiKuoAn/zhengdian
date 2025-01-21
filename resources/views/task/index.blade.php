@@ -68,7 +68,7 @@
                                             <td>
                                                 @foreach ($data->items as $item)
                                                     <span class="badge bg-primary p-1 mb-1">{{ $item->user_data->name }}
-                                                        - {{ $item->context }}(已完成)</span><br>
+                                                        @if(isset($item->context))（{{ $item->context }}）@endif</span><br>
                                                 @endforeach
                                             </td>
                                             <td>
@@ -86,16 +86,15 @@
                                                     <span class="badge bg-danger p-1">完成</span>
                                                 @endif --}}
                                                 <div class="button-list" id="tooltip-container">
-                                                    <button type="button" class="btn btn-light"
+                                                    <button type="button" class="btn btn-white"
                                                         data-bs-container="#tooltip-container" data-bs-toggle="tooltip"
                                                         data-bs-placement="top"
-                                                        title="魏國安(已完成)、
-                                                        黃茹椿(待確認)">
+                                                        title="@foreach ($data->items as $item) {{ $item->user_data->name }}（{{ $item->status() }}）、 @endforeach">
                                                         進行中
                                                     </button>
                                                 </div>
                                             </td>
-                                            <td>{{ substr($data->estimated_end, 0, 11) }}</td>
+                                            <td>{{ $data->estimated_end }}</td>
                                             {{-- <td>{{ $data->user_data->name }}</td> --}}
                                             <td>
                                                 <a href="{{ route('task.edit', $data->id) }}" class="action-icon">

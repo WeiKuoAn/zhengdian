@@ -2,7 +2,10 @@
 
 @section('css')
     @vite('node_modules/tippy.js/dist/tippy.css')
+    @vite(['node_modules/spectrum-colorpicker2/dist/spectrum.min.css', 'node_modules/flatpickr/dist/flatpickr.min.css', 'node_modules/clockpicker/dist/bootstrap-clockpicker.min.css', 'node_modules/bootstrap-datepicker/dist/css/bootstrap-datepicker.min.css'])
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.css">
 @endsection
+
 
 @section('content')
     <!-- Start Content-->
@@ -14,108 +17,300 @@
         ])
 
         <div class="row">
-            <div class="col-12">
+            <!-- Kanban Board Structure -->
+            <div class="col-lg-4">
                 <div class="card">
                     <div class="card-body">
-                        <div class="row mb-2">
-                            <div class="col-sm-4">
-                                <a href="{{ route('task.create') }}">
-                                    <button type="button" class="btn btn-danger waves-effect waves-light"><i
-                                            class="mdi mdi-plus-circle me-1"></i> 新增個人派工</button>
-                                </a>
-                            </div>
-                            <div class="col-sm-8">
-                            </div><!-- end col-->
-                        </div>
+                        <h4 class="header-title">未開始</h4>
+                        <p class="sub-header">尚未開始的任務</p>
 
-                        <div class="table-responsive">
-                            <table class="table table-centered  table-striped" id="products-datatable">
-                                <thead>
-                                    <tr>
-                                        <th scope="col">No</th>
-                                        <th scope="col">專案名稱</th>
-                                        <th scope="col">派工項目</th>
-                                        <th scope="col">優先序</th>
-                                        <th scope="col">負責執行人員</th>
-                                        <th scope="col">派工進度</th>
-                                        <th scope="col">預計完成時間</th>
-                                        {{-- <th scope="col">派工主管</th> --}}
-                                        <th scope="col">操作</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach ($datas as $key => $data)
-                                        <tr>
-                                            <td>{{ $key + 1 }}</td>
-                                            <td width="20%">
-                                                @if (isset($data->project_data))
-                                                    {{ $data->project_data->user_data->name }}{{ $data->project_data->name }}
+                        <ul class="sortable-list tasklist list-unstyled" id="not-started">
+                            @foreach ($datas->where('status', 0)->sortBy('seq') as $task)
+                                <li id="task{{ $task->id }}" data-id="{{ $task->id }}"
+                                    onclick="openTaskModal({{ $task->id }})">
+                                    <span class="badge  text-danger float-end">
+                                        @if (isset($task->task_data->priority))
+                                            @if ($task->task_data->priority == 0)
+                                                <span class="badge bg-danger p-1">緊急</span>
+                                            @elseif($task->task_data->priority == 1)
+                                                <span class="badge bg-primary p-1">高</span>
+                                            @elseif($task->task_data->priority == 2)
+                                                <span class="badge bg-warning p-1">中</span>
+                                            @else
+                                                <span class="badge bg-success p-1">低</span>
+                                            @endif
+                                        @endif
+                                    </span>
+                                    <h5 class="mt-0"><b><a href="javascript: void(0);" class="text-dark">
+                                                @if (isset($task->task_data->task_template_data))
+                                                    {{ $task->task_data->task_template_data->name }}
                                                 @endif
-                                            </td>
-                                            <td>
-                                                @if (isset($data->task_template_data))
-                                                    {{ $data->task_template_data->name }}
+                                            </a></b></h5>
+                                    <p>
+                                        @if (isset($task->task_data->project_data->user_data))
+                                            {{ $task->task_data->project_data->user_data->name }}
+                                        @endif
+                                    </p>
+                                    <div class="clearfix"></div>
+                                    <p class="font-13 mt-2 mb-0"><i class="mdi mdi-calendar"></i>預計完成時間：@if (isset($task->task_data->estimated_end))
+                                            {{ $task->task_data->estimated_end }}
+                                        @endif
+                                    </p>
+                                    <p class="font-13 mt-2 mb-0"><i class="mdi mdi-account  "></i>派工人：@if (isset($task->task_data->user_data))
+                                            {{ $task->task_data->user_data->name }}
+                                        @endif
+                                    </p>
+                                </li>
+                            @endforeach
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h4 class="header-title">進行中</h4>
+                        <p class="sub-header">正在執行的任務</p>
+
+                        <ul class="sortable-list tasklist list-unstyled" id="in-progress">
+                            @foreach ($datas->where('status', 1)->sortBy('seq') as $task)
+                                <li id="task{{ $task->id }}" data-id="{{ $task->id }}"
+                                    onclick="openTaskModal({{ $task->id }})">
+                                    <span class="badge  text-danger float-end">
+                                        @if (isset($task->task_data->priority))
+                                            @if ($task->task_data->priority == 0)
+                                                <span class="badge bg-danger p-1">緊急</span>
+                                            @elseif($task->task_data->priority == 1)
+                                                <span class="badge bg-primary p-1">高</span>
+                                            @elseif($task->task_data->priority == 2)
+                                                <span class="badge bg-warning p-1">中</span>
+                                            @else
+                                                <span class="badge bg-success p-1">低</span>
+                                            @endif
+                                        @endif
+                                    </span>
+                                    <h5 class="mt-0"><b><a href="javascript: void(0);" class="text-dark">
+                                                @if (isset($task->task_data->task_template_data))
+                                                    {{ $task->task_data->task_template_data->name }}
                                                 @endif
-                                            </td>
-                                            <td>
-                                                @if ($data->priority == 0)
-                                                    <span class="badge bg-danger p-1">緊急</span>
-                                                @elseif($data->priority == 1)
-                                                    <span class="badge bg-primary p-1">高</span>
-                                                @elseif($data->priority == 2)
-                                                    <span class="badge bg-warning p-1">中</span>
-                                                @else
-                                                    <span class="badge bg-success p-1">低</span>
+                                            </a></b></h5>
+                                    <p>
+                                        @if (isset($task->task_data->project_data->user_data))
+                                            {{ $task->task_data->project_data->user_data->name }}
+                                        @endif
+                                    </p>
+                                    <div class="clearfix"></div>
+                                    <p class="font-13 mt-2 mb-0"><i class="mdi mdi-calendar"></i>預計完成時間：@if (isset($task->task_data->estimated_end))
+                                            {{ $task->task_data->estimated_end }}
+                                        @endif
+                                    </p>
+                                    <p class="font-13 mt-2 mb-0"><i class="mdi mdi-account  "></i>派工人：@if (isset($task->task_data->user_data))
+                                            {{ $task->task_data->user_data->name }}
+                                        @endif
+                                    </p>
+                                </li>
+                            @endforeach
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h4 class="header-title">已完成</h4>
+                        <p class="sub-header">完成的任務</p>
+
+                        <ul class="sortable-list tasklist list-unstyled" id="completed">
+                            @foreach ($datas->where('status', 9)->sortBy('seq') as $task)
+                                <li id="task{{ $task->id }}" data-id="{{ $task->id }}"
+                                    onclick="openTaskModal({{ $task->id }})">
+                                    <span class="badge  text-danger float-end">
+                                        @if (isset($task->task_data->priority))
+                                            @if ($task->task_data->priority == 0)
+                                                <span class="badge bg-danger p-1">緊急</span>
+                                            @elseif($task->task_data->priority == 1)
+                                                <span class="badge bg-primary p-1">高</span>
+                                            @elseif($task->task_data->priority == 2)
+                                                <span class="badge bg-warning p-1">中</span>
+                                            @else
+                                                <span class="badge bg-success p-1">低</span>
+                                            @endif
+                                        @endif
+                                    </span>
+                                    <h5 class="mt-0"><b><a href="javascript: void(0);" class="text-dark">
+                                                @if (isset($task->task_data->task_template_data))
+                                                    {{ $task->task_data->task_template_data->name }}
                                                 @endif
-                                            </td>
-                                            <td>
-                                                @foreach ($data->items as $item)
-                                                    <span class="badge bg-primary p-1 mb-1">{{ $item->user_data->name }}
-                                                        - {{ $item->context }}(已完成)</span><br>
-                                                @endforeach
-                                            </td>
-                                            <td>
-                                                {{-- @if ($data->status == 0)
-                                                    <span class="badge bg-primary p-1">進行中</span>
-                                                @elseif($data->status == 1)
-                                                    <span class="badge bg-success p-1">送出派工</span>
-                                                @elseif($data->status == 2)
-                                                    <span class="badge bg-success p-1">接收派工</span>
-                                                @elseif($data->status == 3)
-                                                    <span class="badge bg-success p-1">進行中</span>
-                                                @elseif($data->status == 4)
-                                                    <span class="badge bg-success p-1">移轉</span>
-                                                @else
-                                                    <span class="badge bg-danger p-1">完成</span>
-                                                @endif --}}
-                                                <div class="button-list" id="tooltip-container">
-                                                    <button type="button" class="btn btn-light"
-                                                        data-bs-container="#tooltip-container" data-bs-toggle="tooltip"
-                                                        data-bs-placement="top"
-                                                        title="魏國安(已完成)、
-                                                        黃茹椿(待確認)">
-                                                        進行中
-                                                    </button>
-                                                </div>
-                                            </td>
-                                            <td>2025-01-17</td>
-                                            {{-- <td>{{ $data->user_data->name }}</td> --}}
-                                            <td>
-                                                <a href="{{ route('task.edit', $data->id) }}" class="action-icon">
-                                                    <i class="mdi mdi-square-edit-outline"></i></a>
-                                                <a href="{{ route('task.del', $data->id) }}" class="action-icon"> <i
-                                                        class="mdi mdi-trash-can-outline"></i></a>
-                                            </td>
-                                        </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
-                        </div>
-                    </div> <!-- end card-body-->
-                </div> <!-- end card-->
-            </div> <!-- end col -->
+                                            </a></b></h5>
+                                    <p>
+                                        @if (isset($task->task_data->project_data->user_data))
+                                            {{ $task->task_data->project_data->user_data->name }}
+                                        @endif
+                                    </p>
+                                    <div class="clearfix"></div>
+                                    <p class="font-13 mt-2 mb-0"><i class="mdi mdi-calendar"></i>預計完成時間：@if (isset($task->task_data->estimated_end))
+                                            {{ $task->task_data->estimated_end }}
+                                        @endif
+                                    </p>
+                                    <p class="font-13 mt-2 mb-0"><i class="mdi mdi-account  "></i>派工人：@if (isset($task->task_data->user_data))
+                                            {{ $task->task_data->user_data->name }}
+                                        @endif
+                                    </p>
+                                </li>
+                            @endforeach
+                        </ul>
+                    </div>
+                </div>
+            </div>
         </div>
         <!-- end row -->
 
+        <div id="taskModal" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">任務詳情</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="taskForm">
+                            <div class="mb-3">
+                                <label for="taskStatus" class="form-label">變更狀態</label>
+                                <select id="taskStatus" class="form-select" onchange="handleStatusChange(this.value)">
+                                    <option value="not-started">未開始</option>
+                                    <option value="in-progress">進行中</option>
+                                    <option value="completed">已完成</option>
+                                </select>
+                            </div>
+                            <div class="mb-3" id="completionFields" style="display: none;">
+                                <label class="form-label">預計完成日期：<span class="text-danger">*</span></label>
+                                <div id="executor-container">
+                                    <div class="input-group mb-2">
+                                        <input type="date" class="form-control" id="end_date" placeholder="日期"
+                                            required>
+                                        <input type="time" class="form-control" id="end_time" placeholder="時間"
+                                            required>
+                                    </div>
+                                </div>
+                                <label for="executionTime" class="form-label">執行時間 (小時)</label>
+                                <input type="text" id="executionTime" class="form-control">
+                            </div>
+                            <button type="button" class="btn btn-primary" onclick="updateTaskStatus()">保存</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
     </div> <!-- container -->
+@endsection
+
+@section('script')
+    @vite(['resources/js/pages/kanban.init.js'])
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+    <script>
+        let currentTaskId = null;
+
+        function openTaskModal(taskId) {
+            currentTaskId = taskId;
+            const modal = new bootstrap.Modal(document.getElementById('taskModal'));
+
+            // Fetch task details and populate modal
+            fetch(`/person/task/edit/${taskId}`)
+                .then(response => response.json())
+                .then(data => {
+                    const statusMap = {
+                        0: 'not-started',
+                        1: 'in-progress',
+                        9: 'completed'
+                    };
+                    conlose.log(data);
+                    document.getElementById('taskStatus').value = statusMap[data.status] || 'not-started';
+                    document.getElementById('end_date').value = data.end_date || '';
+                    document.getElementById('end_time').value = data.end_time || '';
+                    document.getElementById('executionTime').value = data.execution_time || '';
+                    if (data.status === 9) { // 確保根據數字狀態進行判斷
+                        document.getElementById('completionFields').style.display = 'block';
+                    } else {
+                        document.getElementById('completionFields').style.display = 'none';
+                    }
+                });
+
+            modal.show();
+        }
+
+
+        function handleStatusChange(status) {
+            const completionFields = document.getElementById('completionFields');
+            if (status === 'completed') {
+                completionFields.style.display = 'block';
+            } else {
+                completionFields.style.display = 'none';
+            }
+        }
+
+        function updateTaskStatus() {
+            const status = document.getElementById('taskStatus').value;
+            const endDate = document.getElementById('end_date').value;
+            const endTime = document.getElementById('end_time').value;
+            const executionTime = document.getElementById('executionTime').value;
+
+            fetch(`/tasks/${currentTaskId}/update-status`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({
+                    status: status,
+                    end_date: endDate,
+                    end_time: endTime,
+                    execution_time: executionTime
+                })
+            }).then(response => {
+                if (response.ok) {
+                    location.reload();
+                } else {
+                    alert('更新狀態失敗！');
+                }
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const lists = document.querySelectorAll('.sortable-list');
+            lists.forEach(list => {
+                new Sortable(list, {
+                    group: 'shared',
+                    animation: 150,
+                    onEnd: function(evt) {
+                        const itemId = evt.item.dataset.id;
+                        const newStatus = evt.to.id;
+                        const order = Array.from(evt.to.children).map((item, index) => ({
+                            id: item.dataset.id,
+                            seq: index + 1
+                        }));
+
+                        fetch(`/tasks/${itemId}/update-status`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                            },
+                            body: JSON.stringify({
+                                status: newStatus,
+                                order: order
+                            })
+                        }).then(response => {
+                            if (!response.ok) {
+                                alert('更新狀態失敗！');
+                            }
+                        });
+                    }
+                });
+            });
+        });
+    </script>
 @endsection
