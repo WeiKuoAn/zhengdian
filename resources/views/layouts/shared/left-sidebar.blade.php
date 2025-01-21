@@ -45,6 +45,7 @@
                         <i class="fe-log-out me-1"></i>
                         <span>Logout</span>
                     </a>
+                    
 
                 </div>
             </div>
@@ -55,7 +56,7 @@
 
         <ul id="side-menu" class="menu">
 
-            <li class="menu-title">Navigation</li>
+            {{-- <li class="menu-title">Navigation</li>
 
             <li class="menu-item ">
                 <a href="#sidebarDashboards" data-bs-toggle="collapse" class="menu-link">
@@ -81,7 +82,7 @@
                         </li>
                     </ul>
                 </div>
-            </li>
+            </li> --}}
 
             <li class="menu-title">Apps</li>
 

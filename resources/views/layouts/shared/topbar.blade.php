@@ -19,7 +19,7 @@
                 <i class="mdi mdi-menu"></i>
             </button>
 
-            <div class="dropdown d-none d-xl-block">
+            {{-- <div class="dropdown d-none d-xl-block">
                 <a class="nav-link dropdown-toggle waves-effect waves-light" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="false" aria-expanded="false">
                     Create New
                     <i class="mdi mdi-chevron-down ms-1"></i>
@@ -58,9 +58,9 @@
                     </a>
 
                 </div>
-            </div>
+            </div> --}}
 
-            <div class="dropdown dropdown-mega d-none d-xl-block">
+            {{-- <div class="dropdown dropdown-mega d-none d-xl-block">
                 <a class="nav-link dropdown-toggle waves-effect waves-light" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="false" aria-expanded="false">
                     Mega Menu
                     <i class="mdi mdi-chevron-down ms-1"></i>
@@ -162,7 +162,7 @@
                     </div>
 
                 </div>
-            </div>
+            </div> --}}
         </div>
 
 
@@ -171,7 +171,7 @@
         {{-- Right part of topnav --}}
         <ul class="topbar-menu d-flex align-items-center">
             {{-- Search --}}
-            <li class="app-search dropdown me-3 d-none d-lg-block position-static">
+            {{-- <li class="app-search dropdown me-3 d-none d-lg-block position-static">
                 <form>
                     <input type="search" class="form-control rounded-pill" placeholder="Search..." id="top-search">
                     <span class="fe-search search-icon font-16"></span>
@@ -229,16 +229,16 @@
                         </a>
                     </div>
                 </div>
-            </li>
+            </li> --}}
 
             <!-- Fullscreen Button -->
-            <li class="d-none d-md-inline-block">
+            {{-- <li class="d-none d-md-inline-block">
                 <a class="nav-link waves-effect waves-light" data-toggle="fullscreen" href="#">
                     <i class="fe-maximize font-22"></i>
                 </a>
-            </li>
+            </li> --}}
             <!-- Search Dropdown (for Mobile/Tablet) -->
-            <li class="dropdown d-none d-md-inline-block">
+            {{-- <li class="dropdown d-none d-md-inline-block">
                 <a class="nav-link dropdown-toggle waves-effect waves-light arrow-none" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="false" aria-expanded="false">
                     <i class="fe-grid font-22"></i>
                 </a>
@@ -288,9 +288,9 @@
                         </div>
                     </div>
                 </div>
-            </li>
+            </li> --}}
             <!-- Language flag dropdown  -->
-            <li class="dropdown d-none d-md-inline-block">
+            {{-- <li class="dropdown d-none d-md-inline-block">
                 <a class="nav-link dropdown-toggle waves-effect waves-light arrow-none " data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="false" aria-expanded="false">
                     <img src="/images/flags/us.jpg" alt="user-image" height="18">
                 </a>
@@ -317,9 +317,9 @@
                     </a>
 
                 </div>
-            </li>
+            </li> --}}
             <!-- Notofication dropdown -->
-            <li class="dropdown notification-list">
+            {{-- <li class="dropdown notification-list">
                 <a class="nav-link dropdown-toggle waves-effect waves-light arrow-none " data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="false" aria-expanded="false">
                     <i class="fe-bell font-22"></i>
                     <span class="badge bg-danger rounded-circle noti-icon-badge">9</span>
@@ -452,21 +452,21 @@
                     </a>
 
                 </div>
-            </li>
+            </li> --}}
 
             <!-- Light/Dark Mode Toggle Button -->
-            <li class="d-none d-sm-inline-block">
+            {{-- <li class="d-none d-sm-inline-block">
                 <div class="nav-link waves-effect waves-light" id="light-dark-mode">
                     <i class="ri-moon-line font-22"></i>
                 </div>
-            </li>
+            </li> --}}
 
             <!-- User Dropdown -->
             <li class="dropdown">
                 <a class="nav-link dropdown-toggle nav-user me-0 waves-effect waves-light" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="false" aria-expanded="false">
                     <img src="/images/users/user-1.jpg" alt="user-image" class="rounded-circle">
                     <span class="ms-1 d-none d-md-inline-block">
-                        Geneva <i class="mdi mdi-chevron-down"></i>
+                        {{Auth::user()->name}} <i class="mdi mdi-chevron-down"></i>
                     </span>
                 </a>
                 <div class="dropdown-menu dropdown-menu-end profile-dropdown " data-popper-placement="bottom-end" style="position: absolute; inset: 0px 0px auto auto; margin: 0px; transform: translate(0px, 72px);">
@@ -488,30 +488,31 @@
                     </a>
 
                     <!-- item-->
-                    <a href="javascript:void(0);" class="dropdown-item notify-item">
+                    {{-- <a href="javascript:void(0);" class="dropdown-item notify-item">
                         <i class="fe-lock"></i>
                         <span>Lock Screen</span>
-                    </a>
+                    </a> --}}
 
                     <div class="dropdown-divider"></div>
 
                     <!-- item-->
-                    <form method="POST" action="{{ route('logout') }}" style="margin-block-end: 0px;">
+                    <form method="POST" action="{{ route('logout') }}">
                         @csrf
-                        <a href="javascript:void(0);" class="dropdown-item notify-item" onclick="event.preventDefault(); this.closest('form').submit();">
+                        <a href="javascript:void(0);" class="dropdown-item notify-item" onclick="event.preventDefault();
+                                                this.closest('form').submit();">
                             <i class="fe-log-out"></i>
-                            <span>Logout</span>
+                            <span>登出</span>
                         </a>
                     </form>
 
                 </div>
             </li>
 
-            <li>
+            {{-- <li>
                 <a href="#theme-settings-offcanvas" class="nav-link waves-effect waves-light" data-bs-toggle="offcanvas">
                     <i class="fe-settings font-22"></i>
                 </a>
-            </li>
+            </li> --}}
 
         </ul>
 
