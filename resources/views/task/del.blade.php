@@ -107,7 +107,8 @@
                                         <option value="2" {{ $data->status == 2 ? 'selected' : '' }}>接收派工</option>
                                         <option value="3" {{ $data->status == 3 ? 'selected' : '' }}>進行中</option>
                                         <option value="4" {{ $data->status == 4 ? 'selected' : '' }}>移轉</option>
-                                        <option value="5" {{ $data->status == 5 ? 'selected' : '' }}>完成</option>
+                                        <option value="8" {{ $data->status == 8 ? 'selected' : '' }}>人員已完成，待確認</option>
+                                        <option value="9" {{ $data->status == 9 ? 'selected' : '' }}>完成</option>
                                     </select>
                                 </div>
                             </div> <!-- end col-->

@@ -26,6 +26,18 @@
                                 </a>
                             </li>
                             <li class="nav-item">
+                                <a href="{{ route('project.task', $data->id) }}" aria-expanded="false"
+                                    class="nav-link">
+                                    派工作業
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{{ route('project.plan', $data->id) }}" aria-expanded="false"
+                                    class="nav-link">
+                                    排程作業
+                                </a>
+                            </li>
+                            <li class="nav-item">
                                 <a href="{{ route('project.background', $data->id) }}" aria-expanded="false"
                                     class="nav-link active" aria-expanded="true">
                                     專案背景調查
@@ -41,18 +53,6 @@
                                 <a href="{{ route('project.send', $data->id) }}" aria-expanded="false"
                                     class="nav-link">
                                     送件作業
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="{{ route('project.plan', $data->id) }}" aria-expanded="false"
-                                    class="nav-link">
-                                    排程作業
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="{{ route('project.task', $data->id) }}" aria-expanded="false"
-                                    class="nav-link">
-                                    派工作業
                                 </a>
                             </li>
                             <li class="nav-item">

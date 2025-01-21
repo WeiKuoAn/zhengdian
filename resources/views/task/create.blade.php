@@ -104,7 +104,8 @@
                                         <option value="2">接收派工</option>
                                         <option value="3">進行中</option>
                                         <option value="4">移轉</option>
-                                        <option value="5">完成</option>
+                                        <option value="8">人員已完成，待確認</option>
+                                        <option value="9">完成</option>
                                     </select>
                                 </div>
                             </div> <!-- end col-->

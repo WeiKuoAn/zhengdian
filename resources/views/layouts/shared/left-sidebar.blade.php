@@ -168,6 +168,11 @@
                                 class="{{ request()->is('task') ? 'active' : '' }}"><span
                                     class="menu-text">派工列表</span></a>
                         </li>
+                        <li class="menu-item">
+                            <a class="menu-link" href="{{ route('task.check.index') }}"
+                                class="{{ request()->is('task.check.index') ? 'active' : '' }}"><span
+                                    class="menu-text">派工完成確認</span></a>
+                        </li>
                     </ul>
                 </div>
             </li>

@@ -18,7 +18,7 @@
 
         <div class="row">
             <!-- Kanban Board Structure -->
-            <div class="col-lg-4">
+            <div class="col-lg-3">
                 <div class="card">
                     <div class="card-body">
                         <h4 class="header-title">已被指派，待確認</h4>
@@ -67,7 +67,7 @@
                 </div>
             </div>
 
-            <div class="col-lg-4">
+            <div class="col-lg-3">
                 <div class="card">
                     <div class="card-body">
                         <h4 class="header-title">已接收</h4>
@@ -116,7 +116,7 @@
                 </div>
             </div>
 
-            <div class="col-lg-4">
+            <div class="col-lg-3">
                 <div class="card">
                     <div class="card-body">
                         <h4 class="header-title">執行中</h4>
@@ -124,6 +124,55 @@
 
                         <ul class="sortable-list tasklist list-unstyled" id="implement">
                             @foreach ($datas->where('status', 2)->sortBy('seq') as $task)
+                                <li id="task{{ $task->id }}" data-id="{{ $task->id }}"
+                                    onclick="openTaskModal({{ $task->id }})">
+                                    <span class="badge  text-danger float-end">
+                                        @if (isset($task->task_data->priority))
+                                            @if ($task->task_data->priority == 0)
+                                                <span class="badge bg-danger p-1">緊急</span>
+                                            @elseif($task->task_data->priority == 1)
+                                                <span class="badge bg-primary p-1">高</span>
+                                            @elseif($task->task_data->priority == 2)
+                                                <span class="badge bg-warning p-1">中</span>
+                                            @else
+                                                <span class="badge bg-success p-1">低</span>
+                                            @endif
+                                        @endif
+                                    </span>
+                                    <h5 class="mt-0"><b><a href="javascript: void(0);" class="text-dark">
+                                                @if (isset($task->task_data->task_template_data))
+                                                    {{ $task->task_data->task_template_data->name }}
+                                                @endif
+                                            </a></b></h5>
+                                    <p>
+                                        @if (isset($task->task_data->project_data->user_data))
+                                            {{ $task->task_data->project_data->user_data->name }}
+                                        @endif
+                                    </p>
+                                    <div class="clearfix"></div>
+                                    <p class="font-13 mt-2 mb-0"><i class="mdi mdi-calendar"></i>預計完成時間：@if (isset($task->task_data->estimated_end))
+                                            {{ $task->task_data->estimated_end }}
+                                        @endif
+                                    </p>
+                                    <p class="font-13 mt-2 mb-0"><i class="mdi mdi-account  "></i>派工人：@if (isset($task->task_data->user_data))
+                                            {{ $task->task_data->user_data->name }}
+                                        @endif
+                                    </p>
+                                </li>
+                            @endforeach
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-3">
+                <div class="card">
+                    <div class="card-body">
+                        <h4 class="header-title">確認中</h4>
+                        <p class="sub-header">已執行完成，正在確認的派工項目</p>
+
+                        <ul class="sortable-list tasklist list-unstyled" id="completed">
+                            @foreach ($datas->where('status', 8)->sortBy('seq') as $task)
                                 <li id="task{{ $task->id }}" data-id="{{ $task->id }}"
                                     onclick="openTaskModal({{ $task->id }})">
                                     <span class="badge  text-danger float-end">
@@ -226,7 +275,8 @@
                     const statusMap = {
                         0: 'not-started',
                         1: 'in-progress',
-                        9: 'completed'
+                        2: 'implement',
+                        8: 'completed'
                     };
                     conlose.log(data);
                     document.getElementById('taskStatus').value = statusMap[data.status] || 'not-started';
@@ -281,37 +331,46 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            const lists = document.querySelectorAll('.sortable-list');
-            lists.forEach(list => {
-                new Sortable(list, {
-                    group: 'shared',
-                    animation: 150,
-                    onEnd: function(evt) {
-                        const itemId = evt.item.dataset.id;
-                        const newStatus = evt.to.id;
-                        const order = Array.from(evt.to.children).map((item, index) => ({
-                            id: item.dataset.id,
-                            seq: index + 1
-                        }));
+    const lists = document.querySelectorAll('.sortable-list');
+    lists.forEach(list => {
+        new Sortable(list, {
+            group: 'shared',
+            animation: 150,
+            onEnd: function(evt) {
+                const itemId = evt.item.dataset.id; // 獲取拖動項目的 ID
+                const newStatus = evt.to.id; // 獲取目標列表的 ID
 
-                        fetch(`/tasks/${itemId}/update-status`, {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                            },
-                            body: JSON.stringify({
-                                status: newStatus,
-                                order: order
-                            })
-                        }).then(response => {
-                            if (!response.ok) {
-                                alert('更新狀態失敗！');
-                            }
-                        });
+                const order = Array.from(evt.to.children).map((item, index) => ({
+                    id: item.dataset.id,
+                    seq: index + 1
+                }));
+
+                fetch(`/tasks/${itemId}/update-status`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    },
+                    body: JSON.stringify({
+                        status: newStatus,
+                        order: order
+                    })
+                }).then(response => {
+                    if (response.ok) {
+                        // 如果目標列表是 "completed"，彈出模態窗口
+                        if (newStatus === 'completed') {
+                            openTaskModal(itemId); // 顯示模態窗口
+                        }
+                    } else {
+                        alert('更新狀態失敗！');
                     }
                 });
-            });
+            }
         });
+    });
+});
+
+
+
     </script>
 @endsection

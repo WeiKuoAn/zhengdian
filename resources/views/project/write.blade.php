@@ -27,6 +27,17 @@
                                 </a>
                             </li>
                             <li class="nav-item">
+                                <a href="{{ route('project.task', $data->id) }}" aria-expanded="false" class="nav-link">
+                                    派工作業
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{{ route('project.plan', $data->id) }}" aria-expanded="false"
+                                    class="nav-link">
+                                    排程作業
+                                </a>
+                            </li>
+                            <li class="nav-item">
                                 <a href="{{ route('project.background', $data->id) }}" aria-expanded="false" class="nav-link ">
                                     專案背景調查
                                 </a>
@@ -42,17 +53,8 @@
                                     送件作業
                                 </a>
                             </li>
-                            <li class="nav-item">
-                                <a href="{{ route('project.plan', $data->id) }}" aria-expanded="false"
-                                    class="nav-link">
-                                    排程作業
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="{{ route('project.task', $data->id) }}" aria-expanded="false" class="nav-link">
-                                    派工作業
-                                </a>
-                            </li>
+                            
+                            
                             <li class="nav-item">
                                 <a href="{{ route('project.midterm', $data->id) }}" aria-expanded="false" class="nav-link">
                                     期中報告/檢核

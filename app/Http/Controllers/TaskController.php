@@ -28,7 +28,7 @@ class TaskController extends Controller
             'not-started' => 0, // 未開始
             'in-progress' => 1, // 進行中
             'implement' => 2,   // 執行中
-            'completed' => 9,   // 已完成
+            'completed' => 8,   // 已完成
         ];
 
         if (array_key_exists($validated['status'], $statusMapping)) {
@@ -40,11 +40,19 @@ class TaskController extends Controller
             }
 
             // 如果狀態變為 "已完成"，設置完成時間和執行時長
-            if ($statusMapping[$validated['status']] === 9) {
-                $doneDateTime = Carbon::parse($validated['end_date'] . ' ' . $validated['end_time']);
-                $updateData['end_time'] = $doneDateTime;
-                $updateData['done_time'] = $validated['execution_time'];
+            if ($statusMapping[$validated['status']] === 8) {
+                if (!empty($validated['end_date']) && !empty($validated['end_time'])) {
+                    $doneDateTime = Carbon::parse($validated['end_date'] . ' ' . $validated['end_time']);
+                    $updateData['end_time'] = $doneDateTime;
+                } else {
+                    $updateData['end_time'] = null; // 如果日期或時間無效，設為 null 或其他默認值
+                }
+
+                // 設置執行時長，檢查是否存在 execution_time
+                $updateData['done_time'] = $validated['execution_time'] ?? null;
             }
+
+
 
             $task->update($updateData);
 
@@ -64,7 +72,7 @@ class TaskController extends Controller
                 $newTaskStatus = 2; // 接收派工
             } elseif (!in_array(1, $allStatuses) && in_array(2, $allStatuses)) {
                 $newTaskStatus = 3; // 執行中
-            } elseif (count(array_unique($allStatuses)) === 1 && $allStatuses[0] == 9) {
+            } elseif (count(array_unique($allStatuses)) === 1 && $allStatuses[0] == 8) {
                 $newTaskStatus = 8; // 人員已完成，待確認
                 Task::where('id', $taskId)->update(['actual_end' => Carbon::now()]);
             } else {
@@ -84,8 +92,30 @@ class TaskController extends Controller
 
     public function index(Request $request)
     {
-        $datas = Task::orderby('priority', 'asc')->get();
-        return view('task.index')->with('datas', $datas)->with('request', $request);
+        $task_templates = TaskTemplate::get();
+        $datas = Task::query();
+
+        // 如果提供了 task_template_id，過濾數據
+        $task_template_id = $request->input('task_template_id');
+        if ($task_template_id && $task_template_id !== "null") {
+            $datas->where('template_id', $task_template_id);
+        }
+
+        $status = $request->input('status');
+        if ($status && $status !== "null") {
+            $datas->where('status', $status);
+        }
+
+        // 篩選客戶名稱
+        $project_name = $request->input('project_name');
+        if ($project_name) {
+            $projectIds = CustProject::where('name', 'like', '%' . $project_name . '%')->pluck('id'); // 獲取符合條件的用戶 ID 列表
+            $datas->whereIn('project_id', $projectIds); // 篩選出符合用戶 ID 的專案
+        }
+
+        // 排序優先級，然後按預計結束時間排序
+        $datas = $datas->orderBy('priority', 'asc')->orderBy('estimated_end', 'asc')->get();
+        return view('task.index')->with('datas', $datas)->with('request', $request)->with('task_templates', $task_templates);
     }
 
     /**
@@ -207,6 +237,52 @@ class TaskController extends Controller
         }
 
         return redirect()->route('task')->with('success', '任務已更新成功');
+    }
+
+    public function check(Request $request)
+    {
+        $task_templates = TaskTemplate::get();
+        $datas = Task::query();
+
+        // 日期篩選條件
+        $estimated_date_start = $request->input('estimated_date_start');
+        $estimated_date_end = $request->input('estimated_date_end');
+        if ($estimated_date_start && $estimated_date_end) {
+            $datas->whereBetween('estimated_end', [$estimated_date_start . ' 00:00:00', $estimated_date_end . ' 23:59:59']);
+        } elseif ($estimated_date_start) {
+            $datas->where('estimated_end', '>=', $estimated_date_start);
+        } elseif ($estimated_date_end) {
+            $datas->where('estimated_end', '<=', $estimated_date_end);
+        }
+
+        // 排序優先級，然後按預計結束時間排序
+        $datas = $datas->where('status', '8')->orderBy('priority', 'asc')->orderBy('estimated_end', 'asc')->get();
+        return view('task.check_index')->with('datas', $datas)->with('request', $request)->with('task_templates', $task_templates);
+    }
+
+    public function check_show($id)
+    {
+        $cust_projects = CustProject::get();
+        $data = Task::where('id', $id)->first();
+        $task_templates = TaskTemplate::get();
+        $check_statuss = CheckStatus::where('status', 'up')->orderby('seq', 'asc')->whereNull('parent_id')->get();
+        $users = User::where('status', 1)->where('group_id', 1)->get();
+        return view('task.check')->with('data', $data)->with('task_templates', $task_templates)->with('cust_projects', $cust_projects)->with('check_statuss', $check_statuss)->with('users', $users);
+    }
+
+    public function check_update($id)
+    {
+        $data = Task::findOrFail($id);
+        $data->status = 9;
+        $data->actual_end = Carbon::now();
+        $data->save();
+
+        $items = TaskItem::where('task_id', $id)->get();
+        foreach ($items as $item) {
+            $item->status = 9;
+            $item->save();
+        }
+        return redirect()->route('task.check.index');
     }
 
     /**

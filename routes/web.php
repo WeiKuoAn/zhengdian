@@ -94,6 +94,9 @@ Route::post('task/edit/{id}', [TaskController::class, 'update'])->name('task.edi
 Route::get('task/del/{id}', [TaskController::class, 'delete'])->name('task.del');
 Route::post('task/del/{id}', [TaskController::class, 'destroy'])->name('task.del.data');
 Route::post('/tasks/{task}/update-status', [TaskController::class, 'updateStatus'])->name('tasks.updateStatus');
+Route::get('task/check', [TaskController::class, 'check'])->name('task.check.index');
+Route::get('task/check/{id}', [TaskController::class, 'check_show'])->name('task.check');
+Route::post('task/check/{id}', [TaskController::class, 'check_update'])->name('task.check.data');
 
 
 

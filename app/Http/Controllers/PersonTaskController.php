@@ -9,6 +9,7 @@ use App\Models\TaskTemplate;
 use App\Models\User;
 use App\Models\CheckStatus;
 use App\Models\CustProject;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 
 class PersonTaskController extends Controller
@@ -78,14 +79,17 @@ class PersonTaskController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function show(TaskItem $task)
-    {
-        return response()->json([
-            'status' => $task->status,
-            'end_date' => optional($task->done_time)->toDateString(),
-            'end_time' => optional($task->done_time)->format('H:i'),
-            'execution_time' => $task->execution_time,
-        ]);
-    }
+{
+    // 檢查是否存在 end_time，並分離日期和時間部分
+    $endTime = $task->end_time ? Carbon::parse($task->end_time) : null;
+
+    return response()->json([
+        'status' => $task->status,
+        'end_date' => $endTime ? $endTime->format('Y-m-d') : null, // 提取日期部分
+        'end_time' => $endTime ? $endTime->format('H:i') : null,   // 提取時間部分
+        'execution_time' => $task->execution_time, // 執行時間
+    ]);
+}
 
 
     /**
