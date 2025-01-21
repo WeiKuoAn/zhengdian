@@ -27,6 +27,7 @@ use SebastianBergmann\CodeCoverage\Report\Xml\Project;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Word;
 use App\Models\ProjectMilestones;
+use App\Models\ProjectType;
 
 class ProjectController extends Controller
 {
@@ -41,33 +42,45 @@ class ProjectController extends Controller
 
     public function index(Request $request)
     {
-        $datas = CustProject::join('cust_data', 'cust_data.user_id', '=', 'cust_project.user_id')
-            ->where('cust_project.status', '0')
-            ->orderby('cust_project.date', 'desc');
-        
+        $datas = CustProject::query()
+            ->where('status', '0')
+            ->orderBy('date', 'desc');
+
+        // 篩選檢查狀態
         $check_status = $request->input('check_status_id');
-        if ($check_status != "null") {
-            if (isset($check_status)) {
-                $datas = $datas->where('cust_project.check_status', $check_status);
-            } else {
-                $datas = $datas;
-            }
+        if (!is_null($check_status) && $check_status !== "null") {
+            $datas->where('check_status', $check_status);
         }
 
+        // 篩選客戶名稱
         $cust_name = $request->input('cust_name');
-        if($cust_name){
-            $user_datas = User::where('status', 1)->where('group_id', 2)->where('name', 'like', '%'.$cust_name.'%')->get();
-            foreach($user_datas as $user_data){
-                $datas = $datas->orWhere('cust_project.user_id', $user_data->id);
-            }
+        if ($cust_name) {
+            $userIds = User::where('status', 1)
+                ->where('group_id', 2)
+                ->where('name', 'like', '%' . $cust_name . '%')
+                ->pluck('id'); // 獲取符合條件的用戶 ID 列表
+
+            $datas->whereIn('user_id', $userIds); // 篩選出符合用戶 ID 的專案
         }
 
-        if (Auth::user()->group_id == 1) {
-            $datas = $datas->paginate(50);
-        } else {
-            $datas = $datas->whereIn('cust_data.limit_status', ['all', Auth::user()->group_id])->paginate(50);
+
+        // 篩選專案名稱
+        $project_name = $request->input('project_name');
+        if ($project_name) {
+            $datas->where('name', 'like', '%' . $project_name . '%');
         }
-        $check_statuss = CheckStatus::where('status', 'up')->orderby('seq','asc')->whereNull('parent_id')->get();
+
+        // 根據用戶組別進行資料篩選
+        if (Auth::user()->group_id != 1) {
+            $datas->whereIn('limit_status', ['all', Auth::user()->group_id]);
+        }
+
+        // 獲取資料
+        $datas = $datas->paginate(50);;
+
+
+        // dd($datas);
+        $check_statuss = CheckStatus::where('status', 'up')->orderby('seq', 'asc')->whereNull('parent_id')->get();
         return view('project.index')->with('datas', $datas)->with('request', $request)->with('check_statuss', $check_statuss);
     }
 
@@ -77,23 +90,22 @@ class ProjectController extends Controller
     public function create()
     {
         $cust_datas = User::where('status', 1)->where('group_id', 2)->get();
-        $check_statuss = CheckStatus::where('status', 'up')->orderby('seq','asc')->whereNull('parent_id')->get();
-        return view('project.create')->with('cust_datas', $cust_datas)->with('check_statuss', $check_statuss);
+        $check_statuss = CheckStatus::where('status', 'up')->orderby('seq', 'asc')->whereNull('parent_id')->get();
+        $project_types = ProjectType::where('status','up')->get();
+        return view('project.create')->with('cust_datas', $cust_datas)->with('check_statuss', $check_statuss)->with('project_types', $project_types);
     }
 
     public function store(Request $request)
     {
         $cust_data = User::where('id', $request->user_id)->first();
-        $type = '';
-        if ($request->type == 0) $type = '商業服務業';
-        if ($request->type == 1) $type = '製造業';
+        $project_type = ProjectType::where('id',$request->type)->first();
 
         $data = new CustProject;
         $data->date = $request->date;
-        $data->name = date('Ymd', strtotime($request->date)) . '-' . ($type ?? 'N/A') . '-' . ($cust_data->name ?? '000');;
+        $data->name = date('Ymd', strtotime($request->date)) . '-' . ($project_type->name ?? 'N/A') . '-' . ($cust_data->name ?? '000');;
         $data->year = substr($request->date, 0, 4);
         $data->user_id = $request->user_id;
-        $data->type = $request->type;
+        $data->type = $project_type->id;
         $data->check_status = $request->check_status;
         $data->status = 0;
         $data->check_limlit  = 0;
@@ -488,8 +500,9 @@ class ProjectController extends Controller
     public function edit(string $id, Request $request)
     {
         // 查詢對應的專案
-        $data = CustProject::where('user_id', $id)->first();
-        $check_statuss = CheckStatus::where('status', 'up')->orderby('seq','asc')->whereNull('parent_id')->get();
+        $data = CustProject::where('id', $id)->first();
+        // dd($data);  
+        $check_statuss = CheckStatus::where('status', 'up')->orderby('seq', 'asc')->whereNull('parent_id')->get();
         // 返回專案詳情頁面或視圖
         return view('project.edit', ['data' => $data, 'request' => $request, 'check_statuss' => $check_statuss]);
     }
@@ -500,7 +513,7 @@ class ProjectController extends Controller
     public function update(Request $request, string $id)
     {
         // 查詢對應的專案
-        $data = CustProject::where('user_id', $id)->first();
+        $data = CustProject::where('id', $id)->first();
         // 更新專案資料
         $data->date = $request->date;
         $data->name = $request->name;
@@ -513,7 +526,7 @@ class ProjectController extends Controller
     public function background(string $id, Request $request)
     {
         // 查詢對應的專案
-        $data = CustProject::where('user_id', $id)->first();
+        $data = CustProject::where('id', $id)->first();
         // 返回專案詳情頁面或視圖
         $check_statuss = CheckStatus::where('parent_id', null)->where('status', 'up')->get();
         return view('project.background', ['data' => $data, 'request' => $request, 'check_statuss' => $check_statuss]);
@@ -522,8 +535,8 @@ class ProjectController extends Controller
     public function write(string $id, Request $request)
     {
         // 查詢對應的專案
-        $data = CustProject::where('user_id', $id)->first();
-        $check_statuss = CheckStatus::where('status', 'up')->orderby('seq','asc')->get();
+        $data = CustProject::where('id', $id)->first();
+        $check_statuss = CheckStatus::where('status', 'up')->orderby('seq', 'asc')->get();
         // 返回專案詳情頁面或視圖
         $project = CustProject::where('user_id', $id)->where('type', 0)->first();
         $word_data = Word::where('user_id', $id)->where('project_id', $project->id)->first();
@@ -533,7 +546,7 @@ class ProjectController extends Controller
     public function send(string $id, Request $request)
     {
         // 查詢對應的專案
-        $data = CustProject::where('user_id', $id)->first();
+        $data = CustProject::where('id', $id)->first();
         // 返回專案詳情頁面或視圖
         $check_statuss = CheckStatus::where('parent_id', null)->where('status', 'up')->get();
         return view('project.send', ['data' => $data, 'request' => $request, 'check_statuss' => $check_statuss]);
@@ -542,7 +555,7 @@ class ProjectController extends Controller
     public function plan(string $id, Request $request)
     {
         // 查詢對應的專案
-        $data = CustProject::where('user_id', $id)->first();
+        $data = CustProject::where('id', $id)->first();
         // 返回專案詳情頁面或視圖
         $check_statuss = CheckStatus::where('parent_id', null)->where('status', 'up')->get();
         return view('project.plan', ['data' => $data, 'request' => $request, 'check_statuss' => $check_statuss]);
@@ -551,7 +564,7 @@ class ProjectController extends Controller
     public function task(string $id, Request $request)
     {
         // 查詢對應的專案
-        $data = CustProject::where('user_id', $id)->first();
+        $data = CustProject::where('id', $id)->first();
         // 返回專案詳情頁面或視圖
         $check_statuss = CheckStatus::where('parent_id', null)->where('status', 'up')->get();
         return view('project.task', ['data' => $data, 'request' => $request, 'check_statuss' => $check_statuss]);
@@ -560,7 +573,7 @@ class ProjectController extends Controller
     public function midterm(string $id, Request $request)
     {
         // 查詢對應的專案
-        $data = CustProject::where('user_id', $id)->first();
+        $data = CustProject::where('id', $id)->first();
         // 返回專案詳情頁面或視圖
         $check_statuss = CheckStatus::where('parent_id', null)->where('status', 'up')->get();
         return view('project.midterm', ['data' => $data, 'request' => $request, 'check_statuss' => $check_statuss]);
@@ -569,7 +582,7 @@ class ProjectController extends Controller
     public function final(string $id, Request $request)
     {
         // 查詢對應的專案
-        $data = CustProject::where('user_id', $id)->first();
+        $data = CustProject::where('id', $id)->first();
         // 返回專案詳情頁面或視圖
         $check_statuss = CheckStatus::where('parent_id', null)->where('status', 'up')->get();
         return view('project.final', ['data' => $data, 'request' => $request, 'check_statuss' => $check_statuss]);
@@ -578,7 +591,7 @@ class ProjectController extends Controller
     public function meet(string $id, Request $request)
     {
         // 查詢對應的專案
-        $data = CustProject::where('user_id', $id)->first();
+        $data = CustProject::where('id', $id)->first();
         // 返回專案詳情頁面或視圖
         $check_statuss = CheckStatus::where('parent_id', null)->where('status', 'up')->get();
         return view('project.meet', ['data' => $data, 'request' => $request, 'check_statuss' => $check_statuss]);

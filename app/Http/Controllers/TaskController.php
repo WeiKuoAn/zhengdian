@@ -25,18 +25,21 @@ class TaskController extends Controller
         ]);
 
         $statusMapping = [
-            'not-started' => 0,
-            'in-progress' => 1,
-            'completed' => 9,
+            'not-started' => 0, // 未開始
+            'in-progress' => 1, // 進行中
+            'implement' => 2,   // 執行中
+            'completed' => 9,   // 已完成
         ];
 
         if (array_key_exists($validated['status'], $statusMapping)) {
             $updateData = ['status' => $statusMapping[$validated['status']]];
 
+            // 如果狀態變為 "進行中"，設置開始時間
             if ($statusMapping[$validated['status']] === 1 && $task->status !== 1) {
                 $updateData['start_time'] = Carbon::now();
             }
 
+            // 如果狀態變為 "已完成"，設置完成時間和執行時長
             if ($statusMapping[$validated['status']] === 9) {
                 $doneDateTime = Carbon::parse($validated['end_date'] . ' ' . $validated['end_time']);
                 $updateData['end_time'] = $doneDateTime;
@@ -45,24 +48,44 @@ class TaskController extends Controller
 
             $task->update($updateData);
 
+            // 如果有序列更新，更新 task_item 的順序
             if (isset($validated['order'])) {
                 foreach ($validated['order'] as $item) {
                     TaskItem::where('id', $item['id'])->update(['seq' => $item['seq']]);
                 }
             }
 
+            // 更新父任務的狀態
+            $taskId = $task->task_id;
+            $taskItems = TaskItem::where('task_id', $taskId)->get();
+            $allStatuses = $taskItems->pluck('status')->toArray();
+
+            if (in_array(1, $allStatuses)) {
+                $newTaskStatus = 2; // 接收派工
+            } elseif (!in_array(1, $allStatuses) && in_array(2, $allStatuses)) {
+                $newTaskStatus = 3; // 執行中
+            } elseif (count(array_unique($allStatuses)) === 1 && $allStatuses[0] == 9) {
+                $newTaskStatus = 8; // 人員已完成，待確認
+                Task::where('id', $taskId)->update(['actual_end' => Carbon::now()]);
+            } else {
+                $newTaskStatus = 1; // 送出派工
+            }
+
+            Task::where('id', $taskId)->update(['status' => $newTaskStatus]);
+
             return response()->json(['success' => true]);
         }
 
-        return response()->json(['success' => false, 'message' => 'Invalid status'], 400);
+        return response()->json(['success' => false, 'message' => '無效的狀態'], 400);
     }
+
 
 
 
     public function index(Request $request)
     {
         $datas = Task::orderby('priority', 'asc')->get();
-        return view('task.index')->with('datas', $datas);
+        return view('task.index')->with('datas', $datas)->with('request', $request);
     }
 
     /**

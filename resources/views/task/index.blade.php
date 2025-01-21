@@ -14,17 +14,48 @@
             <div class="col-12">
                 <div class="card">
                     <div class="card-body">
-                        <div class="row mb-2">
-                            <div class="col-sm-4">
-                                <a href="{{ route('task.create') }}">
-                                    <button type="button" class="btn btn-danger waves-effect waves-light"><i
-                                            class="mdi mdi-plus-circle me-1"></i> 新增派工</button>
-                                </a>
+                        <div class="row justify-content-between">
+                            <div class="col-md-10">
+                                <form class="d-flex flex-wrap align-items-center" action="{{ route('projects') }}" method="GET">
+                                    @csrf
+                                    <label for="inputPassword2" class="visually-hidden">Search</label>
+                                    <div class="me-3">
+                                        <input type="search" class="form-control my-1 my-md-0" id="inputPassword2"
+                                            placeholder="客戶名稱..." name="cust_name" value="{{ $request->cust_name }}">
+                                    </div>
+                                    <label for="inputPassword2" class="visually-hidden">Search</label>
+                                    <div class="me-3">
+                                        <input type="search" class="form-control my-1 my-md-0" id="inputPassword2"
+                                            placeholder="專案名稱..." name="project_name" value="{{ $request->project_name }}">
+                                    </div>
+                                    <label for="status-select" class="me-2">專案階段</label>
+                                    <div class="me-3">
+                                        <select class="form-control" data-toggle="select2" data-width="100%" name="check_status_id" onchange="this.form.submit()">
+                                            <option value="" selected>請選擇</option>
+                                                        <option value="" ></option>
+                                        </select>
+                                    </div>
+                                    <button type="submit" class="btn btn-success waves-effect waves-light me-1">搜尋</button>
+                                </form>
                             </div>
-                            <div class="col-sm-8">
+                            <div class="col-md-2">
+                                <div class="text-md-end mt-3 mt-md-0">
+                                    <a href="{{ route('task.create') }}">
+                                        <button type="button" class="btn btn-danger waves-effect waves-light"><i
+                                                class="mdi mdi-plus-circle me-1"></i> 新增派工</button>
+                                    </a>
+                                </div>
                             </div><!-- end col-->
-                        </div>
+                        </div> <!-- end row -->
+                    </div>
+                </div> <!-- end card -->
+            </div><!-- end col-->
+        </div>
 
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body">
                         <div class="table-responsive">
                             <table class="table table-centered  table-striped" id="products-datatable">
                                 <thead>
@@ -90,7 +121,7 @@
                                                         data-bs-container="#tooltip-container" data-bs-toggle="tooltip"
                                                         data-bs-placement="top"
                                                         title="@foreach ($data->items as $item) {{ $item->user_data->name }}（{{ $item->status() }}）、 @endforeach">
-                                                        進行中
+                                                        {{$data->status()}}
                                                     </button>
                                                 </div>
                                             </td>

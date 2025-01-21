@@ -3,12 +3,12 @@
 
     <div class="logo-box">
         <a href="#" class="logo-light">
-            <img src="/images/logo-light.png" alt="logo" class="logo-lg">
-            <img src="/images/logo-sm.png" alt="small logo" class="logo-sm">
+            <img src="/images/LOGO.png" alt="logo" width="50" >
+            <img src="/images/LOGO.png" alt="small logo" class="logo-sm">
         </a>
         <a href="#" class="logo-dark">
-            <img src="/images/logo-dark.png" alt="dark logo" class="logo-lg">
-            <img src="/images/logo-sm.png" alt="small logo" class="logo-sm">
+            <img src="/images/LOGO.png" alt="dark logo"  height="50" >
+            <img src="/images/LOGO.png" alt="small logo" class="logo-sm">
         </a>
     </div>
 
@@ -84,7 +84,7 @@
                 </div>
             </li> --}}
 
-            <li class="menu-title">Apps</li>
+            <li class="menu-title"></li>
 
             <li class="menu-item">
                 <a href="#" class="menu-link">
@@ -93,12 +93,12 @@
                 </a>
             </li>
 
-            <li class="menu-item">
+            {{-- <li class="menu-item">
                 <a href="#" class="menu-link">
                     <span class="menu-icon"><i data-feather="message-square"></i></span>
                     <span class="menu-text"> Chat </span>
                 </a>
-            </li>
+            </li> --}}
 
             <li class="menu-item">
                 <a href="{{ route('person.task') }}" class="menu-link">

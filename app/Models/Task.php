@@ -45,4 +45,10 @@ class Task extends Model
     {
         return $this->hasOne('App\Models\User', 'id', 'created_by');
     }
+
+    public function status()
+    {
+        $status = [ '' => '無', '1' => '送出派工', '2' => '已接收' , '3' => '執行中', '8' => '人員已完成，待確認', '9' => '已完成'];
+        return $status[$this->status];
+    }
 }

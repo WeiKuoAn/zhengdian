@@ -23,8 +23,9 @@
                                     <label for="project-priority" class="form-label">專案類型<span
                                             class="text-danger">*</span></label>
                                     <select class="form-control" data-toggle="select" data-width="100%" name="type">
-                                        <option value="0">商業服務業</option>
-                                        <option value="1">製造業</option>
+                                        @foreach ($project_types as $key => $project_type)
+                                            <option value="{{ $project_type->id }}">{{ $project_type->name }}</option>
+                                        @endforeach
                                     </select>
                                 </div>
                                 <div class="mb-3">
@@ -47,8 +48,8 @@
                                 </div>
                                 <div class="mb-3">
                                     <label class="form-label">專案執行階段：<span class="text-danger">*</span></label>
-                                    <select class="form-control" data-toggle="select2" data-width="100%"
-                                        name="check_status" required>
+                                    <select class="form-control" data-toggle="select2" data-width="100%" name="check_status"
+                                        required>
                                         <option value="" selected>請選擇</option>
                                         @foreach ($check_statuss as $key => $check_status)
                                             <optgroup label="{{ $check_status->name }}">
@@ -82,4 +83,3 @@
 @section('script')
     @vite(['resources/js/pages/form-advanced.init.js'])
 @endsection
-

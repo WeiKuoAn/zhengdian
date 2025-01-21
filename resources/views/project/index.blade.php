@@ -121,7 +121,7 @@
                                                         </a>
                                                         <div class="dropdown-menu dropdown-menu-end">
                                                             <a class="dropdown-item"
-                                                                    href="{{ route('project.edit', $data->user_id) }}" >編輯</a>
+                                                                    href="{{ route('project.edit', $data->id) }}" >編輯</a>
                                                             {{-- <a class="dropdown-item"
                                                                 @if ($data->type == 0) href="{{ route('user.project.business.appendix', $data->user_id) }}"
                                                         @elseif($data->type == 1)

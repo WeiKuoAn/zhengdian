@@ -21,8 +21,8 @@
             <div class="col-lg-4">
                 <div class="card">
                     <div class="card-body">
-                        <h4 class="header-title">未開始</h4>
-                        <p class="sub-header">尚未開始的任務</p>
+                        <h4 class="header-title">已被指派，待確認</h4>
+                        <p class="sub-header">已被指派，待確認的派工項目</p>
 
                         <ul class="sortable-list tasklist list-unstyled" id="not-started">
                             @foreach ($datas->where('status', 0)->sortBy('seq') as $task)
@@ -70,8 +70,8 @@
             <div class="col-lg-4">
                 <div class="card">
                     <div class="card-body">
-                        <h4 class="header-title">進行中</h4>
-                        <p class="sub-header">正在執行的任務</p>
+                        <h4 class="header-title">已接收</h4>
+                        <p class="sub-header">已接收但未執行的派工項目</p>
 
                         <ul class="sortable-list tasklist list-unstyled" id="in-progress">
                             @foreach ($datas->where('status', 1)->sortBy('seq') as $task)
@@ -119,11 +119,11 @@
             <div class="col-lg-4">
                 <div class="card">
                     <div class="card-body">
-                        <h4 class="header-title">已完成</h4>
-                        <p class="sub-header">完成的任務</p>
+                        <h4 class="header-title">執行中</h4>
+                        <p class="sub-header">正執行中的派工項目</p>
 
-                        <ul class="sortable-list tasklist list-unstyled" id="completed">
-                            @foreach ($datas->where('status', 9)->sortBy('seq') as $task)
+                        <ul class="sortable-list tasklist list-unstyled" id="implement">
+                            @foreach ($datas->where('status', 2)->sortBy('seq') as $task)
                                 <li id="task{{ $task->id }}" data-id="{{ $task->id }}"
                                     onclick="openTaskModal({{ $task->id }})">
                                     <span class="badge  text-danger float-end">
@@ -179,8 +179,9 @@
                             <div class="mb-3">
                                 <label for="taskStatus" class="form-label">變更狀態</label>
                                 <select id="taskStatus" class="form-select" onchange="handleStatusChange(this.value)">
-                                    <option value="not-started">未開始</option>
-                                    <option value="in-progress">進行中</option>
+                                    <option value="not-started">已被指派，待確認</option>
+                                    <option value="in-progress">已接收</option>
+                                    <option value="implement">執行中</option>
                                     <option value="completed">已完成</option>
                                 </select>
                             </div>
