@@ -49,8 +49,9 @@
                                 <div class="mb-3">
                                     <label for="project-priority" class="form-label">任務項目<span
                                             class="text-danger">*</span></label>
-                                    <select class="form-control" data-toggle="select" data-width="100%" name="template_id" required>
-                                            <option value="">請選擇...</option>
+                                    <select class="form-control" data-toggle="select" data-width="100%" name="template_id"
+                                        required>
+                                        <option value="">請選擇...</option>
                                     </select>
                                 </div>
 

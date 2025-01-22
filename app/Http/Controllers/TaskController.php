@@ -14,6 +14,33 @@ use Carbon\Carbon;
 
 class TaskController extends Controller
 {
+    public function getTaskDetails($id)
+    {
+        $task = Task::with('items.user_data')->find($id);
+
+        if (!$task) {
+            return response()->json(['error' => 'Task not found'], 404);
+        }
+
+        return response()->json([
+            'id' => $task->id,
+            'check_status_id' => $task->check_status_id,
+            'project_id' => $task->project_id,
+            'template_id' => $task->template_id,
+            'estimated_end_date' => $task->estimated_end ? substr($task->estimated_end, 0, 10) : null,
+            'estimated_end_time' => $task->estimated_end ? substr($task->estimated_end, 11, 5) : null,
+            'priority' => $task->priority,
+            'comments' => $task->comments,
+            'status' => $task->status,
+            'items' => $task->items->map(function ($item) {
+                return [
+                    'user_id' => $item->user_id,
+                    'context' => $item->context ?? '', // 如果 context 為 null，設置為空字串
+                ];
+            }),
+        ]);
+    }
+
     public function updateStatus(Request $request, TaskItem $task)
     {
         $validated = $request->validate([

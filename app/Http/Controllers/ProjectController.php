@@ -28,6 +28,9 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\Word;
 use App\Models\ProjectMilestones;
 use App\Models\ProjectType;
+use App\Models\TaskTemplate;
+use App\Models\Task;
+use App\Models\TaskItem;
 
 class ProjectController extends Controller
 {
@@ -91,14 +94,14 @@ class ProjectController extends Controller
     {
         $cust_datas = User::where('status', 1)->where('group_id', 2)->get();
         $check_statuss = CheckStatus::where('status', 'up')->orderby('seq', 'asc')->whereNull('parent_id')->get();
-        $project_types = ProjectType::where('status','up')->get();
+        $project_types = ProjectType::where('status', 'up')->get();
         return view('project.create')->with('cust_datas', $cust_datas)->with('check_statuss', $check_statuss)->with('project_types', $project_types);
     }
 
     public function store(Request $request)
     {
         $cust_data = User::where('id', $request->user_id)->first();
-        $project_type = ProjectType::where('id',$request->type)->first();
+        $project_type = ProjectType::where('id', $request->type)->first();
 
         $data = new CustProject;
         $data->date = $request->date;
@@ -565,10 +568,98 @@ class ProjectController extends Controller
     {
         // 查詢對應的專案
         $data = CustProject::where('id', $id)->first();
-        // 返回專案詳情頁面或視圖
-        $check_statuss = CheckStatus::where('parent_id', null)->where('status', 'up')->get();
-        return view('project.task', ['data' => $data, 'request' => $request, 'check_statuss' => $check_statuss]);
+        $task_datas = Task::where('project_id', $id)->orderBy('priority', 'asc')->orderBy('estimated_end', 'asc')->get();
+        $cust_projects = CustProject::get();
+        $task_templates = TaskTemplate::get();
+        $check_statuss = CheckStatus::where('status', 'up')->orderby('seq', 'asc')->whereNull('parent_id')->get();
+        $users = User::where('status', 1)->where('group_id', 1)->get();
+        return view('project.task', ['task_datas' => $task_datas, 'data' => $data, 'request' => $request, 'check_statuss' => $check_statuss, 'task_templates' => $task_templates, 'cust_projects' => $cust_projects, 'users' => $users]);
     }
+    public function task_create(string $id, Request $request)
+    {
+
+        $data = new Task;
+        $data->type = 'group';
+        $data->name = $request->name;
+        $data->project_id =  $id;
+        $data->template_id = $request->template_id;
+        $data->check_status_id = $request->check_status_id;
+        $data->created_by = Auth::user()->id;
+        $data->estimated_end = $request->estimated_end_date . ' ' . $request->estimated_end_time . ':00';
+        $data->priority = $request->priority;
+        $data->status = $request->status;
+        $data->comments = $request->comments;
+        $data->save();
+
+        $user_ids = $request->input('user_ids');
+        $contexts = $request->input('contexts');
+
+        // 抓取儲存後的 task_id
+        $task_id = $data->id;
+        foreach ($user_ids as $index => $user_id) {
+            // 儲存資料到資料庫或其他操作
+            TaskItem::create([
+                'user_id' => $user_id,
+                'context' => $contexts[$index],
+                'task_id' => $task_id,  // 假設任務ID已存在
+                'status' => '0',
+                'start_time' => Carbon::now()->locale('zh-tw'),
+            ]);
+        }
+        return redirect()->route('project.task', $id)->with('success', '派工新增成功！');
+    }
+
+    public function task_update(string $id, Request $request)
+    {
+        $data = Task::findOrFail($id);
+        $data->project_id = $request->project_id;
+        $data->type = 'group';
+        $data->name = $request->name;
+        $data->template_id = $request->template_id;
+        $data->check_status_id = $request->check_status_id;
+        $data->estimated_end = $request->estimated_end_date . ' ' . $request->estimated_end_time . ':00';
+        $data->priority = $request->priority;
+        $data->status = $request->status;
+        $data->comments = $request->comments;
+        $data->save();
+
+        $user_ids = $request->input('user_ids');
+        $contexts = $request->input('contexts');
+
+        // 刪除舊的 TaskItem 資料
+        TaskItem::where('task_id', $id)->delete();
+
+        // 更新新的 TaskItem 資料
+        foreach ($user_ids as $index => $user_id) {
+            TaskItem::create([
+                'user_id' => $user_id,
+                'context' => $contexts[$index],
+                'task_id' => $id
+            ]);
+        }
+        return redirect()->route('project.task', $request->project_id)->with('success', '派工新增成功！');
+    }
+
+    public function task_delete(string $id)
+    {
+        try {
+            // 確認任務是否存在
+            $task = Task::findOrFail($id);
+
+            // 刪除相關的 TaskItem
+            TaskItem::where('task_id', $id)->delete();
+
+            // 刪除主 Task
+            $task->delete();
+
+            // 重定向到專案派工頁面
+            return redirect()->route('project.task', $task->project_id)->with('success', '派工刪除成功！');
+        } catch (\Exception $e) {
+            // 重定向並顯示錯誤訊息
+        }
+    }
+
+
 
     public function midterm(string $id, Request $request)
     {

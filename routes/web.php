@@ -124,7 +124,12 @@ Route::get('project/send/{id}', [ProjectController::class, 'send'])->name('proje
 Route::get('project/plan/{id}', [ProjectController::class, 'plan'])->name('project.plan');
 // Route::get('project/plan/{id}', [ProjectController::class, 'plan_update'])->name('project.plan.data');
 Route::get('project/task/{id}', [ProjectController::class, 'task'])->name('project.task');
-// Route::get('project/task/{id}', [ProjectController::class, 'task_update'])->name('project.task.data');
+Route::post('project/task/{id}', [ProjectController::class, 'task_create'])->name('project.task.data');
+Route::put('project/task/update/{id}', [ProjectController::class, 'task_update'])->name('project.task.update.data');
+Route::delete('project/task/delete/{id}', [ProjectController::class, 'task_delete'])->name('project.task.delete.data');
+Route::get('/api/task/{id}', [TaskController::class, 'getTaskDetails']);
+
+
 Route::get('project/midterm/{id}', [ProjectController::class, 'midterm'])->name('project.midterm');
 // Route::get('project/midterm/{id}', [ProjectController::class, 'midterm_update'])->name('project.midterm.data');
 Route::get('project/final/{id}', [ProjectController::class, 'final'])->name('project.final');
