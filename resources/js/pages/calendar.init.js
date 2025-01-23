@@ -82,7 +82,7 @@ import bootstrapPlugin from '@fullcalendar/bootstrap';
         /* 初始化 FullCalendar */
         this.$calendarObj = new Calendar(this.$calendar[0], {
             plugins: [dayGridPlugin, bootstrapPlugin, interactionPlugin, listPlugin, timeGridPlugin],
-            initialView: 'listMonth',
+            initialView: 'listMonth', // 預設顯示為列表
             themeSystem: 'bootstrap',
             headerToolbar: {
                 left: 'prev,next today',
@@ -92,15 +92,21 @@ import bootstrapPlugin from '@fullcalendar/bootstrap';
             editable: true,
             droppable: true,
             selectable: true,
-            events: '/api/projectMilestones',
-            eventContent: function (info) {
-                // 自定義事件顯示內容
-                return {
-                    html: `<b>${info.event.title}</b>`
-                };
+            events: '/api/projectMilestones', // 從後端 API 加載數據
+            views: {
+                listMonth: {
+                    displayEventTime: true, // 顯示事件時間
+                    displayEventEnd: true, // 顯示結束時間
+                    noEventsText: "No events to display", // 如果沒有事件的提示文字
+                }
+            },
+            dateClick: function (info) {
+                $this.onSelect(info);
+            },
+            eventClick: function (info) {
+                $this.onEventClick(info);
             }
         });
-        
         
 
         this.$calendarObj.render();
