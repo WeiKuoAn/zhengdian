@@ -87,7 +87,7 @@
             <li class="menu-title"></li>
 
             <li class="menu-item">
-                <a href="#" class="menu-link">
+                <a href="{{ route('projectMilestones.calendar') }}" class="menu-link">
                     <span class="menu-icon"><i data-feather="calendar"></i></span>
                     <span class="menu-text"> Calendar </span>
                 </a>

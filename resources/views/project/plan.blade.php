@@ -16,13 +16,12 @@
                         <div class="d-flex align-items-start mb-3">
                             <div class="w-100 ">
                                 <h3 class="mt-1 mb-0">{{ $data->name }}</h3>
-                                    <p class="mb-1 mt-1 text-muted">計畫登入帳號：ＸＸＸ　計畫登入密碼：ＸＸＸ</p>
+                                <p class="mb-1 mt-1 text-muted">計畫登入帳號：ＸＸＸ　計畫登入密碼：ＸＸＸ</p>
                             </div>
                         </div>
                         <ul class="nav nav-tabs nav-bordered nav-justified">
                             <li class="nav-item">
-                                <a href="{{ route('project.edit', $data->id) }}" aria-expanded="true"
-                                    class="nav-link ">
+                                <a href="{{ route('project.edit', $data->id) }}" aria-expanded="true" class="nav-link ">
                                     專案基本設定
                                 </a>
                             </li>
@@ -38,13 +37,13 @@
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a href="{{ route('project.background', $data->id) }}" aria-expanded="false" class="nav-link ">
+                                <a href="{{ route('project.background', $data->id) }}" aria-expanded="false"
+                                    class="nav-link ">
                                     專案背景調查
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a href="{{ route('project.write', $data->id) }}" aria-expanded="false"
-                                    class="nav-link">
+                                <a href="{{ route('project.write', $data->id) }}" aria-expanded="false" class="nav-link">
                                     內容撰寫
                                 </a>
                             </li>
@@ -69,39 +68,50 @@
                                 </a>
                             </li>
                         </ul>
-                        <form action="{{ route('customer.create.data') }}" method="POST">
+                        <form action="{{ route('project.plan.data', $data->id) }}" method="POST">
                             @csrf
                             <div class="row mt-3">
                                 <div class="mb-3">
                                     <label for="project-priority" class="form-label">排程日期<span
                                             class="text-danger">*</span></label>
                                     <div class="row">
-                                        <div class="col-4 mb-1">
-                                            <label for="project-priority" class="form-label">專案流程</label>
+                                        <div class="col-3 mb-1">
+                                            <label for="project-priority" class="form-label">專案派工</label>
                                         </div>
-                                        <div class="col-4 mb-1">
-                                            <label for="project-priority" class="form-label">預計時間</label>
+                                        <div class="col-3 mb-1">
+                                            <label for="project-priority" class="form-label">表訂時間</label>
                                         </div>
-                                        <div class="col-4 mb-1">
-                                            <label for="project-priority" class="form-label">正式時間</label>
+                                        <div class="col-3 mb-1">
+                                            <label for="project-priority" class="form-label">預計完成時間</label>
+                                        </div>
+                                        <div class="col-3 mb-1">
+                                            <label for="project-priority" class="form-label">實際完成時間</label>
                                         </div>
                                     </div>
-                                    @foreach ($check_statuss as $key => $check_status)
+                                    @foreach ($task_datas as $key => $task_data)
                                         <div class="row">
-                                            <div class="col-4 mb-1">
-                                                <input type="text" class="form-control" name="milestone_types[]"
-                                                    value="{{ $check_status->name }}">
+                                            <div class="col-3 mb-1">
+                                                <input type="text" class="form-control" name=""
+                                                    value="【{{ $task_data->check_status_data->name }}】{{ $task_data->name }}"
+                                                    readonly>
+                                                <input type="hidden" class="form-control" name="milestone_types[]"
+                                                    value="{{ $task_data->id }}">
                                             </div>
-                                            <div class="col-4 mb-1">
+                                            <div class="col-3 mb-1">
+                                                <input type="date" class="form-control" name="order_dates[]"
+                                                    value="{{ $task_data->order_date }}" placeholder="預計時間">
+                                            </div>
+                                            <div class="col-3 mb-1">
                                                 <input type="date" class="form-control" name="milestone_dates[]"
-                                                    value="" placeholder="預計時間">
+                                                    value="{{ $task_data->milestone_date }}" placeholder="預計時間">
                                             </div>
-                                            <div class="col-4 mb-1">
+                                            <div class="col-3 mb-1">
                                                 <input type="date" class="form-control" name="formal_dates[]"
-                                                    value="" placeholder="正式時間">
+                                                    value="{{ $task_data->formal_date }}" placeholder="正式時間">
                                             </div>
                                         </div>
                                     @endforeach
+
                                 </div>
                             </div> <!-- end col-->
                     </div> <!-- end col-->

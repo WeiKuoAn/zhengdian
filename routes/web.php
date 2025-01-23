@@ -122,7 +122,7 @@ Route::get('project/write/{id}', [ProjectController::class, 'write'])->name('pro
 Route::get('project/send/{id}', [ProjectController::class, 'send'])->name('project.send');
 // Route::get('project/send/{id}', [ProjectController::class, 'send_update'])->name('project.send.data');
 Route::get('project/plan/{id}', [ProjectController::class, 'plan'])->name('project.plan');
-// Route::get('project/plan/{id}', [ProjectController::class, 'plan_update'])->name('project.plan.data');
+Route::post('project/plan/{id}', [ProjectController::class, 'plan_update'])->name('project.plan.data');
 Route::get('project/task/{id}', [ProjectController::class, 'task'])->name('project.task');
 Route::post('project/task/{id}', [ProjectController::class, 'task_create'])->name('project.task.data');
 Route::put('project/task/update/{id}', [ProjectController::class, 'task_update'])->name('project.task.update.data');
@@ -140,10 +140,13 @@ Route::get('project/meet/{id}', [ProjectController::class, 'meet'])->name('proje
 Route::get('/project/{id}', [ProjectController::class, 'show'])->name('project.show');
 
 Route::get('projectMilestones', [ProjectMilestonesController::class, 'index'])->name('projectMilestones');
+Route::get('projectMilestones/calendar', [ProjectMilestonesController::class, 'calendar'])->name('projectMilestones.calendar');
 Route::get('projectMilestones/create', [ProjectMilestonesController::class, 'create'])->name('projectMilestones.create');
 Route::post('projectMilestones/create', [ProjectMilestonesController::class, 'store'])->name('projectMilestones.create.data');
 Route::get('projectMilestones/edit/{id}', [ProjectMilestonesController::class, 'show'])->name('projectMilestones.edit');
 Route::post('projectMilestones/edit/{id}', [ProjectMilestonesController::class, 'update'])->name('projectMilestones.edit.data');
+Route::get('/api/projectMilestones', [ProjectMilestonesController::class, 'projectMilestones']);
+
 
 Route::get('meetData', [MeetDataController::class, 'index'])->name('meetDatas');
 Route::get('meetData/create', [MeetDataController::class, 'create'])->name('meetData.create');

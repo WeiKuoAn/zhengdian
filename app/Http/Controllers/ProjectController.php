@@ -559,10 +559,62 @@ class ProjectController extends Controller
     {
         // 查詢對應的專案
         $data = CustProject::where('id', $id)->first();
+
+        // 取得所有的 TaskTemplate
+        $task_templates = TaskTemplate::all();
+
+        // 取得對應的 project_milestones
+        $project_milestones = ProjectMilestones::where('project_id', $id)->get()->keyBy('milestone_type');
+
+        // 將兩者結合
+        $task_datas = $task_templates->map(function ($task) use ($project_milestones) {
+            $milestone = $project_milestones->get($task->id);
+
+            return (object) [
+                'id' => $task->id,
+                'name' => $task->name,
+                'check_status_data' => $task->check_status_data,
+                'milestone_date' => $milestone->milestone_date ?? null,
+                'order_date' => $milestone->order_date ?? null,
+                'formal_date' => $milestone->formal_date ?? null,
+            ];
+        });
+
         // 返回專案詳情頁面或視圖
-        $check_statuss = CheckStatus::where('parent_id', null)->where('status', 'up')->get();
-        return view('project.plan', ['data' => $data, 'request' => $request, 'check_statuss' => $check_statuss]);
+        return view('project.plan', [
+            'data' => $data,
+            'request' => $request,
+            'task_datas' => $task_datas,
+        ]);
     }
+
+
+    public function plan_update(string $id, Request $request)
+    {
+        // 確保請求中包含所需的陣列，若未提供則設置為空陣列
+        $milestone_types = $request->milestone_types ?? [];
+        $milestone_dates = $request->milestone_dates ?? [];
+        $formal_dates = $request->formal_dates ?? [];
+        $order_dates = $request->order_dates ?? [];
+
+        // 刪除屬於該 $id 的所有紀錄
+        ProjectMilestones::where('project_id', $id)->delete();
+
+        // 新增資料
+        foreach ($milestone_types as $index => $milestone_type) {
+            ProjectMilestones::create([
+                'project_id' => $id,
+                'milestone_type' => $milestone_type,
+                'order_date'=> $order_dates[$index] ?? null,
+                'milestone_date' => $milestone_dates[$index] ?? null,
+                'formal_date' => $formal_dates[$index] ?? null,
+            ]);
+        }
+
+        // 返回成功訊息
+        return redirect()->route('project.plan', $id)->with('success', '派工新增成功！');
+    }
+
 
     public function task(string $id, Request $request)
     {

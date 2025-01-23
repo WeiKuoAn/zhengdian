@@ -27,9 +27,10 @@
                                     <tr>
                                         <th scope="col">No</th>
                                         <th scope="col">客戶名稱</th>
-                                        <th scope="col">專案狀態名稱</th>
-                                        <th scope="col">預測時間</th>
-                                        <th scope="col">正式時間</th>
+                                        <th scope="col">專案派工</th>
+                                        <th scope="col">表訂時間</th>
+                                        <th scope="col">預計完成時間</th>
+                                        <th scope="col">實際完成時間</th>
                                         <th scope="col">操作</th>
                                     </tr>
                                 </thead>
@@ -38,7 +39,8 @@
                                         <tr>
                                             <td>{{ $key+1 }}</td>
                                             <td>{{ $data->project_data->user_data->name }}</td>
-                                            <td>{{ $data->milestone_type }}</td>
+                                            <td>{{ $data->task_data->name }}</td>
+                                            <td>{{ $data->order_date }}</td>
                                             <td>{{ $data->milestone_date }}</td>
                                             <td>{{ $data->formal_date }}</td>
                                             <td>

@@ -9,6 +9,27 @@ use App\Models\User;
 
 class ProjectMilestonesController extends Controller
 {
+    public function projectMilestones(Request $request)
+    {
+        $datas = ProjectMilestones::get(); // 替換為實際數據獲取邏輯
+        $events = $datas->map(function ($data) {
+            return [
+                'id' => $data->id,
+                'title' => $data->task_data->name . ' - ' . $data->project_data->user_data->name,
+                'start' => $data->order_date, // 表訂時間
+                'end' => $data->milestone_date, // 預計完成時間
+            ];
+        });
+
+        return response()->json($events);
+    }
+
+    public function calendar()
+    {
+        $datas = ProjectMilestones::all();
+        return view('project_milestones.calendar', compact('datas'));
+    }
+
     public function project_search(Request $request)
     {
         $project_id = $request->project_id;

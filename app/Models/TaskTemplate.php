@@ -25,4 +25,6 @@ class TaskTemplate extends Model
     {
         return $this->hasOne('App\Models\CheckStatus', 'id', 'check_status_parent_id');
     }
+
+    
 }
