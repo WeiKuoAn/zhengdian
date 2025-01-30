@@ -608,6 +608,8 @@ class ProjectController extends Controller
                 'order_date'=> $order_dates[$index] ?? null,
                 'milestone_date' => $milestone_dates[$index] ?? null,
                 'formal_date' => $formal_dates[$index] ?? null,
+                'formal_date' => $formal_dates[$index] ?? null,
+                'category_id' => '1',
             ]);
         }
 

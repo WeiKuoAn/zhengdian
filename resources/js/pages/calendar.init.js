@@ -11,9 +11,7 @@ import interactionPlugin from '@fullcalendar/interaction';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import listPlugin from '@fullcalendar/list';
 import dayGridPlugin from '@fullcalendar/daygrid';
-
 import { Modal } from "bootstrap";
-
 import bootstrapPlugin from '@fullcalendar/bootstrap';
 
 !function ($) {
@@ -33,6 +31,32 @@ import bootstrapPlugin from '@fullcalendar/bootstrap';
         this.$newEventData = null;
     };
 
+    /* 設定 CSRF Token 避免 Laravel 拒絕請求 */
+    $.ajaxSetup({
+        headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') }
+    });
+
+    /* 取得事件資料 */
+    CalendarApp.prototype.fetchEvents = function (callback) {
+        $.ajax({
+            url: "/api/calendar/events",
+            method: "GET",
+            success: function (response) {
+                let events = response.map(event => ({
+                    id: event.id,
+                    title: event.title,
+                    start: event.start,
+                    end: event.end ? event.end : null,
+                    className: event.className ? event.className : "bg-primary",
+                }));
+                callback(events);
+            },
+            error: function () {
+                alert("無法載入行事曆事件，請檢查 API");
+            }
+        });
+    };
+
     /* 點擊事件 */
     CalendarApp.prototype.onEventClick = function (info) {
         this.$formEvent[0].reset();
@@ -40,11 +64,20 @@ import bootstrapPlugin from '@fullcalendar/bootstrap';
 
         this.$newEventData = null;
         this.$btnDeleteEvent.show();
-        this.$modalTitle.text('Edit Event');
+        this.$modalTitle.text('編輯行事曆事件');
         this.$modal.show();
         this.$selectedEvent = info.event;
         $("#event-title").val(this.$selectedEvent.title);
         $("#event-category").val(this.$selectedEvent.classNames[0]);
+
+        $("#form-event").off("submit").on("submit", function (e) {
+            e.preventDefault();
+            saveEvent(info.event.id);
+        });
+
+        $("#btn-delete-event").off("click").on("click", function () {
+            deleteEvent(info.event.id);
+        });
     };
 
     /* 選擇日期 */
@@ -55,34 +88,26 @@ import bootstrapPlugin from '@fullcalendar/bootstrap';
         this.$selectedEvent = null;
         this.$newEventData = info;
         this.$btnDeleteEvent.hide();
-        this.$modalTitle.text('Add New Event');
+        this.$modalTitle.text('新增行事曆事件');
 
         this.$modal.show();
         this.$calendarObj.unselect();
+
+        $("#form-event").off("submit").on("submit", function (e) {
+            e.preventDefault();
+            saveEvent(null, info.dateStr);
+        });
     };
 
-    /* 初始化日曆 */
+    /* 初始化 FullCalendar */
     CalendarApp.prototype.init = function () {
         this.$modal = new Modal(document.getElementById('event-modal'), { keyboard: false });
 
-        /* 初始化 Draggable 事件 */
-        var externalEventContainerEl = document.getElementById('external-events');
-        new Draggable(externalEventContainerEl, {
-            itemSelector: '.external-event',
-            eventData: function (eventEl) {
-                return {
-                    title: eventEl.innerText,
-                    className: $(eventEl).data('class')
-                };
-            }
-        });
-
         var $this = this;
 
-        /* 初始化 FullCalendar */
         this.$calendarObj = new Calendar(this.$calendar[0], {
             plugins: [dayGridPlugin, bootstrapPlugin, interactionPlugin, listPlugin, timeGridPlugin],
-            initialView: 'listMonth', // 預設顯示為列表
+            initialView: 'dayGridMonth',
             themeSystem: 'bootstrap',
             headerToolbar: {
                 left: 'prev,next today',
@@ -90,70 +115,87 @@ import bootstrapPlugin from '@fullcalendar/bootstrap';
                 right: 'dayGridMonth,timeGridWeek,timeGridDay,listMonth'
             },
             editable: true,
-            droppable: true,
             selectable: true,
-            events: '/api/projectMilestones', // 從後端 API 加載數據
-            views: {
-                listMonth: {
-                    displayEventTime: true, // 顯示事件時間
-                    displayEventEnd: true, // 顯示結束時間
-                    noEventsText: "No events to display", // 如果沒有事件的提示文字
-                }
+            droppable: true,
+            events: function (fetchInfo, successCallback, failureCallback) {
+                $this.fetchEvents(successCallback);
             },
             dateClick: function (info) {
                 $this.onSelect(info);
             },
             eventClick: function (info) {
                 $this.onEventClick(info);
+            },
+            eventDrop: function (info) {
+                updateEvent(info.event);
             }
         });
-        
 
         this.$calendarObj.render();
-
-        /* 新增事件按鈕 */
-        this.$btnNewEvent.on('click', function () {
-            $this.onSelect({ date: new Date(), allDay: true });
-        });
-
-        /* 儲存事件 */
-        this.$formEvent.on('submit', function (e) {
-            e.preventDefault();
-            var form = $this.$formEvent[0];
-
-            if (form.checkValidity()) {
-                if ($this.$selectedEvent) {
-                    // 編輯事件
-                    $this.$selectedEvent.setProp('title', $("#event-title").val());
-                    $this.$selectedEvent.setProp('classNames', [$("#event-category").val()]);
-                } else {
-                    // 新增事件
-                    var newEvent = {
-                        title: $("#event-title").val(),
-                        start: $this.$newEventData.date,
-                        allDay: $this.$newEventData.allDay,
-                        className: $("#event-category").val()
-                    };
-                    $this.$calendarObj.addEvent(newEvent);
-                }
-                $this.$modal.hide();
-            } else {
-                e.stopPropagation();
-                form.classList.add('was-validated');
-            }
-        });
-
-        /* 刪除事件 */
-        this.$btnDeleteEvent.on('click', function () {
-            if ($this.$selectedEvent) {
-                $this.$selectedEvent.remove();
-                $this.$selectedEvent = null;
-                $this.$modal.hide();
-            }
-        });
     };
 
-    // 初始化 CalendarApp
+    // 新增 / 更新事件
+    function saveEvent(eventId = null, start = null) {
+        var eventData = {
+            id: eventId,
+            title: $("#event-title").val(),
+            start: start ? start : $("#event-start").val(),
+            end: $("#event-end").val() ? $("#event-end").val() : null,
+            className: $("#event-category").val()
+        };
+
+        $.ajax({
+            url: "/api/calendar/events",
+            method: "POST",
+            contentType: "application/json",
+            data: JSON.stringify(eventData),
+            success: function () {
+                $("#event-modal").modal("hide");
+                location.reload();
+            },
+            error: function () {
+                alert("無法儲存事件，請檢查 API");
+            }
+        });
+    }
+
+    // 更新事件（拖拉變更時間）
+    function updateEvent(event) {
+        $.ajax({
+            url: "/api/calendar/events",
+            method: "POST",
+            contentType: "application/json",
+            data: JSON.stringify({
+                id: event.id,
+                title: event.title,
+                start: event.start.toISOString(),
+                end: event.end ? event.end.toISOString() : null,
+                className: event.classNames[0]
+            }),
+            success: function () {
+                console.log("事件更新成功");
+            },
+            error: function () {
+                alert("無法更新事件");
+            }
+        });
+    }
+
+    // 刪除事件
+    function deleteEvent(eventId) {
+        $.ajax({
+            url: "/api/calendar/events/" + eventId,
+            method: "DELETE",
+            success: function () {
+                $("#event-modal").modal("hide");
+                location.reload();
+            },
+            error: function () {
+                alert("刪除事件失敗");
+            }
+        });
+    }
+
     $.CalendarApp = new CalendarApp();
     $.CalendarApp.Constructor = CalendarApp;
 
@@ -164,6 +206,7 @@ function ($) {
     "use strict";
     $.CalendarApp.init();
 }(window.jQuery);
+
 
 
 

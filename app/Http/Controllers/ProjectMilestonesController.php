@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\ProjectMilestones;
 use App\Models\CheckStatus;
 use App\Models\User;
+use App\Models\CalendarCategory;
 
 class ProjectMilestonesController extends Controller
 {
@@ -18,6 +19,7 @@ class ProjectMilestonesController extends Controller
                 'title' => $data->task_data->name . ' - ' . $data->project_data->user_data->name,
                 'start' => $data->order_date, // 表訂時間
                 'end' => $data->milestone_date, // 預計完成時間
+                'className' => $data->calendar_category_data->classname, // 預計完成時間
             ];
         });
 
@@ -26,8 +28,9 @@ class ProjectMilestonesController extends Controller
 
     public function calendar()
     {
+        $calendar_categorys = CalendarCategory::where('status', 'up')->get();
         $datas = ProjectMilestones::all();
-        return view('project_milestones.calendar', compact('datas'));
+        return view('project_milestones.calendar', compact('datas' , 'calendar_categorys'));
     }
 
     public function project_search(Request $request)
@@ -59,6 +62,7 @@ class ProjectMilestonesController extends Controller
                 'milestone_type' => $request->milestone_types[$index],
                 'milestone_date' =>$request->milestone_dates[$index],
                 'formal_date' => $request->formal_dates[$index],
+                'category_id' => '1',
             ]);
         }
 

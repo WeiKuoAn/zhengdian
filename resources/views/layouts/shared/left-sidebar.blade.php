@@ -252,6 +252,11 @@
                                 class="{{ request()->is('projectTypes') ? 'active' : '' }}"><span
                                     class="menu-text">專案類別設定</span></a>
                         </li>
+                        <li class="menu-item">
+                            <a class="menu-link" href="{{ route('CalendarCategorys') }}"
+                                class="{{ request()->is('CalendarCategorys') ? 'active' : '' }}"><span
+                                    class="menu-text">行事曆類別設定</span></a>
+                        </li>
                         {{-- <li class="menu-item">
                             <a class="menu-link" href="{{ route('jobs') }}"
                                 class="{{ request()->is('jobs') ? 'active' : '' }}"><span

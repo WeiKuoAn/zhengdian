@@ -11,7 +11,7 @@ class ProjectMilestones extends Model
 
     protected $table = 'project_milestones';
     protected $fillable = [
-        'project_id', 'milestone_type', 'milestone_date', 'formal_date', 'status','order_date'
+        'project_id', 'milestone_type', 'milestone_date', 'formal_date', 'status','order_date','category_id'
     ];
     public function project_data()
     {
@@ -21,5 +21,10 @@ class ProjectMilestones extends Model
     public function task_data()
     {
         return $this->hasOne('App\Models\TaskTemplate', 'id', 'milestone_type');
+    }
+
+    public function calendar_category_data()
+    {
+        return $this->hasOne('App\Models\CalendarCategory', 'id', 'category_id');
     }
 }

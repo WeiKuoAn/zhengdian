@@ -17,6 +17,8 @@ use App\Http\Controllers\MeetDataController;
 use App\Http\Controllers\JobController;
 use App\Http\Controllers\PersonTaskController;
 use App\Http\Controllers\ProjectTypeController;
+use App\Http\Controllers\CalendarCategoryController;
+use App\Http\Controllers\CalendarController;
 
 
 require __DIR__ . '/auth.php';
@@ -168,6 +170,20 @@ Route::get('/person/task/create', [PersonTaskController::class, 'create'])->name
 Route::post('/person/task/create', [PersonTaskController::class, 'store'])->name('person.task.create.data');
 Route::get('/person/task/edit/{id}', [PersonTaskController::class, 'show'])->name('person.task.edit');
 Route::post('/person/task/edit/{id}', [PersonTaskController::class, 'update'])->name('person.task.edit.data');
+
+//行事曆類別
+Route::get('CalendarCategory', [CalendarCategoryController::class, 'index'])->name('CalendarCategorys');
+Route::get('CalendarCategory/create', [CalendarCategoryController::class, 'create'])->name('CalendarCategory.create');
+Route::post('CalendarCategory/create', [CalendarCategoryController::class, 'store'])->name('CalendarCategory.create.data');
+Route::get('CalendarCategory/edit/{id}', [CalendarCategoryController::class, 'show'])->name('CalendarCategory.edit');
+Route::post('CalendarCategory/edit/{id}', [CalendarCategoryController::class, 'update'])->name('CalendarCategory.edit.data');
+Route::get('CalendarCategory/del/{id}', [CalendarCategoryController::class, 'delete'])->name('CalendarCategory.del');
+Route::post('CalendarCategory/del/{id}', [CalendarCategoryController::class, 'destroy'])->name('CalendarCategory.del.data');
+
+//行事曆
+Route::get('/api/calendar/events', [CalendarController::class, 'getEvents']);
+Route::post('/api/calendar/events', [CalendarController::class, 'storeOrUpdate']);
+Route::delete('/api/calendar/events/{id}', [CalendarController::class, 'destroy']);
 
 
 // routes/web.php
