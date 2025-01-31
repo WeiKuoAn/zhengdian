@@ -20,6 +20,7 @@ use App\Http\Controllers\ProjectTypeController;
 use App\Http\Controllers\CalendarCategoryController;
 use App\Http\Controllers\CalendarController;
 use App\Http\Controllers\ProjectBusinessController;
+use App\Http\Controllers\ProjectManufacturingController;
 
 require __DIR__ . '/auth.php';
 
@@ -117,9 +118,9 @@ Route::post('project/create', [ProjectController::class, 'store'])->name('projec
 Route::get('project/edit/{id}', [ProjectController::class, 'edit'])->name('project.edit');
 Route::post('project/edit/{id}', [ProjectController::class, 'update'])->name('project.edit.data'); //01
 Route::get('project/background/{id}', [ProjectController::class, 'background'])->name('project.background');
-// Route::post('project/background/{id}', [ProjectController::class, 'background_update'])->name('project.background.data');//02
+Route::post('project/background/{id}', [ProjectController::class, 'background_update'])->name('project.background.data');//02
 Route::get('project/write/{id}', [ProjectController::class, 'write'])->name('project.write');
-// Route::get('project/write/{id}', [ProjectController::class, 'write_update'])->name('project.write.data');
+Route::post('project/write/{id}', [ProjectController::class, 'write_update'])->name('project.write.data');
 
 Route::get('project/send/{id}', [ProjectController::class, 'send'])->name('project.send');
 // Route::get('project/send/{id}', [ProjectController::class, 'send_update'])->name('project.send.data');
@@ -195,9 +196,17 @@ Route::post('customer/introduce-create', [CustomerController::class, 'IntroduceS
 //客戶介面-專案
 Route::get('business-create', [ProjectBusinessController::class, 'BusinessCreate'])->name('business.create');
 Route::post('business-store', [ProjectBusinessController::class, 'BusinessStore'])->name('business.store');
-Route::get('business-appendix', [ProjectBusinessController::class,'BusinessAppendix'])->name('business.appendix');
-Route::get('project/manufacturing-appendix', [ProjectBusinessController::class,'ManufacturingAppendix'])->name('project.manufacturing.appendix');
+Route::get('business-appendix', [ProjectBusinessController::class, 'BusinessAppendix'])->name('business.appendix');
+Route::get('business-preview', [ProjectBusinessController::class, 'BusinessPreview'])->name('business.preview');
+
 Route::post('/update-checkbox-status', [ProjectBusinessController::class, 'updateAppendixStatus'])->name('appendix-status');
+
+//製造業畫面
+Route::get('manufacturing-create', [ProjectManufacturingController::class, 'ManufacturingCreate'])->name('manufacturing.create');
+Route::post('manufacturing-create', [ProjectManufacturingController::class, 'ManufacturingStore'])->name('manufacturing.store');
+Route::get('manufacturing-preview', [ProjectManufacturingController::class, 'ManufacturingPreview'])->name('manufacturing.preview');
+Route::get('manufacturing-appendix', [ProjectManufacturingController::class, 'ManufacturingAppendix'])->name('manufacturing.appendix');
+
 
 Route::get('', function () {
     Auth::logout();

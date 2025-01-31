@@ -22,7 +22,8 @@ class User extends Authenticatable
         'password',
         'level',
         'status',
-        'group_id'
+        'group_id',
+        'job_id',
     ];
 
     /**
@@ -51,6 +52,11 @@ class User extends Authenticatable
     public function cust_data()
     {
         return $this->hasOne('App\Models\CustData', 'user_id', 'id');
+    }
+
+    public function job_data()
+    {
+        return $this->hasOne('App\Models\Job', 'id', 'job_id');
     }
 
     public function group_data()

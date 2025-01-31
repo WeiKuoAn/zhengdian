@@ -90,7 +90,7 @@
                 <li class="menu-item">
                     <a href="{{ route('projectMilestones.calendar') }}" class="menu-link">
                         <span class="menu-icon"><i data-feather="calendar"></i></span>
-                        <span class="menu-text"> Calendar </span>
+                        <span class="menu-text"> 專案排程 </span>
                     </a>
                 </li>
 
@@ -258,11 +258,11 @@
                                     class="{{ request()->is('CalendarCategorys') ? 'active' : '' }}"><span
                                         class="menu-text">行事曆類別設定</span></a>
                             </li>
-                            {{-- <li class="menu-item">
-                            <a class="menu-link" href="{{ route('jobs') }}"
-                                class="{{ request()->is('jobs') ? 'active' : '' }}"><span
-                                    class="menu-text">職稱設定</span></a>
-                        </li> --}}
+                            <li class="menu-item">
+                                <a class="menu-link" href="{{ route('jobs') }}"
+                                    class="{{ request()->is('jobs') ? 'active' : '' }}"><span
+                                        class="menu-text">職稱設定</span></a>
+                            </li>
                         </ul>
                     </div>
                     {{-- <div class="collapse" id="setting">
@@ -334,58 +334,66 @@
                         <span class="menu-text"> 基本資料設定 </span>
                     </a>
                 </li>
-                <li class="menu-item">
-                    <a class="menu-link" href="#business" data-bs-toggle="collapse">
-                        <span class="menu-icon"><i data-feather="briefcase"></i></span>
-                        <span class="menu-text"> 商業類 </span>
-                        <span class="menu-arrow"></span>
-                    </a>
-                    <div class="collapse" id="business">
-                        <ul class="sub-menu">
+                @foreach (Auth::user()->project_datas as $project_data)
+                    @if ($project_data->status == 0)
+                        @if ($project_data->type == 0)
                             <li class="menu-item">
-                                <a class="menu-link" href="{{ route('business.create') }}"
-                                    class="{{ request()->is('business.create') ? 'active' : '' }}"><span
-                                        class="menu-text">商業類-資料</span></a>
+                                <a class="menu-link" href="#business" data-bs-toggle="collapse">
+                                    <span class="menu-icon"><i data-feather="briefcase"></i></span>
+                                    <span class="menu-text"> 商業類 </span>
+                                    <span class="menu-arrow"></span>
+                                </a>
+                                <div class="collapse" id="business">
+                                    <ul class="sub-menu">
+                                        <li class="menu-item">
+                                            <a class="menu-link" href="{{ route('business.create') }}"
+                                                class="{{ request()->is('business.create') ? 'active' : '' }}"><span
+                                                    class="menu-text">商業類-資料</span></a>
+                                        </li>
+                                        <li class="menu-item">
+                                            <a class="menu-link" href="{{ route('business.appendix') }}"
+                                                class="{{ request()->is('business.appendix') ? 'active' : '' }}"><span
+                                                    class="menu-text">商業類-附件</span></a>
+                                        </li>
+                                        <li class="menu-item">
+                                            <a class="menu-link" href="{{ route('business.preview') }}"
+                                                class="{{ request()->is('business.preview') ? 'active' : '' }}"><span
+                                                    class="menu-text">商業類-預覽</span></a>
+                                        </li>
+                                    </ul>
+                                </div>
                             </li>
+                        @endif
+                        @if ($project_data->type == 1)
                             <li class="menu-item">
-                                <a class="menu-link" href="{{ route('business.appendix') }}"
-                                    class="{{ request()->is('business.appendix') ? 'active' : '' }}"><span
-                                        class="menu-text">商業類-附件</span></a>
+                                <a class="menu-link" href="#manufacturing" data-bs-toggle="collapse">
+                                    <span class="menu-icon"><i data-feather="map"></i></span>
+                                    <span class="menu-text"> 製造業 </span>
+                                    <span class="menu-arrow"></span>
+                                </a>
+                                <div class="collapse" id="manufacturing">
+                                    <ul class="sub-menu">
+                                        <li class="menu-item">
+                                            <a class="menu-link" href="{{ route('manufacturing.create') }}"
+                                                class="{{ request()->is('Manufacturing.create') ? 'active' : '' }}"><span
+                                                    class="menu-text">製造類-資料</span></a>
+                                        </li>
+                                        <li class="menu-item">
+                                            <a class="menu-link" href="{{ route('manufacturing.appendix') }}"
+                                                class="{{ request()->is('manufacturing.appendix') ? 'active' : '' }}"><span
+                                                    class="menu-text">製造類-附件</span></a>
+                                        </li>
+                                        <li class="menu-item">
+                                            <a class="menu-link" href="{{ route('manufacturing.preview') }}"
+                                                class="{{ request()->is('manufacturing.preview') ? 'active' : '' }}"><span
+                                                    class="menu-text">製造類-預覽</span></a>
+                                        </li>
+                                    </ul>
+                                </div>
                             </li>
-                            <li class="menu-item">
-                                <a class="menu-link" href="{{ route('business.create') }}"
-                                    class="{{ request()->is('business.create') ? 'active' : '' }}"><span
-                                        class="menu-text">商業類-預覽</span></a>
-                            </li>
-                        </ul>
-                    </div>
-                </li>
-                <li class="menu-item">
-                    <a class="menu-link" href="#manufacturing" data-bs-toggle="collapse">
-                        <span class="menu-icon"><i data-feather="map"></i></span>
-                        <span class="menu-text"> 製造業 </span>
-                        <span class="menu-arrow"></span>
-                    </a>
-                    <div class="collapse" id="manufacturing">
-                        <ul class="sub-menu">
-                            <li class="menu-item">
-                                <a class="menu-link" href="{{ route('business.create') }}"
-                                    class="{{ request()->is('business.create') ? 'active' : '' }}"><span
-                                        class="menu-text">製造類-資料</span></a>
-                            </li>
-                            <li class="menu-item">
-                                <a class="menu-link" href="{{ route('user.create') }}"
-                                    class="{{ request()->is('user.create') ? 'active' : '' }}"><span
-                                        class="menu-text">製造類-附件</span></a>
-                            </li>
-                            <li class="menu-item">
-                                <a class="menu-link" href="{{ route('user.create') }}"
-                                    class="{{ request()->is('user.create') ? 'active' : '' }}"><span
-                                        class="menu-text">製造類-預覽</span></a>
-                            </li>
-                        </ul>
-                    </div>
-                </li>
+                        @endif
+                    @endif
+                @endforeach
             @endif
 
         </ul>

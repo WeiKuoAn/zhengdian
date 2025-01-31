@@ -24,13 +24,7 @@ class ProjectBusinessController extends Controller
         $project = CustProject::where('user_id', Auth::user()->id)->where('type', '0')->first();
         $project_host_data = ProjectHost::where('user_id', Auth::user()->id)->where('project_id', $project->id)->first();
         $project_contact_data = ProjectContact::where('user_id', Auth::user()->id)->where('project_id', $project->id)->first();
-        // if(!isset($project)) $project = [];
-        // if(!isset($project_host_data)) $project_host_data = [];
-        // if(!isset($project_contact_data)) $project_contact_data = [];
-        // dd($project_contact_data);
         return view('project_bussiness.bussiness-create', compact('project', 'project_host_data', 'project_contact_data', 'cust_data'));
-
-        
     }
 
     public function BusinessStore(Request $request)
@@ -166,7 +160,7 @@ class ProjectBusinessController extends Controller
         $project = CustProject::where('user_id', Auth::user()->id)->first();
         $project_host_data = ProjectHost::where('user_id', Auth::user()->id)->first();
         $project_contact_data = ProjectContact::where('user_id', Auth::user()->id)->first();
-        return view('project_bussiness.business-preview')->with('project', $project)
+        return view('project_bussiness.bussiness-preview')->with('project', $project)
             ->with('project_host_data', $project_host_data)
             ->with('project_contact_data', $project_contact_data)
             ->with('cust_data', $cust_data)

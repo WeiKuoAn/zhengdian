@@ -5,7 +5,7 @@
     <div class="container-fluid">
 
         @include('layouts.shared.page-title', [
-            'title' => '商業業-資料',
+            'title' => '商業類-資料',
             'subtitle' => Auth::user()->name,
         ])
         <!--  successfully modal  -->

@@ -40,6 +40,7 @@ class UserController extends Controller
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
+            'job_id' => $request->job_id,
             'password' => Hash::make($request->password),
             'level' => $request->level,
             'group_id' => $request->group_id,
@@ -113,6 +114,7 @@ class UserController extends Controller
         $data->name = $request->name;
         $data->level = $request->level;
         $data->group_id = $request->group_id;
+        $data->job_id = $request->job_id;
         $data->status = $request->status;
         $data->save();
         return redirect()->route('user.index');

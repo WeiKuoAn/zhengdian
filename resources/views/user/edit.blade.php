@@ -24,21 +24,21 @@
                                     </div>
                                     <div class="mb-3">
                                         <label class="form-label" for="AddNew-Username">姓名</label>
-                                        <input type="text" class="form-control" id="AddNew-Username" name="name">
+                                        <input type="text" class="form-control" id="AddNew-Username" name="name" value="{{ $data->name }}">
                                     </div>
                                     <div class="mb-3">
                                         <label class="form-label" for="AddNew-Username">帳號</label>
-                                        <input type="text" class="form-control" id="AddNew-Username" name="email">
+                                        <input type="text" class="form-control" id="AddNew-Username" name="email" value="{{ $data->email }}" readonly>
                                     </div>
                                     <div class="mb-3">
                                         <label class="form-label" for="AddNew-Email">密碼</label>
-                                        <input type="text" class="form-control" id="AddNew-Email" name="password">
+                                        <input type="text" class="form-control" id="AddNew-Email" name="password" value="{{ $data->password }}" readonly>
                                     </div>
                                     <div class="mb-3">
                                         <label class="form-label">群組</label>
                                         <select class="form-select" name="group_id">
                                             @foreach ($groups as $group)
-                                                <option value="{{ $group->id }}">{{ $group->name }}</option>
+                                                <option value="{{ $group->id }}" @if($data->group_id == $group->id) selected @endif>{{ $group->name }}</option>
                                             @endforeach
                                         </select>
                                     </div>
@@ -57,7 +57,7 @@
                                         <button type="button" class="btn btn-danger me-1"
                                             data-bs-dismiss="modal">回上一頁</button>
                                         <button type="submit" class="btn btn-success" data-bs-toggle="modal"
-                                            data-bs-target="#success-btn" id="btn-save-event">新增用戶</button>
+                                            data-bs-target="#success-btn" id="btn-save-event">編輯用戶</button>
                                     </div>
                                 </div>
                             </div>

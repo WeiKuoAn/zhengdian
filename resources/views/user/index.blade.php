@@ -35,6 +35,7 @@
                                         <th scope="col">姓名</th>
                                         <th scope="col" width="30%">帳號</th>
                                         <th scope="col">群組</th>
+                                        <th scope="col">職稱</th>
                                         <th scope="col">等級</th>
                                         <th scope="col">權限</th>
                                         <th scope="col" style="width: 200px;">動作</th>
@@ -51,6 +52,11 @@
                                             </td>
                                             <td>{{ $data->email }}</td>
                                             <td>{{ $data->group_data->name }}</td>
+                                            <td>
+                                                @if (isset($data->job_data))
+                                                    {{ $data->job_data->name }}
+                                                @endif
+                                            </td>
                                             <td>
                                                 <span class="badge badge-soft-success font-size-14">
                                                     @if ($data->level == 0)
@@ -77,7 +83,8 @@
                                                             data-bs-toggle="dropdown" aria-expanded="false">動作 <i
                                                                 class="mdi mdi-arrow-down-drop-circle"></i></a>
                                                         <div class="dropdown-menu dropdown-menu-end">
-                                                            <a class="dropdown-item" href="{{ route('user.edit',$data->id)}}"><i
+                                                            <a class="dropdown-item"
+                                                                href="{{ route('user.edit', $data->id) }}"><i
                                                                     class="mdi mdi-pencil me-2 text-muted font-18 vertical-middle"></i>編輯</a>
                                                             {{-- <a class="dropdown-item" href="#"><i class="mdi mdi-delete me-2 text-muted font-18 vertical-middle"></i>刪除</a> --}}
                                                             <a class="dropdown-item" href="#"><i
