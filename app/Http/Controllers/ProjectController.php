@@ -324,8 +324,9 @@ class ProjectController extends Controller
         $data = CustProject::where('id', $id)->first();
         // dd($data);  
         $check_statuss = CheckStatus::where('status', 'up')->orderby('seq', 'asc')->whereNull('parent_id')->get();
+        $project_types = ProjectType::where('status', 'up')->get();
         // 返回專案詳情頁面或視圖
-        return view('project.edit', ['data' => $data, 'request' => $request, 'check_statuss' => $check_statuss]);
+        return view('project.edit', ['data' => $data, 'request' => $request, 'check_statuss' => $check_statuss , 'project_types' => $project_types]);
     }
 
     /**
@@ -335,9 +336,12 @@ class ProjectController extends Controller
     {
         // 查詢對應的專案
         $data = CustProject::where('id', $id)->first();
+        $project_type = ProjectType::where('id', $request->type)->first();
+        $cust_data = User::where('id', $data->user_id)->first();
         // 更新專案資料
         $data->date = $request->date;
-        $data->name = $request->name;
+        $data->name = date('Ymd', strtotime($request->date)) . '-' . ($project_type->name ?? 'N/A') . '-' . ($cust_data->name ?? '000');;
+        $data->type = $request->type;
         $data->check_status = $request->check_status;
         $data->save();
         // 返回專案列表頁面

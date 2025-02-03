@@ -91,20 +91,29 @@ class TaskController extends Controller
             }
 
             // 更新父任務的狀態
+            // 更新父任務的狀態
             $taskId = $task->task_id;
             $taskItems = TaskItem::where('task_id', $taskId)->get();
             $allStatuses = $taskItems->pluck('status')->toArray();
 
-            if (in_array(1, $allStatuses)) {
-                $newTaskStatus = 2; // 接收派工
-            } elseif (!in_array(1, $allStatuses) && in_array(2, $allStatuses)) {
-                $newTaskStatus = 3; // 執行中
+            if (count($allStatuses) > 0 && count(array_unique($allStatuses)) === 1 && $allStatuses[0] == 1) {
+                // **所有** taskItems 的 status 都是 1，則進入「接收派工」狀態
+                $newTaskStatus = 2;
+            } elseif (in_array(2, $allStatuses)) {
+                // 存在 status = 2 的任務項目，則進入「執行中」
+                $newTaskStatus = 3;
             } elseif (count(array_unique($allStatuses)) === 1 && $allStatuses[0] == 8) {
-                $newTaskStatus = 8; // 人員已完成，待確認
+                // **所有** taskItems 的 status 都是 8，則進入「人員已完成，待確認」狀態
+                $newTaskStatus = 8;
                 Task::where('id', $taskId)->update(['actual_end' => Carbon::now()]);
             } else {
-                $newTaskStatus = 1; // 送出派工
+                // 其他狀況則維持「送出派工」
+                $newTaskStatus = 1;
             }
+
+            // 更新父任務狀態
+            Task::where('id', $taskId)->update(['status' => $newTaskStatus]);
+
 
             Task::where('id', $taskId)->update(['status' => $newTaskStatus]);
 

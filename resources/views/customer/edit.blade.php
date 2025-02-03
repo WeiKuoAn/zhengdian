@@ -130,7 +130,7 @@
                                         <label class="form-label">專案狀態</label>
                                         <select class="form-select" name="contract_status">
                                             @foreach ($contract_status as $status)
-                                                <option value="{{ $status->id }}" @if($data->contract_status == $status->id) selected @endif>{{ $status->name }}</option>
+                                                <option value="{{ $status->id }}" @if($data->cust_data->contract_status == $status->id) selected @endif>{{ $status->name }}</option>
                                             @endforeach
                                         </select>
                                     </div>
@@ -166,7 +166,7 @@
                 <div class="row mb-3">
                     <div class="col-12 text-center">
                         <button type="submit" class="btn btn-success waves-effect waves-light m-1"><i
-                                class="fe-check-circle me-1"></i>新增</button>
+                                class="fe-check-circle me-1"></i>儲存</button>
                         <button type="reset" class="btn btn-secondary waves-effect waves-light m-1"
                             onclick="history.go(-1)"><i class="fe-x me-1"></i>回上一頁</button>
                     </div>
