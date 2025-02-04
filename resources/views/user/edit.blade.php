@@ -27,14 +27,6 @@
                                         <input type="text" class="form-control" id="AddNew-Username" name="name" value="{{ $data->name }}">
                                     </div>
                                     <div class="mb-3">
-                                        <label class="form-label" for="AddNew-Username">帳號</label>
-                                        <input type="text" class="form-control" id="AddNew-Username" name="email" value="{{ $data->email }}" readonly>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label class="form-label" for="AddNew-Email">密碼</label>
-                                        <input type="text" class="form-control" id="AddNew-Email" name="password" value="{{ $data->password }}" readonly>
-                                    </div>
-                                    <div class="mb-3">
                                         <label class="form-label">群組</label>
                                         <select class="form-select" name="group_id">
                                             @foreach ($groups as $group)
@@ -50,6 +42,15 @@
                                             @endif
                                             <option value="2" selected>一般使用者</option>
                                         </select>
+                                    </div>
+                                    <div class="col-md-12">
+                                        <div class="mb-3">
+                                            <label class="form-label">狀態</label>
+                                            <select class="form-select" name="status">
+                                                <option value="0" @if($data->status == 0) selected @endif>開通</option>
+                                                <option value="1" @if($data->status == 1) selected @endif>停用</option>
+                                            </select>
+                                        </div>
                                     </div>
                                 </div>
                                 <div class="row mt-2">
