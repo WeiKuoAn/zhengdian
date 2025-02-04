@@ -7,8 +7,8 @@
     <div class="container-fluid">
 
         @include('layouts.shared.page-title', [
-            'title' => '專案狀態類別刪除',
-            'subtitle' => '專案狀態類別刪除',
+            'title' => '派工刪除',
+            'subtitle' => '派工管理',
         ])
 
         <div class="row">

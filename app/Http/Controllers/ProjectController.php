@@ -337,13 +337,18 @@ class ProjectController extends Controller
         // 查詢對應的專案
         $data = CustProject::where('id', $id)->first();
         $project_type = ProjectType::where('id', $request->type)->first();
-        $cust_data = User::where('id', $data->user_id)->first();
+        $cust_data = CustData::where('user_id', $data->user_id)->first();
         // 更新專案資料
         $data->date = $request->date;
-        $data->name = date('Ymd', strtotime($request->date)) . '-' . ($project_type->name ?? 'N/A') . '-' . ($cust_data->name ?? '000');;
+        $data->name = date('Ymd', strtotime($request->date)) . '-' . ($project_type->name ?? 'N/A') . '-' . ($cust_data->user_data->name ?? '000');;
         $data->type = $request->type;
         $data->check_status = $request->check_status;
         $data->save();
+
+        $cust_data->nas_link = $request->nas_link;
+        $cust_data->save();
+        
+
         // 返回專案列表頁面
         return redirect()->route('projects');
     }

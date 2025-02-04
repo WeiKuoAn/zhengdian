@@ -358,6 +358,7 @@
                                         name="estimated_end_date" required>
                                     <input type="time" class="form-control" id="editEstimatedEndTime"
                                         name="estimated_end_time" required>
+
                                 </div>
                             </div>
                             <div class="mb-3">
@@ -506,6 +507,22 @@
                     $(this).closest('.executor-entry').remove();
                 } else {
                     alert('至少需要保留一個執行人員條目');
+                }
+            });
+
+            $('form').on('submit', function(event) {
+                let formAction = $(this).attr('action'); // 取得當前表單的 action 屬性
+                let targetAction = "{{ route('project.task.data', $data->id) }}"; // 目標 action
+
+                // 只有當前表單的 action 符合時，才執行時間驗證
+                if (formAction === targetAction) {
+                    let timepickerValue = $('#24hours-timepicker').val().trim(); // 取得輸入值並去除空格
+
+                    if (timepickerValue === '') {
+                        alert('請輸入預計完成時間！'); // 顯示警告
+                        $('#24hours-timepicker').focus(); // 將焦點放到該輸入框
+                        event.preventDefault(); // 阻止表單提交
+                    }
                 }
             });
 
