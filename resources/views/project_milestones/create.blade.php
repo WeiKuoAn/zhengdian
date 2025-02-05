@@ -20,7 +20,8 @@
                             <div class="row">
                                 <div class="mb-3">
                                     <label class="form-label">客戶名稱<span class="text-danger">*</span></label>
-                                    <select class="form-control" data-toggle="select" data-width="100%" id="user_id" name="user_id">
+                                    <select class="form-control" data-toggle="select" data-width="100%" id="user_id"
+                                        name="user_id">
                                         @foreach ($cust_datas as $key => $cust_data)
                                             <option value="{{ $cust_data->id }}">{{ $cust_data->name }}</option>
                                         @endforeach
@@ -29,7 +30,8 @@
                                 </div>
                                 <div class="mb-3">
                                     <label class="form-label">專案/任務名稱：<span class="text-danger">*</span></label>
-                                    <select class="form-control" data-toggle="select" data-width="100%" id="project_id" name="project_id">
+                                    <select class="form-control" data-toggle="select" data-width="100%" id="project_id"
+                                        name="project_id">
                                         <option value="">無</option>
                                     </select>
                                 </div>
@@ -50,8 +52,10 @@
                                     @foreach ($check_statuss as $key => $check_status)
                                         <div class="row">
                                             <div class="col-4 mb-1">
-                                                <input type="text" class="form-control" name="milestone_types[]"
+                                                <input type="text" class="form-control" name="milestone_names[]"
                                                     value="{{ $check_status->name }}">
+                                                <input type="hidden" class="form-control" name="milestone_types[]"
+                                                    value="{{ $check_status->id }}">
                                             </div>
                                             <div class="col-4 mb-1">
                                                 <input type="date" class="form-control" name="milestone_dates[]"
@@ -121,6 +125,10 @@
                 }
             });
         });
-        $.ajaxSetup({ headers: { 'csrftoken' : '{{ csrf_token() }}' } });
+        $.ajaxSetup({
+            headers: {
+                'csrftoken': '{{ csrf_token() }}'
+            }
+        });
     </script>
 @endsection
