@@ -346,6 +346,7 @@ class CustomerController extends Controller
 
             $cust_data = new CustData();
             $cust_data->user_id = $user_data->id;
+            $cust_data->capital = $request->capital;
             $cust_data->nas_link = $request->nas_link;
             $cust_data->registration_no = $request->registration_no;
             $cust_data->county = $request->county;

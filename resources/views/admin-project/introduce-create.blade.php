@@ -1,4 +1,4 @@
-@extends('layouts.vertical', ['title' => '基本資料設定'])
+@extends('layouts.vertical', ['title' => 'CRM Customers'])
 
 @section('content')
     <!-- Start Content-->

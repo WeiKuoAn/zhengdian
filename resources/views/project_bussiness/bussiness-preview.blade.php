@@ -471,7 +471,7 @@
                                     <label class="form-check-label" for="carbonCheck">是否做過碳盤查？</label>
                                     @if ($cust_data->carbon_done == '0')
                                         <span class="text-danger"
-                                            id="carbonCheck_text">※否，請提供最近一年度全年度的油(柴油、汽油)、電(要注意一般用電或是契約用電)、水、天然氣費帳單</span>
+                                            id="carbonCheck_text"> </span>
                                     @elseif($cust_data->carbon_done == '1')
                                         <span class="text-danger" id="carbonCheck_text">※是，請提供碳排查報告</span>
                                     @endif
@@ -1083,7 +1083,7 @@
                         $(this).val(1);
                     } else {
                         $(this).val(0);
-                        $("#carbonCheck_text").html('※否，請提供最近一年度全年度的油(柴油、汽油)、電(要注意一般用電或是契約用電)、水、天然氣費帳單');
+                        $("#carbonCheck_text").html(' ');
                         $("#carbon_need_text").html('否 - 油(柴油、汽油)、電(要注意一般用電或是其他用電)、水、天然氣費帳單是 - 碳盤查報告書');
                     }
                     console.log($(this).val());

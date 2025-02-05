@@ -21,6 +21,7 @@ use App\Http\Controllers\CalendarCategoryController;
 use App\Http\Controllers\CalendarController;
 use App\Http\Controllers\ProjectBusinessController;
 use App\Http\Controllers\ProjectManufacturingController;
+use App\Http\Controllers\UserCustomerController;
 
 require __DIR__ . '/auth.php';
 
@@ -189,7 +190,6 @@ Route::delete('/api/calendar/events/{id}', [CalendarController::class, 'destroy'
 
 // routes/web.php
 Route::get('/api/projects/{user_id}', [ProjectController::class, 'getProjectsByUser']);
-
 Route::get('customer/introduce-create', [CustomerController::class, 'IntroduceCreate'])->name('cust.introduce.create');
 Route::post('customer/introduce-create', [CustomerController::class, 'IntroduceStore'])->name('cust.introduce.store');
 
@@ -208,6 +208,9 @@ Route::get('manufacturing-preview', [ProjectManufacturingController::class, 'Man
 Route::get('manufacturing-appendix', [ProjectManufacturingController::class, 'ManufacturingAppendix'])->name('manufacturing.appendix');
 
 
+Route::get('customer/{id}/introduce-edit', [UserCustomerController::class,'IntroduceEdit'])->name('user.introduce.edit');
+Route::post('customer/{id}/introduce-edit', [UserCustomerController::class,'IntroduceUpdate'])->name('user.introduce.update');
+    
 Route::get('', function () {
     Auth::logout();
     return view('auth.login');

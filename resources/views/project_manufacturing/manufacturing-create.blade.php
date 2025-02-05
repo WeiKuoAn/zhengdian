@@ -16,7 +16,7 @@
                     <div class="modal-body">
                         <div class="text-center">
                             <i class="bx bx-check-circle display-1 text-success"></i>
-                            <h4 class="mt-3">儲存製造類資料成功！</h4>
+                            <h4 class="mt-3">儲存資料成功！</h4>
                         </div>
                     </div>
                 </div><!-- /.modal-content -->
