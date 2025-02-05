@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\CustData;
 use App\Models\CustProject;
+use App\Models\User;
 use Carbon\Carbon;
 use App\Models\CustSocail;
 use App\Models\ManufactureSubsidy;
@@ -16,6 +17,13 @@ use Illuminate\Support\Facades\Auth;
 
 class UserCustomerController extends Controller
 {
+    public function index($id)
+    {
+        $datas = CustProject::where('user_id', $id)->get();
+        $user = User::where('id', $id)->first();
+        return view('admin-project.index')->with('datas', $datas)->with('user', $user);
+    }
+
     public function IntroduceEdit($id)
     {
         $years = [];

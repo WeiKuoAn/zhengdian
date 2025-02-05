@@ -54,8 +54,8 @@ Route::post('customer/edit/{id}', [CustomerController::class, 'update'])->name('
 Route::get('customer/del/{id}', [CustomerController::class, 'delete'])->name('customer.del');
 Route::post('customer/del/{id}', [CustomerController::class, 'destroy'])->name('customer.del.data');
 
-Route::get('customer/{id}/introduce-edit', [PresonCustomerController::class, 'IntroduceEdit'])->name('user.introduce.edit');
-Route::post('customer/{id}/introduce-edit', [PresonCustomerController::class, 'IntroduceUpdate'])->name('user.introduce.update');
+// Route::get('customer/{id}/introduce-edit', [PresonCustomerController::class, 'IntroduceEdit'])->name('user.introduce.edit');
+// Route::post('customer/{id}/introduce-edit', [PresonCustomerController::class, 'IntroduceUpdate'])->name('user.introduce.update');
 
 Route::get('projects/{id}', [PresonProjectController::class, 'index'])->name('user.project.index');
 
@@ -210,6 +210,7 @@ Route::get('manufacturing-appendix', [ProjectManufacturingController::class, 'Ma
 
 Route::get('customer/{id}/introduce-edit', [UserCustomerController::class,'IntroduceEdit'])->name('user.introduce.edit');
 Route::post('customer/{id}/introduce-edit', [UserCustomerController::class,'IntroduceUpdate'])->name('user.introduce.update');
+Route::get('customer/{id}/project', [UserCustomerController::class,'index'])->name('admin.project.index');
     
 Route::get('', function () {
     Auth::logout();

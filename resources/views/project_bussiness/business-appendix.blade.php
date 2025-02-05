@@ -118,7 +118,7 @@
             </div>
         </div>
 
-        <div class="row">
+        {{-- <div class="row">
             <div class="col-lg-12">
                 <div class="row">
                     <div class="col-12 mb-4">
@@ -187,7 +187,7 @@
                     </div>
                 </div>
             </div>
-        </div>
+        </div> --}}
     @endsection
 
     @section('script')
