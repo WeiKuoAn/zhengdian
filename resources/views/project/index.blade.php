@@ -67,7 +67,7 @@
                                         {{-- <th scope="col">主要聯絡人</th>
                                         <th scope="col">聯絡人職稱</th>
                                         <th scope="col">聯絡人電話</th> --}}
-                                        <th scope="col">狀態</th>
+                                        <th scope="col">階段</th>
                                         <th scope="col" style="width: 200px;">操作</th>
                                     </tr>
                                 </thead>
