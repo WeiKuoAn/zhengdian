@@ -2,11 +2,11 @@
     <div class="logo-box">
         <a href="javascript:void(0);" class="logo-light">
             <img src="/images/logo-light.png" alt="logo" class="logo-lg" />
-            <img src="/images/logo-sm.png" alt="small logo" class="logo-sm" />
+            <img src="/images/LOGO.png" alt="small logo" class="logo-sm" />
         </a>
         <a href="javascript:void(0);" class="logo-dark">
             <img src="/images/logo-dark.png" alt="dark logo" class="logo-lg" />
-            <img src="/images/logo-sm.png" alt="small logo" class="logo-sm" />
+            <img src="/images/LOGO.png" alt="small logo" class="logo-sm" />
         </a>
     </div>
 

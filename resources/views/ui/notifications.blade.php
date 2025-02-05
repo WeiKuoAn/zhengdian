@@ -26,7 +26,7 @@
                                 <div class="p-3">
                                     <div class="toast fade show" role="alert" aria-live="assertive" aria-atomic="true" data-bs-toggle="toast">
                                         <div class="toast-header">
-                                            <img src="/images/logo-sm.png" alt="brand-logo" height="12" class="me-1" />
+                                            <img src="/images/LOGO.png" alt="brand-logo" height="12" class="me-1" />
                                             <strong class="me-auto">UBold</strong>
                                             <small>11 mins ago</small>
                                             <button type="button" class="btn-close ms-2" data-bs-dismiss="toast" aria-label="Close"></button>
@@ -47,7 +47,7 @@
                                 <div class="p-3 bg-light">
                                     <div class="toast fade show" role="alert" aria-live="assertive" aria-atomic="true" data-bs-toggle="toast">
                                         <div class="toast-header">
-                                            <img src="/images/logo-sm.png" alt="brand-logo" height="12" class="me-1" />
+                                            <img src="/images/LOGO.png" alt="brand-logo" height="12" class="me-1" />
                                             <strong class="me-auto">UBold</strong>
                                             <small>11 mins ago</small>
                                             <button type="button" class="btn-close ms-2" data-bs-dismiss="toast" aria-label="Close"></button>
@@ -74,7 +74,7 @@
                                             <!-- Then put toasts within -->
                                             <div class="toast fade show" role="alert" aria-live="assertive" aria-atomic="true" data-bs-toggle="toast">
                                                 <div class="toast-header">
-                                                    <img src="/images/logo-sm.png" alt="brand-logo" height="12" class="me-1" />
+                                                    <img src="/images/LOGO.png" alt="brand-logo" height="12" class="me-1" />
                                                     <strong class="me-auto">UBold</strong>
                                                     <small class="text-muted">just now</small>
                                                     <button type="button" class="btn-close ms-2" data-bs-dismiss="toast" aria-label="Close"></button>
@@ -87,7 +87,7 @@
 
                                             <div class="toast fade show" role="alert" aria-live="assertive" aria-atomic="true" data-bs-toggle="toast">
                                                 <div class="toast-header">
-                                                    <img src="/images/logo-sm.png" alt="brand-logo" height="12" class="me-1" />
+                                                    <img src="/images/LOGO.png" alt="brand-logo" height="12" class="me-1" />
                                                     <strong class="me-auto">UBold</strong>
                                                     <small class="text-muted">2 seconds ago</small>
                                                     <button type="button" class="btn-close ms-2" data-bs-dismiss="toast" aria-label="Close"></button>
@@ -112,7 +112,7 @@
                                         <!-- Then put toasts within -->
                                         <div class="toast fade show" role="alert" aria-live="assertive" aria-atomic="true" data-bs-toggle="toast">
                                             <div class="toast-header">
-                                                <img src="/images/logo-sm.png" alt="brand-logo" height="12" class="me-1" />
+                                                <img src="/images/LOGO.png" alt="brand-logo" height="12" class="me-1" />
                                                 <strong class="me-auto">UBold</strong>
                                                 <small>11 mins ago</small>
                                                 <button type="button" class="btn-close ms-2" data-bs-dismiss="toast" aria-label="Close"></button>
@@ -205,7 +205,7 @@
                             <div class="toast-container position-absolute p-3" id="toastPlacement">
                                 <div class="toast fade show">
                                     <div class="toast-header">
-                                        <img src="/images/logo-sm.png" alt="brand-logo" height="12" class="me-1" />
+                                        <img src="/images/LOGO.png" alt="brand-logo" height="12" class="me-1" />
                                         <strong class="me-auto">UBold</strong>
                                         <small>11 mins ago</small>
                                     </div>
