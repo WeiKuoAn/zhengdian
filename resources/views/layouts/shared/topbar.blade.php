@@ -475,16 +475,16 @@
                         <h6 class="text-overflow m-0">Welcome !</h6>
                     </div>
 
-                    <!-- item-->
+                    {{-- <!-- item-->
                     <a href="javascript:void(0);" class="dropdown-item notify-item">
                         <i class="fe-user"></i>
                         <span>My Account</span>
-                    </a>
+                    </a> --}}
 
                     <!-- item-->
-                    <a href="javascript:void(0);" class="dropdown-item notify-item">
+                    <a href="{{ route("user-password") }}" class="dropdown-item notify-item">
                         <i class="fe-settings"></i>
-                        <span>Settings</span>
+                        <span>變更密碼</span>
                     </a>
 
                     <!-- item-->

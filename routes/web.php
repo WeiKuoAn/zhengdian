@@ -211,6 +211,9 @@ Route::get('manufacturing-appendix', [ProjectManufacturingController::class, 'Ma
 Route::get('customer/{id}/introduce-edit', [UserCustomerController::class,'IntroduceEdit'])->name('user.introduce.edit');
 Route::post('customer/{id}/introduce-edit', [UserCustomerController::class,'IntroduceUpdate'])->name('user.introduce.update');
 Route::get('customer/{id}/project', [UserCustomerController::class,'index'])->name('admin.project.index');
+
+Route::get('user-password', [UserController::class, 'password_show'])->name('user-password');
+Route::post('user-password', [UserController::class, 'password_update'])->name('user-password.data');
     
 Route::get('', function () {
     Auth::logout();

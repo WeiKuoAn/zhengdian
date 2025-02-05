@@ -107,7 +107,7 @@
                                                             class="mdi mdi-arrow-down-drop-circle"></i></a>
                                                     <div class="dropdown-menu dropdown-menu-end">
                                                         <a class="dropdown-item"
-                                                            href="{{ route('user.introduce.update', $data->user_id) }}"><i
+                                                            href="{{ route('customer.edit.data', $data->user_id) }}"><i
                                                                 class="mdi mdi-pencil me-2 text-muted font-18 vertical-middle"></i>編輯客戶帳戶資料</a>
                                                         {{-- <a class="dropdown-item" href="#"><i class="mdi mdi-delete me-2 text-muted font-18 vertical-middle"></i>刪除</a> --}}
                                                         <a class="dropdown-item" href="{{ route('user.introduce.edit', $data->user_id) }}"><i
