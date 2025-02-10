@@ -53,8 +53,8 @@
                                         <th scope="col">會議時間</th>
                                         <th scope="col">會議名稱</th>
                                         <th scope="col">地點</th>
-                                        <th scope="col">錚典待辦</th>
-                                        <th scope="col">客戶待辦</th>
+                                        <!---<th scope="col">錚典待辦</th>--->
+                                        <!---<th scope="col">客戶待辦</th>--->
                                         <th scope="col">NAS連結</th>
                                         <th scope="col" style="width: 200px;">操作</th>
                                     </tr>
@@ -67,8 +67,8 @@
                                             <td>{{ $data->date }}</td>
                                             <td>{{ $data->name }}</td>
                                             <td>{{ $data->agenda }}</td>
-                                            <td>{{ $data->to_do }}</td>
-                                            <td>{{ $data->cust_to_do }}</td>
+                                           <!--- <td>{{ $data->to_do }}</td>---->
+                                           <!--- <td>{{ $data->cust_to_do }}</td>---->
                                             <td><a href="{{ $data->nas_link }}">連結</a></td>
                                             <td align="center">
                                                 <a href="{{ route('meetData.edit', $data->id) }}" class="action-icon"> <i class="mdi mdi-square-edit-outline"></i></a>
