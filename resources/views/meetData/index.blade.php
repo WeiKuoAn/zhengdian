@@ -66,7 +66,7 @@
                                             <td>{{ $data->user_data->name }}</td>
                                             <td>{{ $data->date }}</td>
                                             <td>{{ $data->name }}</td>
-                                            <td>{{ $data->agenda }}</td>
+                                            <td>{{ $data->place }}</td>
                                            <!--- <td>{{ $data->to_do }}</td>---->
                                            <!--- <td>{{ $data->cust_to_do }}</td>---->
                                             <td><a href="{{ $data->nas_link }}">連結</a></td>
