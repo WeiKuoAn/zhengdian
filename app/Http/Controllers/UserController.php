@@ -117,7 +117,7 @@ class UserController extends Controller
         $data->job_id = $request->job_id;
         $data->status = $request->status;
         $data->save();
-        return redirect()->route('user.index');
+        return redirect()->route('users');
     }
 
     /**

@@ -7,11 +7,11 @@
             <div class="logo-box">
                 <a href="#" class="logo-light">
                     <img src="/images/logo-light.png" alt="logo" class="logo-lg">
-                    <img src="/images/logo-sm.png" alt="small logo" class="logo-sm">
+                    <img src="/images/LOGO.png" alt="small logo" class="logo-sm">
                 </a>
                 <a href="#" class="logo-dark">
                     <img src="/images/logo-dark.png" alt="dark logo" class="logo-lg">
-                    <img src="/images/logo-sm.png" alt="small logo" class="logo-sm">
+                    <img src="/images/LOGO.png" alt="small logo" class="logo-sm">
                 </a>
             </div>
 
@@ -475,16 +475,16 @@
                         <h6 class="text-overflow m-0">Welcome !</h6>
                     </div>
 
-                    <!-- item-->
+                    {{-- <!-- item-->
                     <a href="javascript:void(0);" class="dropdown-item notify-item">
                         <i class="fe-user"></i>
                         <span>My Account</span>
-                    </a>
+                    </a> --}}
 
                     <!-- item-->
-                    <a href="javascript:void(0);" class="dropdown-item notify-item">
+                    <a href="{{ route("user-password") }}" class="dropdown-item notify-item">
                         <i class="fe-settings"></i>
-                        <span>Settings</span>
+                        <span>變更密碼</span>
                     </a>
 
                     <!-- item-->

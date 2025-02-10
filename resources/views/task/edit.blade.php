@@ -7,8 +7,8 @@
     <div class="container-fluid">
 
         @include('layouts.shared.page-title', [
-            'title' => '專案狀態類別編輯',
-            'subtitle' => '專案狀態類別編輯',
+            'title' => '派工編輯',
+            'subtitle' => '派工管理',
         ])
 
         <div class="row">
@@ -23,19 +23,23 @@
                                     <select class="form-control" data-toggle="select" data-width="100%" name="project_id">
                                         <option value="" selected>請選擇</option>
                                         @foreach ($cust_projects as $key => $cust_project)
-                                            <option value="{{ $cust_project->id }}"  {{ $data->project_id == $cust_project->id ? 'selected' : '' }}>
+                                            <option value="{{ $cust_project->id }}"
+                                                {{ $data->project_id == $cust_project->id ? 'selected' : '' }}>
                                                 【{{ $cust_project->user_data->name }}】{{ $cust_project->name }}</option>
                                         @endforeach
                                     </select>
                                 </div>
                                 <div class="mb-3">
                                     <label class="form-label">專案執行階段：<span class="text-danger">*</span></label>
-                                    <select class="form-control" data-toggle="select2" data-width="100%" name="check_status_id">
+                                    <select class="form-control" data-toggle="select2" data-width="100%"
+                                        name="check_status_id">
                                         <option value="" selected>請選擇</option>
                                         @foreach ($check_statuss as $key => $check_status)
                                             <optgroup label="{{ $check_status->name }}">
                                                 @foreach ($check_status->check_childrens as $num => $check_children)
-                                                    <option value="{{ $check_children->id }}" {{ $data->check_status_id == $check_children->id ? 'selected' : '' }}>{{ $check_children->name }}</option>
+                                                    <option value="{{ $check_children->id }}"
+                                                        {{ $data->check_status_id == $check_children->id ? 'selected' : '' }}>
+                                                        {{ $check_children->name }}</option>
                                                 @endforeach
                                             </optgroup>
                                         @endforeach
@@ -100,17 +104,21 @@
                                     <textarea class="form-control" id="floatingTextarea" name="comments" rows="3">{{ $data->comments }}</textarea>
                                 </div>
                                 <div class="mb-3">
-                                    <label for="project-priority" class="form-label">狀態<span
+                                    <label for="project-priority" class="form-label">主要派工人<span
                                             class="text-danger">*</span></label>
-                                    <select class="form-control" data-toggle="select" data-width="100%" name="status">
-                                        <option value="1" {{ $data->status == 1 ? 'selected' : '' }}>送出派工</option>
-                                        <option value="2" {{ $data->status == 2 ? 'selected' : '' }}>接收派工</option>
-                                        <option value="3" {{ $data->status == 3 ? 'selected' : '' }}>進行中</option>
-                                        <option value="4" {{ $data->status == 4 ? 'selected' : '' }}>移轉</option>
-                                        <option value="8" {{ $data->status == 8 ? 'selected' : '' }}>人員已完成，待確認</option>
-                                        <option value="9" {{ $data->status == 9 ? 'selected' : '' }}>完成</option>
+                                    <input type="text" class="form-control" name="created_by" value="{{ $data->user_data->name }}"  readonly>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="project-priority" class="form-label">優先序<span
+                                            class="text-danger">*</span></label>
+                                    <select class="form-control" data-toggle="select" data-width="100%" name="priority">
+                                        <option value="0" {{ $data->priority == 0 ? 'selected' : '' }}>緊急</option>
+                                        <option value="1" {{ $data->priority == 1 ? 'selected' : '' }}>高</option>
+                                        <option value="2" {{ $data->priority == 2 ? 'selected' : '' }}>中</option>
+                                        <option value="3" {{ $data->priority == 3 ? 'selected' : '' }}>低</option>
                                     </select>
                                 </div>
+                                
                             </div> <!-- end col-->
                     </div>
                     <!-- end row -->
@@ -155,6 +163,51 @@
                 if ($('.executor-entry').length > 1) {
                     $(this).closest('.executor-entry').remove();
                 }
+            });
+
+            $('form').on('submit', function(event) {
+                let timepickerValue = $('#24hours-timepicker').val().trim(); // 取得輸入值並去除空格
+
+                if (timepickerValue === '') {
+                    alert('請輸入預計完成時間！'); // 顯示警告
+                    $('#24hours-timepicker').focus(); // 將焦點放到該輸入框
+                    event.preventDefault(); // 阻止表單提交
+                }
+            });
+        });
+
+        $(document).ready(function() {
+            // 當 check_status_id 改變時執行 AJAX 請求
+            $('select[name="check_status_id"]').change(function() {
+                let checkStatusId = $(this).val(); // 獲取選中的 check_status_id 值
+                let templateSelect = $('select[name="template_id"]'); // 目標 template_id 的 <select>
+
+                // 清空現有選項
+                templateSelect.empty().append('<option value="">請選擇...</option>');
+
+                // 若 check_status_id 為空，停止執行
+                if (!checkStatusId) {
+                    return;
+                }
+
+                // 發送 AJAX 請求
+                $.ajax({
+                    url: '/get-tasktemplate-id', // 請求的路由
+                    method: 'GET',
+                    data: {
+                        check_status_id: checkStatusId
+                    }, // 傳遞的參數
+                    success: function(response) {
+                        // 動態添加回傳的資料到 <select> 選單
+                        response.forEach(function(item) {
+                            templateSelect.append('<option value="' + item.id + '">' +
+                                item.name + '</option>');
+                        });
+                    },
+                    error: function() {
+                        alert('無法加載資料，請稍後再試！');
+                    }
+                });
             });
         });
     </script>

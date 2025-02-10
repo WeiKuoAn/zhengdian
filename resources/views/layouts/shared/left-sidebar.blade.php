@@ -105,7 +105,7 @@
                     <a href="{{ route('person.task') }}" class="menu-link">
                         <span class="menu-icon"><i data-feather="codesandbox"></i></span>
                         <span class="menu-text"> 個人待辦 </span>
-                        <span class="badge bg-success rounded-pill ms-auto">4</span>
+                        {{-- <span class="badge bg-success rounded-pill ms-auto">4</span> --}}
                     </a>
                 </li>
 
@@ -318,6 +318,11 @@
                                             class="menu-text">用戶列表</span></a>
                                 </li>
                                 <li class="menu-item">
+                                    <a class="menu-link" href="{{ route('users') }}"
+                                        class="{{ request()->is('users') ? 'active' : '' }}"><span
+                                            class="menu-text">群組列表</span></a>
+                                </li>
+                                <li class="menu-item">
                                     <a class="menu-link" href="{{ route('user.create') }}"
                                         class="{{ request()->is('user.create') ? 'active' : '' }}"><span
                                             class="menu-text">新增用戶</span></a>
@@ -334,7 +339,7 @@
                         <span class="menu-text"> 基本資料設定 </span>
                     </a>
                 </li>
-                @foreach (Auth::user()->project_datas as $project_data)
+                {{-- @foreach (Auth::user()->project_datas as $project_data)
                     @if ($project_data->status == 0)
                         @if ($project_data->type == 0)
                             <li class="menu-item">
@@ -393,7 +398,7 @@
                             </li>
                         @endif
                     @endif
-                @endforeach
+                @endforeach --}}
             @endif
 
         </ul>

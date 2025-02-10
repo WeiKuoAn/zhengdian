@@ -6,7 +6,7 @@
 
         @include('layouts.shared.page-title', [
             'title' => '基本資料設定',
-            'subtitle' => Auth::user()->name,
+            'subtitle' => $cust_data->user_data->name,
         ])
         <!--  successfully modal  -->
         <div id="success-btn" class="modal fade" tabindex="-1" aria-labelledby="success-btnLabel" aria-hidden="true"
@@ -22,7 +22,7 @@
                 </div><!-- /.modal-content -->
             </div><!-- /.modal-dialog -->
         </div><!-- /.modal -->
-        <form action="{{ route('cust.introduce.store') }}" method="POST">
+        <form action="{{ route('user.introduce.update',$cust_data->user_id) }}" method="POST">
             @csrf
             <div class="row">
                 <div class="col-xl-12">

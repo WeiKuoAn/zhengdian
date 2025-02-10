@@ -9,8 +9,8 @@
     <div class="container-fluid">
 
         @include('layouts.shared.page-title', [
-            'title' => '專案狀態類別新增',
-            'subtitle' => '專案狀態類別新增',
+            'title' => '派工新增',
+            'subtitle' => '派工管理',
         ])
 
         <div class="row">
@@ -79,7 +79,7 @@
                                             <input type="date" class="form-control" name="estimated_end_date"
                                                 placeholder="執行內容" required>
                                             <input type="text" id="24hours-timepicker" name="estimated_end_time"
-                                                class="form-control" placeholder="時：分" required>
+                                                class="form-control" placeholder="時：分" value="" required>
                                         </div>
                                     </div>
                                 </div>
@@ -155,6 +155,16 @@
             $(document).on('click', '.remove-executor', function() {
                 if ($('.executor-entry').length > 1) {
                     $(this).closest('.executor-entry').remove();
+                }
+            });
+
+            $('form').on('submit', function(event) {
+                let timepickerValue = $('#24hours-timepicker').val().trim(); // 取得輸入值並去除空格
+
+                if (timepickerValue === '') {
+                    alert('請輸入預計完成時間！'); // 顯示警告
+                    $('#24hours-timepicker').focus(); // 將焦點放到該輸入框
+                    event.preventDefault(); // 阻止表單提交
                 }
             });
         });

@@ -1,4 +1,4 @@
-@extends('layouts.vertical', ['title' => 'CRM Customers'])
+@extends('layouts.vertical', ['title' => '編輯客戶'])
 
 @section('content')
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -40,7 +40,7 @@
                                         class="text-danger">*</span>
                                     <div class="mb-3 row">
                                         <div class="col-9">
-                                            <input class="form-control me-auto" type="text" value="{{$data->password}}" name="password"
+                                            <input class="form-control me-auto" type="password" value="{{$data->password}}" name="password"
                                                 placeholder="請產生密碼" required>
                                         </div>
                                         <div class="col-3">
@@ -65,7 +65,7 @@
                                 <div class="col-md-6">
                                     <div class="mb-3">
                                         <label class="form-label" for="AddNew-Phone">公司資本額</label>
-                                        <input type="text" class="form-control" name="capital" value="{{$data->cust_data->capital }}" required>
+                                        <input type="text" class="form-control" name="capital" value="{{$data->cust_data->capital }}">
                                     </div>
                                 </div>
 

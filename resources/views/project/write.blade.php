@@ -633,7 +633,7 @@
                                     <button class="btn btn-success" type="submit" id="btn_storage"><i
                                             class="bx bx-file me-1"></i> 確認儲存 </button>
 
-                                    <a href="{{ route('business.appendix') }}">
+                                    <a href="{{ route('business.appendix',$project->id) }}">
                                         <button class="btn btn-primary" type="button" id="btn_submit"><i
                                                 class=" bx bx-check me-1"></i> 查看附件 </button>
                                     </a>

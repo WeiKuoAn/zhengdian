@@ -13,9 +13,11 @@ class CalendarController extends Controller
     public function getEvents()
     {
         $events = ProjectMilestones::all()->map(function ($event) {
+            // dd($event->task_data);
             return [
                 'id' => $event->id,
-                'title' => $event->task_data->name . ' - ' . $event->project_data->user_data->name,
+                'title' => ($event->task_data?->name ?? '未指定任務') . ' - ' .
+                    ($event->project_data?->user_data?->name ?? '未指定使用者'),
                 'start' => $event->order_date, // 表訂時間
                 'end' => $event->milestone_date, // 預計完成時間
                 'className' => $event->calendar_category_data->classname, // 預計完成時間

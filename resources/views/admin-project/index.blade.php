@@ -4,8 +4,8 @@
     <!-- Start Content-->
     <div class="container-fluid">
 
-        @include('layouts.shared.page-title', ['title' => '專案管理', 'subtitle' => '專案列表'])
-        <div class="row">
+        @include('layouts.shared.page-title', ['title' => '專案管理', 'subtitle' => $user->name.'-專案列表'])
+        {{-- <div class="row">
             <div class="col-12">
                 <div class="card">
                     <div class="card-body">
@@ -51,7 +51,7 @@
                     </div>
                 </div> <!-- end card -->
             </div><!-- end col-->
-        </div>
+        </div> --}}
         <div class="row">
             <div class="col-12">
                 <div class="card">
@@ -67,13 +67,13 @@
                                         {{-- <th scope="col">主要聯絡人</th>
                                         <th scope="col">聯絡人職稱</th>
                                         <th scope="col">聯絡人電話</th> --}}
-                                        <th scope="col">階段</th>
+                                        <th scope="col">狀態</th>
                                         <th scope="col" style="width: 200px;">操作</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     @foreach ($datas as $key => $data)
-                                        <tr>
+                                        <tr align="center">
                                             <td>{{ $key + 1 }}</td>
                                             <td>{{ $data->year }}年</td>
                                             <td>
@@ -143,7 +143,6 @@
                                 </tbody>
                             </table>
                         </div>
-                        {{ $datas->links('vendor.pagination.bootstrap-5') }}
                     </div> <!-- end card-body-->
                 </div> <!-- end card-->
             </div> <!-- end col -->

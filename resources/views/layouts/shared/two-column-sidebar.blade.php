@@ -5,7 +5,7 @@
 
         <div class="logo-box">
             <a href="#">
-                <img src="/images/logo-sm.png" alt="small logo" height="28">
+                <img src="/images/LOGO.png" alt="small logo" height="28">
             </a>
         </div>
 
@@ -54,11 +54,11 @@
         <div class="logo-box">
             <a href="#" class="logo-light">
                 <img src="/images/logo-light.png" alt="logo" class="logo-lg">
-                <img src="/images/logo-sm.png" alt="small logo" class="logo-sm">
+                <img src="/images/LOGO.png" alt="small logo" class="logo-sm">
             </a>
             <a href="#" class="logo-dark">
                 <img src="/images/logo-dark.png" alt="dark logo" class="logo-lg">
-                <img src="/images/logo-sm.png" alt="small logo" class="logo-sm">
+                <img src="/images/LOGO.png" alt="small logo" class="logo-sm">
             </a>
         </div>
 

@@ -80,15 +80,14 @@
                                     <label for="project-priority" class="form-label">專案類型<span
                                             class="text-danger">*</span></label>
                                     <select class="form-control" data-toggle="select" data-width="100%" name="type">
-                                        <option value="0" @if ($data->type == 0) selected @endif>商業服務業
-                                        </option>
-                                        <option value="1" @if ($data->type == 1) selected @endif>製造業
-                                        </option>
+                                        @foreach ($project_types as $key => $project_type)
+                                            <option value="{{ $project_type->id }}"  @if ($data->type == $project_type->id) selected @endif>{{ $project_type->name }}</option>
+                                        @endforeach
                                     </select>
                                 </div>
                                 <div class="mb-3">
                                     <label class="form-label">NAS連結<span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control" name="nas_link" value="{{ $data->nas_link }}" required>
+                                    <input type="text" class="form-control" name="nas_link" value="{{ $data->cust_data->nas_link }}" required>
                                 </div>
                                 {{-- <div class="mb-3">
                                     <label class="form-label">計畫登入密碼<span class="text-danger">*</span></label>
@@ -97,7 +96,7 @@
                                 <div class="mb-3">
                                     <label class="form-label">專案執行階段：<span class="text-danger">*</span></label>
                                     <select class="form-control" data-toggle="select2" data-width="100%"
-                                        name="check_status">
+                                        name="check_status" required>
                                         <option value="" selected>請選擇</option>
                                         @foreach ($check_statuss as $key => $check_status)
                                             <optgroup label="{{ $check_status->name }}">

@@ -7,8 +7,8 @@
     <div class="container-fluid">
 
         @include('layouts.shared.page-title', [
-            'title' => '專案狀態類別刪除',
-            'subtitle' => '專案狀態類別刪除',
+            'title' => '派工刪除',
+            'subtitle' => '派工管理',
         ])
 
         <div class="row">
@@ -100,6 +100,11 @@
                                     <textarea class="form-control" id="floatingTextarea" name="comments" rows="3">{{ $data->comments }}</textarea>
                                 </div>
                                 <div class="mb-3">
+                                    <label for="project-priority" class="form-label">主要派工人<span
+                                            class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" name="created_by" value="{{ $data->user_data->name }}"  readonly>
+                                </div>
+                                <div class="mb-3">
                                     <label for="project-priority" class="form-label">狀態<span
                                             class="text-danger">*</span></label>
                                     <select class="form-control" data-toggle="select" data-width="100%" name="status">
@@ -111,6 +116,7 @@
                                         <option value="9" {{ $data->status == 9 ? 'selected' : '' }}>完成</option>
                                     </select>
                                 </div>
+                                
                             </div> <!-- end col-->
                     </div>
                     <!-- end row -->

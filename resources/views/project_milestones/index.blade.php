@@ -38,8 +38,8 @@
                                     @foreach ($datas as $key => $data)
                                         <tr>
                                             <td>{{ $key+1 }}</td>
-                                            <td>{{ $data->project_data->user_data->name }}</td>
-                                            <td>{{ $data->task_data->name }}</td>
+                                            <td>@if(isset($data->project_data->user_data)){{ $data->project_data->user_data->name }}@endif</td>
+                                            <td>@if(isset($data->task_data)){{ $data->task_data->name }}@endif</td>
                                             <td>{{ $data->order_date }}</td>
                                             <td>{{ $data->milestone_date }}</td>
                                             <td>{{ $data->formal_date }}</td>

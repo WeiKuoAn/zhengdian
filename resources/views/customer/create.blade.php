@@ -1,4 +1,4 @@
-@extends('layouts.vertical', ['title' => 'CRM Customers'])
+@extends('layouts.vertical', ['title' => '新增客戶'])
 
 @section('content')
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
