@@ -114,4 +114,17 @@
 @endsection
 @section('script')
     @vite(['resources/js/pages/form-pickers.init.js'])
+    <script>
+        $(document).ready(function() {
+            $('form').on('submit', function(event) {
+                let timepickerValue = $('#24hours-timepicker').val().trim(); // 取得輸入值並去除空格
+
+                if (timepickerValue === '') {
+                    alert('請輸入預計完成時間！'); // 顯示警告
+                    $('#24hours-timepicker').focus(); // 將焦點放到該輸入框
+                    event.preventDefault(); // 阻止表單提交
+                }
+            });
+        });
+    </script>
 @endsection
