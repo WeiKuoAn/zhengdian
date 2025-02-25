@@ -16,9 +16,52 @@ class PersonTaskController extends Controller
 {
     public function index(Request $request)
     {
-        $datas = TaskItem::where('user_id', Auth::user()->id)->get();
-        // dd($datas);
-        return view('person_task.index')->with('datas', $datas);
+        // $datas = TaskItem::where('user_id', Auth::user()->id)->get();
+        // // 篩選客戶名稱
+        // $project_name = $request->input('project_name');
+        // if ($project_name) {
+        //     $projectIds = CustProject::where('name', 'like', '%' . $project_name . '%')->pluck('id'); // 獲取符合條件的用戶 ID 列表
+        //     $datas->whereIn('project_id', $projectIds); // 在查詢中篩選符合專案 ID 的資料
+
+        // } 
+        // $project_data_name = $request->input('project_data_name');
+        // if ($project_data_name) {
+        //     $datas->whereHas('project_data.project_data', function ($query) use ($project_data_name) {
+        //         $query->where('name', 'like', '%' . $project_data_name . '%');
+        //     });
+        // }
+
+
+        // return view('person_task.index')->with('datas', $datas);
+        // return view('person_task.index',['request'=>$request]);
+         // 初始化查詢構建器
+         $datas = TaskItem::where('user_id', Auth::user()->id);
+
+      
+         $project_name = $request->input('project_name');
+         $startDate = $request->input('startDate');
+         $endDate = $request->input('endDate');
+
+         
+         // 篩選專案名稱
+         if ($project_name) {
+             $projectIds = CustProject::where('name', 'like', '%' . $project_name . '%')->pluck('id');
+             
+             
+             $datas->whereIn('project_id', $projectIds);
+         }
+         
+         if ($startDate && $endDate) {
+            $datas->whereBetween('estimated_end', [$startDate, $endDate]);
+        }
+         // 執行查詢並獲取結果
+         $datas = $datas->get();
+        
+         
+         return view('person_task.index', [
+             'datas' => $datas,
+             'request' => $request
+         ]);
     }
 
     /**
