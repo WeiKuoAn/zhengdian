@@ -22,6 +22,8 @@ use App\Http\Controllers\CalendarController;
 use App\Http\Controllers\ProjectBusinessController;
 use App\Http\Controllers\ProjectManufacturingController;
 use App\Http\Controllers\UserCustomerController;
+use App\Models\User; // ✅ 確保引用 Customer Model
+
 
 require __DIR__ . '/auth.php';
 
@@ -36,6 +38,9 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
 Route::get('/home', function () {
     return view('index');
 })->middleware('auth')->name('home');
+
+/**/
+Route::get('/get-customer-account/{id}', [ProjectController::class, 'getCustomerAccount']);
 
 
 /*用戶管理*/
@@ -122,6 +127,7 @@ Route::get('project/background/{id}', [ProjectController::class, 'background'])-
 Route::post('project/background/{id}', [ProjectController::class, 'background_update'])->name('project.background.data');//02
 Route::get('project/write/{id}', [ProjectController::class, 'write'])->name('project.write');
 Route::post('project/write/{id}', [ProjectController::class, 'write_update'])->name('project.write.data');
+Route::delete('/project/{id}', [ProjectController::class, 'destroy'])->name('projects.destroy');
 
 Route::get('project/send/{id}', [ProjectController::class, 'send'])->name('project.send');
 // Route::get('project/send/{id}', [ProjectController::class, 'send_update'])->name('project.send.data');
@@ -133,6 +139,7 @@ Route::put('project/task/update/{id}', [ProjectController::class, 'task_update']
 Route::delete('project/task/delete/{id}', [ProjectController::class, 'task_delete'])->name('project.task.delete.data');
 Route::get('/api/task/{id}', [TaskController::class, 'getTaskDetails']);
 
+Route::get('/get-customer-account/{id}', [ProjectController::class, 'getCustomerAccount']);
 
 Route::get('project/midterm/{id}', [ProjectController::class, 'midterm'])->name('project.midterm');
 // Route::get('project/midterm/{id}', [ProjectController::class, 'midterm_update'])->name('project.midterm.data');
@@ -172,6 +179,7 @@ Route::get('/person/task/create', [PersonTaskController::class, 'create'])->name
 Route::post('/person/task/create', [PersonTaskController::class, 'store'])->name('person.task.create.data');
 Route::get('/person/task/edit/{id}', [PersonTaskController::class, 'show'])->name('person.task.edit');
 Route::post('/person/task/edit/{id}', [PersonTaskController::class, 'update'])->name('person.task.edit.data');
+Route::get('/person/task/edit/{id}', [TaskController::class, 'edit']);
 
 //行事曆類別
 Route::get('CalendarCategory', [CalendarCategoryController::class, 'index'])->name('CalendarCategorys');

@@ -31,20 +31,21 @@
                                 <div class="mb-3">
                                     <label for="project-priority" class="form-label">客戶名稱<span
                                             class="text-danger">*</span></label>
-                                    <select class="form-control" data-toggle="select" data-width="100%" name="user_id">
+                                    <select class="form-control" data-toggle="select" data-width="100%" name="user_id" id="cust_select">
                                         <option value="" selected>請選擇</option>
                                         @foreach ($cust_datas as $key => $cust_data)
                                             <option value="{{ $cust_data->id }}">{{ $cust_data->name }}</option>
                                         @endforeach
+                                        
                                     </select>
                                 </div>
                                 <div class="mb-3">
                                     <label class="form-label">計畫登入帳號<span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control" name="account" value="" required>
+                                    <input type="text" class="form-control" name="account" value="" required id="cust_account" readonly>
                                 </div>
                                 <div class="mb-3">
                                     <label class="form-label">計畫登入密碼<span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control" name="password" value="" required>
+                                    <input type="password" class="form-control" name="password" value="" required id="cust_password" readonly>
                                 </div>
                                 <div class="mb-3">
                                     <label class="form-label">專案執行階段：<span class="text-danger">*</span></label>
@@ -80,6 +81,45 @@
 
     </div> <!-- container -->
 @endsection
+
+
 @section('script')
+<!---根據user抓取帳號密碼 ---->
+
     @vite(['resources/js/pages/form-advanced.init.js'])
+    <script>
+       document.addEventListener("DOMContentLoaded", function() {
+    let cust_select = document.getElementById("cust_select");
+    let cust_account = document.getElementById("cust_account");
+    let cust_password = document.getElementById("cust_password");
+
+    cust_select.addEventListener("change", function() {
+        let id = this.value;  // 確保用的是 id 而不是 customer_id
+
+        // 檢查是否選擇了有效的客戶 ID
+        if (id) {
+            fetch(`/get-customer-account/${id}`)
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data);  // 檢查返回的資料
+
+                    // 如果返回的資料有帳號和密碼，則填充表單
+                    if (data.cust_account && data.cust_password) {
+                        cust_account.value = data.cust_account;
+                        cust_password.value = data.cust_password;
+                    } else {
+                        cust_account.value = "查無帳號資料";
+                        cust_password.value = "查無密碼資料";
+                    }
+                })
+                .catch(error => console.error("錯誤:", error));
+        } else {
+            // 如果沒有選擇客戶，則清空表單
+            cust_account.value = "請選擇一個客戶";
+            cust_password.value = "請選擇一個客戶";
+        }
+    });
+});
+    </script>
 @endsection
+

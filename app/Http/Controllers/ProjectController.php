@@ -36,6 +36,17 @@ use Illuminate\Support\Facades\Auth;
 
 class ProjectController extends Controller
 {
+    public function getCustomerAccount($id)
+    {
+        $customer = user::find($id);
+    if ($customer) {
+        return response()->json([
+            'cust_account' => $customer->email,
+            'cust_password' => $customer->password,
+        ]);
+    }
+    return response()->json([], 404); // 如果找不到對應的 customer
+    }
     public function getProjectsByUser($user_id)
     {
         // 查詢特定用戶的專案
@@ -894,6 +905,9 @@ class ProjectController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+    $data = CustProject::where('id', $id)->first();
+    $data->delete();
+
+    return response()->json(['message' => '刪除成功'], 200);
     }
 }

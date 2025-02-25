@@ -121,7 +121,9 @@
                                                         </a>
                                                         <div class="dropdown-menu dropdown-menu-end">
                                                             <a class="dropdown-item"
-                                                                    href="{{ route('project.edit', $data->id) }}" >編輯</a>
+                                                                    href="{{ route('project.edit', $data->id) }}" >編輯
+                                                            </a>
+                                                                <a href="javascript:void(0);" class="dropdown-item" onclick="deleteProject({{ $data->id }})">刪除</a>
                                                             {{-- <a class="dropdown-item"
                                                                 @if ($data->type == 0) href="{{ route('user.project.business.appendix', $data->user_id) }}"
                                                         @elseif($data->type == 1)
@@ -151,4 +153,25 @@
         <!-- end row -->
 
     </div> <!-- container -->
-@endsection
+    <script>
+        function deleteProject(id) {
+            if (!confirm("確定要刪除嗎？")) return;
+            fetch(`{{ url('/project') }}/${id}`, {
+                method: "DELETE",
+                headers: {
+                    "X-CSRF-TOKEN": "{{ csrf_token() }}",
+                    "Content-Type": "application/json"
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert(data.message);
+                location.reload(); // 重新整理頁面
+            })
+            .catch(error => console.error('Error:', error));
+        }
+        </script>
+    @endsection
+
+
+

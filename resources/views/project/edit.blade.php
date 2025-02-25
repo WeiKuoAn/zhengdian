@@ -2,6 +2,8 @@
 
 @section('content')
     <!-- Start Content-->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+
     <div class="container-fluid">
 
         @include('layouts.shared.page-title', [
@@ -74,7 +76,7 @@
                             <div class="row mt-3">
                                 <div class="mb-3">
                                     <label class="form-label">專案起始日期<span class="text-danger">*</span></label>
-                                    <input type="date" class="form-control" name="date" value="{{ $data->date }}">
+                                    <input type="date" class="form-control" name="date" value="{{ $data->date }}" id="dateInput">
                                 </div>
                                 <div class="mb-3">
                                     <label for="project-priority" class="form-label">專案類型<span
@@ -128,4 +130,11 @@
         <!-- end row -->
 
     </div> <!-- container -->
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
+<script>
+    flatpickr("#dateInput", {
+        dateFormat: "Y/m/d" // 設定格式為 DD/MM/YYYY
+    });
+</script>
 @endsection
