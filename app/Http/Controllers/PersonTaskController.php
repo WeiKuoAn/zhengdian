@@ -10,59 +10,56 @@ use App\Models\User;
 use App\Models\CheckStatus;
 use App\Models\CustProject;
 use Carbon\Carbon;
+use Illuminate\Support\HtmlString;
 use Illuminate\Support\Facades\Auth;
 
 class PersonTaskController extends Controller
 {
+
     public function index(Request $request)
     {
-        // $datas = TaskItem::where('user_id', Auth::user()->id)->get();
-        // // 篩選客戶名稱
-        // $project_name = $request->input('project_name');
-        // if ($project_name) {
-        //     $projectIds = CustProject::where('name', 'like', '%' . $project_name . '%')->pluck('id'); // 獲取符合條件的用戶 ID 列表
-        //     $datas->whereIn('project_id', $projectIds); // 在查詢中篩選符合專案 ID 的資料
+        // 取得當前使用者名稱
+        $userName = Auth::user()->name;
 
-        // } 
-        // $project_data_name = $request->input('project_data_name');
-        // if ($project_data_name) {
-        //     $datas->whereHas('project_data.project_data', function ($query) use ($project_data_name) {
-        //         $query->where('name', 'like', '%' . $project_data_name . '%');
-        //     });
-        // }
+        // 初始化查詢構建器
+        $datas = TaskItem::join('task', 'task_item.task_id', '=', 'task.id')
+            ->where('task_item.user_id', Auth::user()->id);
 
+        // 取得篩選條件
+        $project_name = $request->input('project_name');
+        $startDate = $request->input('startDate');
+        $endDate = $request->input('endDate');
 
-        // return view('person_task.index')->with('datas', $datas);
-        // return view('person_task.index',['request'=>$request]);
-         // 初始化查詢構建器
-         $datas = TaskItem::where('user_id', Auth::user()->id);
-
-      
-         $project_name = $request->input('project_name');
-         $startDate = $request->input('startDate');
-         $endDate = $request->input('endDate');
-
-         
-         // 篩選專案名稱
-         if ($project_name) {
-             $projectIds = CustProject::where('name', 'like', '%' . $project_name . '%')->pluck('id');
-             
-             
-             $datas->whereIn('project_id', $projectIds);
-         }
-         
-         if ($startDate && $endDate) {
-            $datas->whereBetween('estimated_end', [$startDate, $endDate]);
+        // 篩選專案名稱
+        if ($project_name) {
+            $projectIds = CustProject::where('name', 'like', '%' . $project_name . '%')->pluck('id');
+            $datas->whereIn('task.project_id', $projectIds);
         }
-         // 執行查詢並獲取結果
-         $datas = $datas->get();
-        
-         
-         return view('person_task.index', [
-             'datas' => $datas,
-             'request' => $request
-         ]);
+
+        // 篩選時間區間
+        if ($startDate && $endDate) {
+            $datas->whereBetween('task.estimated_end', [$startDate, $endDate]);
+        }
+
+        // 執行查詢並獲取結果
+        $datas = $datas->orderBy('task.estimated_end', 'asc')
+            ->select('task_item.*', 'task.estimated_end') // 確保選擇需要的欄位
+            ->get();
+
+        // 計算個人待辦數量
+        $todoCount = $datas->count();
+
+        // 建立動態標題，包含待辦數量
+        $title = new HtmlString('【' . $userName . '】個人待辦 ' .
+            '<span class="badge bg-danger rounded-pill ms-auto">' . $todoCount . '</span>');
+
+        return view('person_task.index', [
+            'datas' => $datas,
+            'request' => $request,
+            'title' => $title
+        ]);
     }
+
 
     /**
      * Show the form for creating a new resource.
@@ -73,9 +70,9 @@ class PersonTaskController extends Controller
     {
         $cust_projects = CustProject::get();
         $task_templates = TaskTemplate::get();
-        $check_statuss = CheckStatus::where('status', 'up')->orderby('seq','asc')->whereNull('parent_id')->get();
+        $check_statuss = CheckStatus::where('status', 'up')->orderby('seq', 'asc')->whereNull('parent_id')->get();
         $users = User::where('status', 1)->where('group_id', 1)->get();
-        return view('task.create')->with('task_templates', $task_templates)->with('check_statuss', $check_statuss)->with('cust_projects',$cust_projects)->with('users', $users);
+        return view('task.create')->with('task_templates', $task_templates)->with('check_statuss', $check_statuss)->with('cust_projects', $cust_projects)->with('users', $users);
     }
     /**
      * Store a newly created resource in storage.
@@ -122,17 +119,17 @@ class PersonTaskController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function show(TaskItem $task)
-{
-    // 檢查是否存在 end_time，並分離日期和時間部分
-    $endTime = $task->end_time ? Carbon::parse($task->end_time) : null;
+    {
+        // 檢查是否存在 end_time，並分離日期和時間部分
+        $endTime = $task->end_time ? Carbon::parse($task->end_time) : null;
 
-    return response()->json([
-        'status' => $task->status,
-        'end_date' => $endTime ? $endTime->format('Y-m-d') : null, // 提取日期部分
-        'end_time' => $endTime ? $endTime->format('H:i') : null,   // 提取時間部分
-        'execution_time' => $task->execution_time, // 執行時間
-    ]);
-}
+        return response()->json([
+            'status' => $task->status,
+            'end_date' => $endTime ? $endTime->format('Y-m-d') : null, // 提取日期部分
+            'end_time' => $endTime ? $endTime->format('H:i') : null,   // 提取時間部分
+            'execution_time' => $task->execution_time, // 執行時間
+        ]);
+    }
 
 
     /**
@@ -167,13 +164,13 @@ class PersonTaskController extends Controller
         $data->status = $request->status;
         $data->comments = $request->comments;
         $data->save();
-    
+
         $user_ids = $request->input('user_ids');
         $contexts = $request->input('contexts');
-    
+
         // 刪除舊的 TaskItem 資料
         TaskItem::where('task_id', $id)->delete();
-    
+
         // 更新新的 TaskItem 資料
         foreach ($user_ids as $index => $user_id) {
             TaskItem::create([
@@ -182,7 +179,7 @@ class PersonTaskController extends Controller
                 'task_id' => $id
             ]);
         }
-    
+
         return redirect()->route('task')->with('success', '任務已更新成功');
     }
 
