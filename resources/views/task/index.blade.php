@@ -8,7 +8,7 @@
     <!-- Start Content-->
     <div class="container-fluid">
 
-        @include('layouts.shared.page-title', ['title' => '派工完成確認', 'subtitle' => '派工管理'])
+        @include('layouts.shared.page-title', ['title' => '派工列表', 'subtitle' => '派工管理'])
 
         <div class="row">
             <div class="col-12">
@@ -20,12 +20,12 @@
                                     method="GET">
                                     @csrf
                                     <label for="inputPassword2" class="visually-hidden">Search</label>
-                                    <div class="me-3">
+                                    <div class="me-2">
                                         <input type="search" class="form-control my-1 my-md-0" id="inputPassword2"
                                             placeholder="專案名稱..." name="project_name" value="{{ $request->project_name }}">
                                     </div>
                                     <label for="status-select" class="me-2">派工項目</label>
-                                    <div class="me-3">
+                                    <div class="me-2">
                                         <select class="form-control" data-toggle="select2" data-width="100%"
                                             name="task_template_id" onchange="this.form.submit()">
                                             <option value="" selected>請選擇</option>
@@ -35,7 +35,7 @@
                                         </select>
                                     </div>
                                     <label for="status-select" class="me-2">派工進度</label>
-                                    <div class="me-3">
+                                    <div class="me-2">
                                         <select class="form-control" data-toggle="select2" data-width="100%"
                                             name="status" onchange="this.form.submit()">
                                             <option value="" selected>請選擇</option>
@@ -45,6 +45,16 @@
                                             <option value="4" {{ $request->status == 4 ? 'selected' : '' }}>移轉</option>
                                             <option value="8" {{ $request->status == 8 ? 'selected' : '' }}>人員已完成，待確認</option>
                                             <option value="9" {{ $request->status == 9 ? 'selected' : '' }}>完成</option>
+                                        </select>
+                                    </div>
+                                    <label for="status-select" class="me-1">派工人員</label>
+                                    <div class="me-2">
+                                        <select class="form-control" data-toggle="select2" data-width="100%"
+                                            name="user_id" onchange="this.form.submit()">
+                                            <option value="" selected>請選擇</option>
+                                            @foreach ($users as $user)
+                                                <option value="{{ $user->id }}" {{ $request->user_id == $user->id ? 'selected' : '' }}>{{ $user->name }}</option>
+                                            @endforeach
                                         </select>
                                     </div>
                                     <button type="submit" class="btn btn-success waves-effect waves-light me-1">搜尋</button>

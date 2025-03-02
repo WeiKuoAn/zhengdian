@@ -129,6 +129,7 @@ class TaskController extends Controller
     public function index(Request $request)
     {
         $task_templates = TaskTemplate::get();
+        $users = User::where('status', 1)->where('group_id', 1)->get();
         $datas = Task::query();
 
         // 如果提供了 task_template_id，過濾數據
@@ -142,6 +143,19 @@ class TaskController extends Controller
             $datas->where('status', $status);
         }
 
+        //搜尋派工人員
+        $user_id = $request->input('user_id');
+        if ($user_id && $user_id !== "null") {
+            $datas->where('created_by', $user_id);
+        }
+
+        //搜尋被派工人員
+        // $user_id = $request->input('user_id');
+        // if ($user_id && $user_id !== "null") {
+        //     $taskItemIds = TaskItem::where('user_id', $user_id)->pluck('task_id'); // 獲取符合條件的用戶 ID 列表
+        //     $datas->whereIn('id', $taskItemIds); // 篩選出符合用戶 ID 的專案
+        // }
+
         // 篩選客戶名稱
         $project_name = $request->input('project_name');
         if ($project_name) {
@@ -151,7 +165,7 @@ class TaskController extends Controller
 
         // 排序優先級，然後按預計結束時間排序
         $datas = $datas->orderBy('priority', 'asc')->orderBy('estimated_end', 'asc')->get();
-        return view('task.index')->with('datas', $datas)->with('request', $request)->with('task_templates', $task_templates);
+        return view('task.index')->with('datas', $datas)->with('request', $request)->with('task_templates', $task_templates)->with('users', $users);
     }
 
     /**
@@ -339,6 +353,8 @@ class TaskController extends Controller
 
     public function destroy($id)
     {
-        //
+        $data = Task::where('id', $id)->delete();
+        $items = TaskItem::where('task_id', $id)->delete();
+        return redirect()->route('task')->with('success', '任務已更新成功');
     }
 }

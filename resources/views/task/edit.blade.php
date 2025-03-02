@@ -1,6 +1,7 @@
 @extends('layouts.vertical', ['title' => 'CRM Customers'])
 @section('css')
     @vite(['node_modules/spectrum-colorpicker2/dist/spectrum.min.css', 'node_modules/flatpickr/dist/flatpickr.min.css', 'node_modules/clockpicker/dist/bootstrap-clockpicker.min.css', 'node_modules/bootstrap-datepicker/dist/css/bootstrap-datepicker.min.css'])
+    @vite(['node_modules/selectize/dist/css/selectize.bootstrap3.css', 'node_modules/mohithg-switchery/dist/switchery.min.css', 'node_modules/bootstrap-touchspin/dist/jquery.bootstrap-touchspin.min.css', 'node_modules/select2/dist/css/select2.min.css', 'node_modules/multiselect/css/multi-select.css'])
 @endsection
 @section('content')
     <!-- Start Content-->
@@ -20,7 +21,7 @@
                             <div class="row">
                                 <div class="mb-3">
                                     <label for="inputEmail3" class="col-4 col-xl-3 col-form-label">專案名稱：</label>
-                                    <select class="form-control" data-toggle="select" data-width="100%" name="project_id">
+                                    <select class="form-control" data-toggle="select2" data-width="100%" name="project_id">
                                         <option value="" selected>請選擇</option>
                                         @foreach ($cust_projects as $key => $cust_project)
                                             <option value="{{ $cust_project->id }}"
@@ -140,6 +141,7 @@
 @endsection
 @section('script')
     @vite(['resources/js/pages/form-pickers.init.js'])
+    @vite(['resources/js/pages/form-advanced.init.js'])
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
         $(document).ready(function() {
