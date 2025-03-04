@@ -76,8 +76,7 @@
 
                         <ul class="sortable-list tasklist list-unstyled" id="not-started">
                             @foreach ($datas->where('status', 0)->sortBy('seq') as $task)
-                                <li id="task{{ $task->id }}" data-id="{{ $task->id }}"
-                                    onclick="openTaskModal({{ $task->id }})">
+                                <li id="task{{ $task->id }}" data-id="{{ $task->id }}" onclick="openTaskModal({{ $task->id }})">
                                     <span class="badge  text-danger float-end">
                                         @if (isset($task->task_data->priority))
                                             @if ($task->task_data->priority == 0)
@@ -107,13 +106,15 @@
                                             {{ $task->context }}
                                         </p>
                                     @endif
-                                    <p class="font-13 mt-1 mb-0"><i class="mdi mdi-calendar"></i>預計完成時間：@if (isset($task->task_data->estimated_end))
-                                            {{ $task->task_data->estimated_end }}
-                                        @endif
+                                    <p class="font-13 mt-1 mb-0"><i
+                                            class="mdi mdi-calendar"></i>預計完成時間：@if (isset($task->task_data->estimated_end))
+                                                {{ $task->task_data->estimated_end }}
+                                            @endif
                                     </p>
-                                    <p class="font-13 mt-1 mb-0"><i class="mdi mdi-account  "></i>派工人：@if (isset($task->task_data->user_data))
-                                            {{ $task->task_data->user_data->name }}
-                                        @endif
+                                    <p class="font-13 mt-1 mb-0"><i
+                                            class="mdi mdi-account  "></i>派工人：@if (isset($task->task_data->user_data))
+                                                {{ $task->task_data->user_data->name }}
+                                            @endif
                                     </p>
                                 </li>
                             @endforeach
@@ -133,8 +134,7 @@
 
                         <ul class="sortable-list tasklist list-unstyled" id="in-progress">
                             @foreach ($datas->where('status', 1)->sortBy('seq') as $task)
-                                <li id="task{{ $task->id }}" data-id="{{ $task->id }}"
-                                    onclick="openTaskModal({{ $task->id }})">
+                                <li id="task{{ $task->id }}" data-id="{{ $task->id }}" onclick="openTaskModal({{ $task->id }})">
                                     <span class="badge  text-danger float-end">
                                         @if (isset($task->task_data->priority))
                                             @if ($task->task_data->priority == 0)
@@ -164,13 +164,15 @@
                                             {{ $task->context }}
                                         </p>
                                     @endif
-                                    <p class="font-13 mt-1 mb-0"><i class="mdi mdi-calendar"></i>預計完成時間：@if (isset($task->task_data->estimated_end))
-                                            {{ $task->task_data->estimated_end }}
-                                        @endif
+                                    <p class="font-13 mt-1 mb-0"><i
+                                            class="mdi mdi-calendar"></i>預計完成時間：@if (isset($task->task_data->estimated_end))
+                                                {{ $task->task_data->estimated_end }}
+                                            @endif
                                     </p>
-                                    <p class="font-13 mt-1 mb-0"><i class="mdi mdi-account  "></i>派工人：@if (isset($task->task_data->user_data))
-                                            {{ $task->task_data->user_data->name }}
-                                        @endif
+                                    <p class="font-13 mt-1 mb-0"><i
+                                            class="mdi mdi-account  "></i>派工人：@if (isset($task->task_data->user_data))
+                                                {{ $task->task_data->user_data->name }}
+                                            @endif
                                     </p>
                                 </li>
                             @endforeach
@@ -190,8 +192,7 @@
 
                         <ul class="sortable-list tasklist list-unstyled" id="implement">
                             @foreach ($datas->where('status', 2)->sortBy('seq') as $task)
-                                <li id="task{{ $task->id }}" data-id="{{ $task->id }}"
-                                    onclick="openTaskModal({{ $task->id }})">
+                                <li id="task{{ $task->id }}" data-id="{{ $task->id }}" onclick="openTaskModal({{ $task->id }})">
                                     <span class="badge  text-danger float-end">
                                         @if (isset($task->task_data->priority))
                                             @if ($task->task_data->priority == 0)
@@ -221,13 +222,15 @@
                                             {{ $task->context }}
                                         </p>
                                     @endif
-                                    <p class="font-13 mt-1 mb-0"><i class="mdi mdi-calendar"></i>預計完成時間：@if (isset($task->task_data->estimated_end))
-                                            {{ $task->task_data->estimated_end }}
-                                        @endif
+                                    <p class="font-13 mt-1 mb-0"><i
+                                            class="mdi mdi-calendar"></i>預計完成時間：@if (isset($task->task_data->estimated_end))
+                                                {{ $task->task_data->estimated_end }}
+                                            @endif
                                     </p>
-                                    <p class="font-13 mt-1 mb-0"><i class="mdi mdi-account  "></i>派工人：@if (isset($task->task_data->user_data))
-                                            {{ $task->task_data->user_data->name }}
-                                        @endif
+                                    <p class="font-13 mt-1 mb-0"><i
+                                            class="mdi mdi-account  "></i>派工人：@if (isset($task->task_data->user_data))
+                                                {{ $task->task_data->user_data->name }}
+                                            @endif
                                     </p>
                                 </li>
                             @endforeach
@@ -247,8 +250,7 @@
 
                         <ul class="sortable-list tasklist list-unstyled" id="completed">
                             @foreach ($datas->where('status', 8)->sortBy('seq') as $task)
-                                <li id="task{{ $task->id }}" data-id="{{ $task->id }}"
-                                    onclick="openTaskModal({{ $task->id }})">
+                                <li id="task{{ $task->id }}" data-id="{{ $task->id }}" onclick="openTaskModal({{ $task->id }})">
                                     <span class="badge  text-danger float-end">
                                         @if (isset($task->task_data->priority))
                                             @if ($task->task_data->priority == 0)
@@ -278,14 +280,16 @@
                                             {{ $task->context }}
                                         </p>
                                     @endif
-                                    <p class="font-13 mt-1 mb-0"><i class="mdi mdi-calendar"></i>預計完成時間：@if (isset($task->task_data->estimated_end))
-                                            {{ $task->task_data->estimated_end }}
-                                        @endif
+                                    <p class="font-13 mt-1 mb-0"><i
+                                            class="mdi mdi-calendar"></i>預計完成時間：@if (isset($task->task_data->estimated_end))
+                                                {{ $task->task_data->estimated_end }}
+                                            @endif
                                     </p>
 
-                                    <p class="font-13 mt-1 mb-0"><i class="mdi mdi-account  "></i>派工人：@if (isset($task->task_data->user_data))
-                                            {{ $task->task_data->user_data->name }}
-                                        @endif
+                                    <p class="font-13 mt-1 mb-0"><i
+                                            class="mdi mdi-account  "></i>派工人：@if (isset($task->task_data->user_data))
+                                                {{ $task->task_data->user_data->name }}
+                                            @endif
                                     </p>
                                 </li>
                             @endforeach
@@ -304,6 +308,10 @@
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="taskContent" class="form-label">任務項目描述</label>
+                            <input name="taskComments" id="taskComments" class="form-control" disabled></textarea>
+                        </div>
                         <form id="taskForm">
                             <div class="mb-3">
                                 <label for="taskStatus" class="form-label">變更狀態</label>
@@ -318,10 +326,8 @@
                                 <label class="form-label">預計完成日期：<span class="text-danger">*</span></label>
                                 <div id="executor-container">
                                     <div class="input-group mb-2">
-                                        <input type="date" class="form-control" id="end_date" placeholder="日期"
-                                            required>
-                                        <input type="time" class="form-control" id="end_time" placeholder="時間"
-                                            required>
+                                        <input type="date" class="form-control" id="end_date" placeholder="日期" required>
+                                        <input type="time" class="form-control" id="end_time" placeholder="時間" required>
                                     </div>
                                 </div>
                                 <label for="executionTime" class="form-label">執行時間 (小時)</label>
@@ -343,10 +349,31 @@
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
     <script>
         let currentTaskId = null;
-
         function openTaskModal(taskId) {
             currentTaskId = taskId;
+            console.log(taskId);
             const modal = new bootstrap.Modal(document.getElementById('taskModal'));
+
+            //抓取特定資料
+            $(document).ready(function(){
+                taskId = taskId;
+            })
+            $.ajax({
+                url: '/person/task/get-task-comments/' + taskId,  // 請求後端 API 端點
+                type: 'GET',
+                success: function (response) {
+                    if (response.status === 'success') {
+            if (response.comments === null) {
+                // 如果回傳的 comments 是 null，顯示查無資料
+                $('#taskComments').val('查無任務資料');
+            } else {
+                // 如果有資料，顯示任務描述
+                $('#taskComments').val(response.comments);
+            }
+        } else {
+            console.error('未找到任務資料');
+                }
+            }});
 
             // Fetch task details and populate modal
             fetch(`/person/task/edit/${taskId}`)
@@ -370,9 +397,11 @@
                     }
                 });
 
+
             modal.show();
         }
-
+       
+        
 
         function handleStatusChange(status) {
             const completionFields = document.getElementById('completionFields');
@@ -416,7 +445,7 @@
                 new Sortable(list, {
                     group: 'shared',
                     animation: 150,
-                    onEnd: function(evt) {
+                    onEnd: function (evt) {
                         const itemId = evt.item.dataset.id; // 獲取拖動項目的 ID
                         const newStatus = evt.to.id; // 獲取目標列表的 ID
 
@@ -449,5 +478,7 @@
                 });
             });
         });
+
+
     </script>
 @endsection

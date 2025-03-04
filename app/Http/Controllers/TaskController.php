@@ -143,18 +143,18 @@ class TaskController extends Controller
             $datas->where('status', $status);
         }
 
-        //搜尋派工人員
-        $user_id = $request->input('user_id');
-        if ($user_id && $user_id !== "null") {
-            $datas->where('created_by', $user_id);
-        }
-
-        //搜尋被派工人員
+        // //搜尋派工人員
         // $user_id = $request->input('user_id');
         // if ($user_id && $user_id !== "null") {
-        //     $taskItemIds = TaskItem::where('user_id', $user_id)->pluck('task_id'); // 獲取符合條件的用戶 ID 列表
-        //     $datas->whereIn('id', $taskItemIds); // 篩選出符合用戶 ID 的專案
+        //     $datas->where('created_by', $user_id);
         // }
+
+        //搜尋被派工人員
+        $user_id = $request->input('user_id');
+        if ($user_id && $user_id !== "null") {
+            $taskItemIds = TaskItem::where('user_id', $user_id)->pluck('task_id'); // 獲取符合條件的用戶 ID 列表
+            $datas->whereIn('id', $taskItemIds); // 篩選出符合用戶 ID 的專案
+        }
 
         // 篩選客戶名稱
         $project_name = $request->input('project_name');

@@ -180,6 +180,8 @@ Route::post('/person/task/create', [PersonTaskController::class, 'store'])->name
 Route::get('/person/task/edit/{id}', [PersonTaskController::class, 'show'])->name('person.task.edit');
 Route::post('/person/task/edit/{id}', [PersonTaskController::class, 'update'])->name('person.task.edit.data');
 Route::get('/person/task/edit/{id}', [TaskController::class, 'edit']);
+Route::get('/person/task/get-task-comments/{taskId}', [PersonTaskController::class, 'getTaskComments']);
+
 
 //行事曆類別
 Route::get('CalendarCategory', [CalendarCategoryController::class, 'index'])->name('CalendarCategorys');

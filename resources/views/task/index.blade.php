@@ -47,7 +47,7 @@
                                             <option value="9" {{ $request->status == 9 ? 'selected' : '' }}>完成</option>
                                         </select>
                                     </div>
-                                    <label for="status-select" class="me-1">派工人員</label>
+                                    <label for="status-select" class="me-1">執行人員</label>
                                     <div class="me-2">
                                         <select class="form-control" data-toggle="select2" data-width="100%"
                                             name="user_id" onchange="this.form.submit()">
