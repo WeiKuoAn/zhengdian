@@ -74,13 +74,9 @@
                                 </div>
                                 <div class="mb-3">
                                     <label class="form-label">預計完成日期：<span class="text-danger">*</span></label>
-                                    <div id="executor-container">
-                                        <div class="input-group mb-2">
-                                            <input type="date" class="form-control" name="estimated_end_date"
-                                                placeholder="執行內容" required>
-                                            <input type="text" id="24hours-timepicker" name="estimated_end_time"
-                                                class="form-control" placeholder="時：分" value="" required>
-                                        </div>
+                                    <div class="input-group mb-2">
+                                        <input type="date" class="form-control" id="end_date" placeholder="日期" required name="estimated_end_date">
+                                        <input type="time" class="form-control" id="end_time" placeholder="時間" required name="estimated_end_time">
                                     </div>
                                 </div>
                                 <div class="mb-3">

@@ -102,6 +102,8 @@ Route::get('task/edit/{id}', [TaskController::class, 'show'])->name('task.edit')
 Route::post('task/edit/{id}', [TaskController::class, 'update'])->name('task.edit.data');
 Route::get('task/del/{id}', [TaskController::class, 'delete'])->name('task.del');
 Route::post('task/del/{id}', [TaskController::class, 'destroy'])->name('task.del.data');
+Route::get('task/copy/{id}', [TaskController::class, 'copy'])->name('task.copy');
+Route::post('task/copy/{id}', [TaskController::class, 'copyData'])->name('task.copy.data');
 Route::post('/tasks/{task}/update-status', [TaskController::class, 'updateStatus'])->name('tasks.updateStatus');
 Route::get('task/check', [TaskController::class, 'check'])->name('task.check.index');
 Route::get('task/check/{id}', [TaskController::class, 'check_show'])->name('task.check');
