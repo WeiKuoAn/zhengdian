@@ -64,7 +64,7 @@
         </div>
         <div class="row">
             <!-- Kanban Board Structure -->
-            <div class="col-lg-2">
+            <div class="col-lg-3">
                 <div class="card">
                     <div class="card-body">
                         <h4 class="header-title">已被指派，待確認
@@ -122,7 +122,7 @@
                 </div>
             </div>
 
-            <div class="col-lg-2">
+            <div class="col-lg-3">
                 <div class="card">
                     <div class="card-body">
                         <h4 class="header-title">已接收
@@ -179,7 +179,7 @@
                 </div>
             </div>
 
-            <div class="col-lg-2">
+            <div class="col-lg-3">
                 <div class="card">
                     <div class="card-body">
                         <h4 class="header-title">執行中
@@ -236,68 +236,10 @@
                 </div>
             </div>
 
-            <div class="col-lg-2">
+            <div class="col-lg-3">
                 <div class="card">
                     <div class="card-body">
                         <h4 class="header-title">確認中
-                            <span
-                                class="badge bg-danger rounded-pill ms-auto">{{ $datas->where('status', 8)->count() }}</span>
-                        </h4>
-                        <p class="sub-header">已執行完成，正在確認的派工項目</p>
-
-                        <ul class="sortable-list tasklist list-unstyled" id="completed">
-                            @foreach ($datas->where('status', 8)->sortBy('seq') as $task)
-                                <li id="task{{ $task->id }}" data-id="{{ $task->id }}"
-                                    onclick="openTaskModal({{ $task->id }})">
-                                    <span class="badge  text-danger float-end">
-                                        @if (isset($task->task_data->priority))
-                                            @if ($task->task_data->priority == 0)
-                                                <span class="badge bg-danger p-1">緊急</span>
-                                            @elseif($task->task_data->priority == 1)
-                                                <span class="badge bg-primary p-1">高</span>
-                                            @elseif($task->task_data->priority == 2)
-                                                <span class="badge bg-warning p-1">中</span>
-                                            @else
-                                                <span class="badge bg-success p-1">低</span>
-                                            @endif
-                                        @endif
-                                    </span>
-                                    <h5 class="mt-0"><b><a href="javascript: void(0);" class="text-dark">
-                                                @if (isset($task->task_data->task_template_data))
-                                                    {{ $task->task_data->task_template_data->name }}
-                                                @endif
-                                            </a></b></h5>
-                                    <p>
-                                        @if (isset($task->task_data->project_data->user_data))
-                                            {{ $task->task_data->project_data->user_data->name }}
-                                        @endif
-                                    </p>
-                                    <div class="clearfix"></div>
-                                    @if (isset($task->context))
-                                        <p class="font-13 mt-1 mb-0"><i class="mdi mdi-tooltip"></i>被派工內容：
-                                            {{ $task->context }}
-                                        </p>
-                                    @endif
-                                    <p class="font-13 mt-1 mb-0"><i class="mdi mdi-calendar"></i>預計完成時間：@if (isset($task->task_data->estimated_end))
-                                            {{ $task->task_data->estimated_end }}
-                                        @endif
-                                    </p>
-
-                                    <p class="font-13 mt-1 mb-0"><i class="mdi mdi-account  "></i>派工人：@if (isset($task->task_data->user_data))
-                                            {{ $task->task_data->user_data->name }}
-                                        @endif
-                                    </p>
-                                </li>
-                            @endforeach
-                        </ul>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-lg-2">
-                <div class="card">
-                    <div class="card-body">
-                        <h4 class="header-title">
                             <span
                                 class="badge bg-danger rounded-pill ms-auto">{{ $datas->where('status', 8)->count() }}</span>
                         </h4>
@@ -395,7 +337,7 @@
                             </div>
                             <div class="mb-3">
                                 <label class="form-label">任務項目描述</label>
-                                <textarea class="form-control" id="taskComments" name="taskComments" rows="4"></textarea>
+                                <textarea class="form-control" id="taskComments" name="taskComments" rows="4" readonly></textarea>
                             </div>
                             <button type="button" class="btn btn-primary" onclick="updateTaskStatus()">保存</button>
                         </form>
