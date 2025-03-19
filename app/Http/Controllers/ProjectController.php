@@ -452,7 +452,7 @@ class ProjectController extends Controller
                 foreach ($request->subsidy_years as $key => $subsidy_year) {
                     if (isset($subsidy_year)) {
                         $cust_subsidy = new ManufactureSubsidy;
-                        $cust_subsidy->user_id = Auth::user()->id;
+                        $cust_subsidy->user_id = $project->user_id;
                         $cust_subsidy->project_id = $cust_data->id;
                         $cust_subsidy->year = $request->subsidy_years[$key];
                         $cust_subsidy->name = $request->subsidy_names[$key];
@@ -474,7 +474,7 @@ class ProjectController extends Controller
             }
             if (isset($request->avoid_department)) {
                 $cust_avoid = new ManufactureAvoid;
-                $cust_avoid->user_id = Auth::user()->id;
+                $cust_avoid->user_id = $project->user_id;
                 $cust_avoid->project_id = $cust_data->id;
                 $cust_avoid->department = $request->avoid_department;
                 $cust_avoid->job = $request->avoid_job;
@@ -497,7 +497,7 @@ class ProjectController extends Controller
                 foreach ($request->iso_names as $key => $iso_name) {
                     if (isset($iso_name)) {
                         $cust_iso = new ManufactureIso;
-                        $cust_iso->user_id = Auth::user()->id;
+                        $cust_iso->user_id = $project->user_id;
                         $cust_iso->project_id = $cust_data->id;
                         $cust_iso->name = $request->iso_names[$key];
                         $cust_iso->year = $request->iso_years[$key];
@@ -521,7 +521,7 @@ class ProjectController extends Controller
             foreach ($request->socail_types as $key => $socail_type) {
                 if (isset($socail_type)) {
                     $cust_socail = new CustSocail;
-                    $cust_socail->user_id = Auth::user()->id;
+                    $cust_socail->user_id = $project->user_id;
                     $cust_socail->project_id = $cust_data->id;
                     $cust_socail->type = $request->socail_types[$key];
                     $cust_socail->context = $request->socail_contexts[$key];
@@ -529,18 +529,18 @@ class ProjectController extends Controller
                 }
             }
         }
-
         //營收
         $cust_income_datas = ManufactureThreeIncome::where('project_id', $cust_data->id)->get();
         // dd($cust_income_datas);
         if (count($cust_income_datas) > 0) {
             $cust_income_datas = ManufactureThreeIncome::where('project_id', $cust_data->id)->delete();
         }
+
         if (isset($request->three_incomes)) {
             foreach ($request->three_incomes as $key => $three_income) {
                 if (isset($three_income)) {
                     $cust_income = new ManufactureThreeIncome;
-                    $cust_income->user_id = Auth::user()->id;
+                    $cust_income->user_id = $project->user_id;
                     $cust_income->project_id = $cust_data->id;
                     $cust_income->income = $request->three_incomes[$key];
                     $cust_income->year = $request->three_years[$key];
@@ -560,7 +560,7 @@ class ProjectController extends Controller
             foreach ($request->norm_names as $key => $norm_name) {
                 if (isset($norm_name)) {
                     $manufacture_norm = new ManufactureNorm;
-                    $manufacture_norm->user_id = Auth::user()->id;
+                    $manufacture_norm->user_id = $project->user_id;
                     $manufacture_norm->project_id = $cust_data->id;
                     $manufacture_norm->name = $request->norm_names[$key];
                     $manufacture_norm->context = $request->norm_contexts[$key];
