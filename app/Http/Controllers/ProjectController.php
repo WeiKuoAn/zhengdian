@@ -39,13 +39,13 @@ class ProjectController extends Controller
     public function getCustomerAccount($id)
     {
         $customer = user::find($id);
-    if ($customer) {
-        return response()->json([
-            'cust_account' => $customer->email,
-            'cust_password' => $customer->password,
-        ]);
-    }
-    return response()->json([], 404); // 如果找不到對應的 customer
+        if ($customer) {
+            return response()->json([
+                'cust_account' => $customer->email,
+                'cust_password' => $customer->password,
+            ]);
+        }
+        return response()->json([], 404); // 如果找不到對應的 customer
     }
     public function getProjectsByUser($user_id)
     {
@@ -337,7 +337,7 @@ class ProjectController extends Controller
         $check_statuss = CheckStatus::where('status', 'up')->orderby('seq', 'asc')->whereNull('parent_id')->get();
         $project_types = ProjectType::where('status', 'up')->get();
         // 返回專案詳情頁面或視圖
-        return view('project.edit', ['data' => $data, 'request' => $request, 'check_statuss' => $check_statuss , 'project_types' => $project_types]);
+        return view('project.edit', ['data' => $data, 'request' => $request, 'check_statuss' => $check_statuss, 'project_types' => $project_types]);
     }
 
     /**
@@ -358,7 +358,7 @@ class ProjectController extends Controller
 
         $cust_data->nas_link = $request->nas_link;
         $cust_data->save();
-        
+
 
         // 返回專案列表頁面
         return redirect()->route('projects');
@@ -374,7 +374,7 @@ class ProjectController extends Controller
         }
         // 从数据库中获取用户的自定义数据
         $project = CustProject::where('id', $id)->first();
-        $cust_data = CustData::where('user_id',$project->user_id)->first();
+        $cust_data = CustData::where('user_id', $project->user_id)->first();
 
         // 如果 $cust_data 不为空，并且 $cust_data 包含 manufacture_income_datas，那么提取年份
         $existingYears = [];
@@ -382,14 +382,14 @@ class ProjectController extends Controller
             $existingYears = $cust_data->manufacture_income_datas->pluck('year')->toArray();
         }
 
-        return view('project.background', ['project'=> $project ,'cust_data'=> $cust_data, 'years'=> $years, 'existingYears'=> $existingYears]);
+        return view('project.background', ['project' => $project, 'cust_data' => $cust_data, 'years' => $years, 'existingYears' => $existingYears]);
     }
 
     public function background_update(string $id, Request $request)
     {
         // 从数据库中获取用户的自定义数据
         $project = CustProject::where('id', $id)->first();
-        $cust_data = CustData::where('user_id',$project->user_id)->first();
+        $cust_data = CustData::where('user_id', $project->user_id)->first();
 
         //客戶資料
         $cust_data->capital = $request->capital;
@@ -699,7 +699,7 @@ class ProjectController extends Controller
             }
         }
 
-        return redirect()->route('project.write',$id)->with('success', '客戶已成功新增');
+        return redirect()->route('project.write', $id)->with('success', '客戶已成功新增');
     }
 
     public function send(string $id, Request $request)
@@ -833,20 +833,39 @@ class ProjectController extends Controller
         $data->comments = $request->comments;
         $data->save();
 
-        $user_ids = $request->input('user_ids');
-        $contexts = $request->input('contexts');
+        // 定義 Task 狀態對應到 TaskItem 狀態的映射
+        $statusMapping = [
+            '1' => '0', // 送出派工 → 已發送，待確認
+            '2' => '1', // 已接收 → 已接收
+            '3' => '2', // 執行中 → 執行中
+            '8' => '8', // 人員已完成，待確認 → 已完成
+            '9' => '9', // 已完成 → 確認完成
+        ];
+
+        // 取得對應的 TaskItem 狀態
+        $taskItemStatus = $statusMapping[$data->status] ?? null;
+
+        // 批量更新 TaskItem 狀態
+        if ($taskItemStatus !== null) {
+            TaskItem::where('task_id', $id)->update(['status' => $taskItemStatus]);
+        }
 
         // 刪除舊的 TaskItem 資料
         TaskItem::where('task_id', $id)->delete();
 
         // 更新新的 TaskItem 資料
+        $user_ids = $request->input('user_ids');
+        $contexts = $request->input('contexts');
+
         foreach ($user_ids as $index => $user_id) {
             TaskItem::create([
                 'user_id' => $user_id,
                 'context' => $contexts[$index],
-                'task_id' => $id
+                'task_id' => $id,
+                'status' => $taskItemStatus, // 確保新建的 TaskItem 也同步狀態
             ]);
         }
+
         return redirect()->route('project.task', $request->project_id)->with('success', '派工新增成功！');
     }
 
@@ -905,9 +924,9 @@ class ProjectController extends Controller
      */
     public function destroy(string $id)
     {
-    $data = CustProject::where('id', $id)->first();
-    $data->delete();
+        $data = CustProject::where('id', $id)->first();
+        $data->delete();
 
-    return response()->json(['message' => '刪除成功'], 200);
+        return response()->json(['message' => '刪除成功'], 200);
     }
 }

@@ -21,16 +21,30 @@
                                     @csrf
                                     <label for="status-select" class="me-2">預計完成時間</label>
                                     <div class="me-1">
-                                        <input type="date" class="form-control" name="estimated_date_start" value="{{ $request->estimated_date_start }}">
+                                        <input type="date" class="form-control" name="estimated_date_start"
+                                            value="{{ $request->estimated_date_start }}">
                                     </div>
                                     <div class="me-3">
-                                        <input type="date" class="form-control" name="estimated_date_end" value="{{ $request->estimated_date_end }}">
+                                        <input type="date" class="form-control" name="estimated_date_end"
+                                            value="{{ $request->estimated_date_end }}">
+                                    </div>
+                                    <label for="status-select" class="me-1">執行人員</label>
+                                    <div class="me-2">
+                                        <select class="form-control" data-toggle="select2" data-width="100%" name="user_id"
+                                            onchange="this.form.submit()">
+                                            <option value="" selected>請選擇</option>
+                                            @foreach ($users as $user)
+                                                <option value="{{ $user->id }}"
+                                                    {{ $request->user_id == $user->id ? 'selected' : '' }}>
+                                                    {{ $user->name }}</option>
+                                            @endforeach
+                                        </select>
                                     </div>
                                     <button type="submit" class="btn btn-success waves-effect waves-light me-1">搜尋</button>
                                 </form>
                             </div>
                             <div class="col-md-2">
-                                
+
                             </div><!-- end col-->
                         </div> <!-- end row -->
                     </div>
@@ -117,10 +131,12 @@
                                             <td>{{ $data->estimated_end }}</td>
                                             <td>{{ $data->user_data->name }}</td>
                                             <td>
-                                                <a href="{{ route('task.check', $data->id) }}">
-                                                    <button type="button"
-                                                        class="btn btn-secondary  waves-effect waves-light">確認派工</button>
-                                                </a>
+                                                @if (Auth::user()->id == $data->created_by)
+                                                    <a href="{{ route('task.check', $data->id) }}">
+                                                        <button type="button"
+                                                            class="btn btn-secondary  waves-effect waves-light">確認派工</button>
+                                                    </a>
+                                                @endif
                                             </td>
                                         </tr>
                                     @endforeach

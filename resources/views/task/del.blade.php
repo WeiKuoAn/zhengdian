@@ -20,7 +20,7 @@
                             @csrf
                             <div class="row">
                                 <div class="mb-3">
-                                    <label for="inputEmail3" class="col-4 col-xl-3 col-form-label">專案名稱：</label>
+                                    <label for="inputEmail3" class="col-4 col-xl-3 col-form-label">專案名稱：<span class="text-danger">*</span></label>
                                     <select class="form-control" data-toggle="select2" data-width="100%" name="project_id">
                                         <option value="" selected>請選擇</option>
                                         @foreach ($cust_projects as $key => $cust_project)

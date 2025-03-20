@@ -174,6 +174,11 @@
                                     class="{{ request()->is('task.check.index') ? 'active' : '' }}"><span
                                         class="menu-text">派工完成確認</span></a>
                             </li>
+                            <li class="menu-item">
+                                <a class="menu-link" href="{{ route('task.ok.index') }}"
+                                    class="{{ request()->is('task.ok.index') ? 'active' : '' }}"><span
+                                        class="menu-text">派工已完成項目</span></a>
+                            </li>
                         </ul>
                     </div>
                 </li>

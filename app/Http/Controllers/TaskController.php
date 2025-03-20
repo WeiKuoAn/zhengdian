@@ -271,20 +271,53 @@ class TaskController extends Controller
         $data->comments = $request->comments;
         $data->save();
 
+        // 定義 Task 狀態對應到 TaskItem 狀態的映射
+        $statusMapping = [
+            '1' => '0', // 送出派工 → 已發送，待確認
+            '2' => '1', // 已接收 → 已接收
+            '3' => '2', // 執行中 → 執行中
+            '8' => '8', // 人員已完成，待確認 → 已完成
+            '9' => '9', // 已完成 → 確認完成
+        ];
+
+        // 取得對應的 TaskItem 狀態
+        $taskItemStatus = $statusMapping[$data->status] ?? null;
+
+        // 取得現有的 TaskItem 資料
+        $existingTaskItems = TaskItem::where('task_id', $id)->get();
+        $existingData = $existingTaskItems->map(function ($item) {
+            return ['user_id' => $item->user_id, 'context' => $item->context];
+        })->toArray();
+        // dd($existingData);
+        // 準備新的 TaskItem 資料
+        $newData = [];
         $user_ids = $request->input('user_ids');
         $contexts = $request->input('contexts');
 
-        // 刪除舊的 TaskItem 資料
-        TaskItem::where('task_id', $id)->delete();
-
-        // 更新新的 TaskItem 資料
         foreach ($user_ids as $index => $user_id) {
-            TaskItem::create([
+            $newData[] = [
                 'user_id' => $user_id,
                 'context' => $contexts[$index],
-                'task_id' => $id
-            ]);
+            ];
         }
+
+        // 只有當資料有變動時才更新
+        if ($existingData !== $newData) {
+            TaskItem::where('task_id', $id)->delete();
+
+            foreach ($newData as $item) {
+                TaskItem::create(array_merge($item, [
+                    'task_id' => $id,
+                    'status' => $taskItemStatus, // 設定 TaskItem 的 status
+                ]));
+            }
+        } else {
+            // 如果 TaskItem 沒有變動，但 Task 狀態變更了，還是要更新 status
+            if ($taskItemStatus !== null) {
+                TaskItem::where('task_id', $id)->update(['status' => $taskItemStatus]);
+            }
+        }
+
 
         return redirect()->route('task')->with('success', '任務已更新成功');
     }
@@ -293,7 +326,7 @@ class TaskController extends Controller
     {
         $task_templates = TaskTemplate::get();
         $datas = Task::query();
-
+        $users = User::where('status', 1)->where('group_id', 1)->get();
         // 日期篩選條件
         $estimated_date_start = $request->input('estimated_date_start');
         $estimated_date_end = $request->input('estimated_date_end');
@@ -304,10 +337,16 @@ class TaskController extends Controller
         } elseif ($estimated_date_end) {
             $datas->where('estimated_end', '<=', $estimated_date_end);
         }
+        $user_id = $request->input('user_id');
+        if ($user_id && $user_id !== "null") {
+            $taskItemIds = TaskItem::where('user_id', $user_id)->pluck('task_id'); // 獲取符合條件的用戶 ID 列表
+            $datas->whereIn('id', $taskItemIds); // 篩選出符合用戶 ID 的專案
+        }
+
 
         // 排序優先級，然後按預計結束時間排序
         $datas = $datas->where('status', '8')->orderBy('priority', 'asc')->orderBy('estimated_end', 'asc')->get();
-        return view('task.check_index')->with('datas', $datas)->with('request', $request)->with('task_templates', $task_templates);
+        return view('task.check_index')->with('datas', $datas)->with('request', $request)->with('task_templates', $task_templates)->with('users', $users);
     }
 
     public function check_show($id)
@@ -317,6 +356,7 @@ class TaskController extends Controller
         $task_templates = TaskTemplate::get();
         $check_statuss = CheckStatus::where('status', 'up')->orderby('seq', 'asc')->whereNull('parent_id')->get();
         $users = User::where('status', 1)->where('group_id', 1)->get();
+
         return view('task.check')->with('data', $data)->with('task_templates', $task_templates)->with('cust_projects', $cust_projects)->with('check_statuss', $check_statuss)->with('users', $users);
     }
 
@@ -334,6 +374,34 @@ class TaskController extends Controller
         }
         return redirect()->route('task.check.index');
     }
+
+    public function ok(Request $request)
+    {
+        $task_templates = TaskTemplate::get();
+        $datas = Task::query();
+        $users = User::where('status', 1)->where('group_id', 1)->get();
+        // 日期篩選條件
+        $estimated_date_start = $request->input('estimated_date_start');
+        $estimated_date_end = $request->input('estimated_date_end');
+        if ($estimated_date_start && $estimated_date_end) {
+            $datas->whereBetween('estimated_end', [$estimated_date_start . ' 00:00:00', $estimated_date_end . ' 23:59:59']);
+        } elseif ($estimated_date_start) {
+            $datas->where('estimated_end', '>=', $estimated_date_start);
+        } elseif ($estimated_date_end) {
+            $datas->where('estimated_end', '<=', $estimated_date_end);
+        }
+        $user_id = $request->input('user_id');
+        if ($user_id && $user_id !== "null") {
+            $taskItemIds = TaskItem::where('user_id', $user_id)->pluck('task_id'); // 獲取符合條件的用戶 ID 列表
+            $datas->whereIn('id', $taskItemIds); // 篩選出符合用戶 ID 的專案
+        }
+
+
+        // 排序優先級，然後按預計結束時間排序
+        $datas = $datas->where('status', '9')->orderBy('priority', 'asc')->orderBy('estimated_end', 'asc')->get();
+        return view('task.ok_index')->with('datas', $datas)->with('request', $request)->with('task_templates', $task_templates)->with('users', $users);
+    }
+
 
     /**
      * Remove the specified resource from storage.

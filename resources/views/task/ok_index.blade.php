@@ -16,42 +16,17 @@
                     <div class="card-body">
                         <div class="row justify-content-between">
                             <div class="col-md-10">
-                                <form class="d-flex flex-wrap align-items-center" action="{{ route('task') }}" method="GET">
+                                <form class="d-flex flex-wrap align-items-center" action="{{ route('task.ok.index') }}"
+                                    method="GET">
                                     @csrf
-                                    <label for="inputPassword2" class="visually-hidden">Search</label>
-                                    <div class="me-2">
-                                        <input type="search" class="form-control my-1 my-md-0" id="inputPassword2"
-                                            placeholder="專案名稱..." name="project_name" value="{{ $request->project_name }}">
+                                    <label for="status-select" class="me-2">預計完成時間</label>
+                                    <div class="me-1">
+                                        <input type="date" class="form-control" name="estimated_date_start"
+                                            value="{{ $request->estimated_date_start }}">
                                     </div>
-                                    <label for="status-select" class="me-2">派工項目</label>
-                                    <div class="me-2">
-                                        <select class="form-control" data-toggle="select2" data-width="100%"
-                                            name="task_template_id" onchange="this.form.submit()">
-                                            <option value="" selected>請選擇</option>
-                                            @foreach ($task_templates as $task_template)
-                                                <option value="{{ $task_template->id }}"
-                                                    {{ $request->task_template_id == $task_template->id ? 'selected' : '' }}>
-                                                    {{ $task_template->name }}</option>
-                                            @endforeach
-                                        </select>
-                                    </div>
-                                    <label for="status-select" class="me-2">派工進度</label>
-                                    <div class="me-2">
-                                        <select class="form-control" data-toggle="select2" data-width="100%" name="status"
-                                            onchange="this.form.submit()">
-                                            <option value="" selected>請選擇</option>
-                                            <option value="1" {{ $request->status == 1 ? 'selected' : '' }}>送出派工
-                                            </option>
-                                            <option value="2" {{ $request->status == 2 ? 'selected' : '' }}>接收派工
-                                            </option>
-                                            <option value="3" {{ $request->status == 3 ? 'selected' : '' }}>進行中
-                                            </option>
-                                            <option value="4" {{ $request->status == 4 ? 'selected' : '' }}>移轉</option>
-                                            <option value="8" {{ $request->status == 8 ? 'selected' : '' }}>人員已完成，待確認
-                                            </option>
-                                            <option value="9" {{ $request->status == 9 ? 'selected' : '' }}>完成
-                                            </option>
-                                        </select>
+                                    <div class="me-3">
+                                        <input type="date" class="form-control" name="estimated_date_end"
+                                            value="{{ $request->estimated_date_end }}">
                                     </div>
                                     <label for="status-select" class="me-1">執行人員</label>
                                     <div class="me-2">
@@ -69,12 +44,7 @@
                                 </form>
                             </div>
                             <div class="col-md-2">
-                                <div class="text-md-end mt-3 mt-md-0">
-                                    <a href="{{ route('task.create') }}">
-                                        <button type="button" class="btn btn-danger waves-effect waves-light"><i
-                                                class="mdi mdi-plus-circle me-1"></i> 新增派工</button>
-                                    </a>
-                                </div>
+
                             </div><!-- end col-->
                         </div> <!-- end row -->
                     </div>
@@ -96,15 +66,14 @@
                                         <th scope="col">優先序</th>
                                         <th scope="col">負責執行人員</th>
                                         <th scope="col">派工進度</th>
-                                        <th scope="col">預計完成時間</th>
-                                        {{-- <th scope="col">派工主管</th> --}}
-                                        <th scope="col">操作</th>
+                                        <th scope="col">完成時間</th>
+                                        <th scope="col">主要派工人</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     @foreach ($datas as $key => $data)
                                         <tr>
-                                            <td>{{ $key + 1 }} </td>
+                                            <td>{{ $key + 1 }}</td>
                                             <td width="20%">
                                                 @if (isset($data->project_data))
                                                     {{ $data->project_data->user_data->name }}{{ $data->project_data->name }}
@@ -159,17 +128,7 @@
                                                 </div>
                                             </td>
                                             <td>{{ $data->estimated_end }}</td>
-                                            {{-- <td>{{ $data->user_data->name }}</td> --}}
-                                            <td>
-                                                @if (Auth::user()->id == $data->created_by)
-                                                    <a href="{{ route('task.edit', $data->id) }}" class="action-icon">
-                                                        <i class="mdi mdi-square-edit-outline"></i></a>
-                                                    <a href="{{ route('task.del', $data->id) }}" class="action-icon"> <i
-                                                            class="mdi mdi-trash-can-outline"></i></a>
-                                                @endif
-                                                <a href="{{ route('task.copy', $data->id) }}" class="action-icon">
-                                                    <i class="mdi mdi-content-copy"></i></a>
-                                            </td>
+                                            <td>{{ $data->user_data->name }}</td>
                                         </tr>
                                     @endforeach
                                 </tbody>

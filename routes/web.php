@@ -108,6 +108,7 @@ Route::post('/tasks/{task}/update-status', [TaskController::class, 'updateStatus
 Route::get('task/check', [TaskController::class, 'check'])->name('task.check.index');
 Route::get('task/check/{id}', [TaskController::class, 'check_show'])->name('task.check');
 Route::post('task/check/{id}', [TaskController::class, 'check_update'])->name('task.check.data');
+Route::get('task/ok', [TaskController::class, 'ok'])->name('task.ok.index');
 
 
 

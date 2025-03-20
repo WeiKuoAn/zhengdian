@@ -137,6 +137,7 @@ class CustomerController extends Controller
 
     public function IntroduceStore(Request $request)
     {
+
         $cust_data = CustData::where('user_id', Auth::user()->id)->first();
         // dd( $request->registration_no);
         //客戶資料
@@ -284,6 +285,8 @@ class CustomerController extends Controller
         if (count($cust_income_datas) > 0) {
             $cust_income_datas = ManufactureThreeIncome::where('project_id', $cust_data->id)->delete();
         }
+        // dd($request->three_incomes);
+
         if (isset($request->three_incomes)) {
             foreach ($request->three_incomes as $key => $three_income) {
                 if (isset($three_income)) {
@@ -304,6 +307,7 @@ class CustomerController extends Controller
         if (count($manufacture_norm_datas) > 0) {
             $manufacture_norm_datas = ManufactureNorm::where('project_id', $cust_data->id)->delete();
         }
+
         if (isset($request->norm_names)) {
             foreach ($request->norm_names as $key => $norm_name) {
                 if (isset($norm_name)) {

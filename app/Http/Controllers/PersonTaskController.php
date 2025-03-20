@@ -49,7 +49,7 @@ class PersonTaskController extends Controller
             ->get();
 
         // 計算個人待辦數量
-        $todoCount = $datas->count();
+        $todoCount = $datas->whereNotIn('status',['9'])->count();
 
         // 建立動態標題，包含待辦數量
         $title = new HtmlString('【' . $userName . '】個人待辦 ' .
