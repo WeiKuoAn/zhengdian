@@ -20,7 +20,8 @@
                             @csrf
                             <div class="row">
                                 <div class="mb-3">
-                                    <label for="inputEmail3" class="col-4 col-xl-3 col-form-label">專案名稱：</label>
+                                    <label for="inputEmail3" class="col-4 col-xl-3 col-form-label">專案名稱：<span
+                                            class="text-danger">*</span></label>
                                     <select class="form-control" data-toggle="select2" data-width="100%" name="project_id">
                                         <option value="" selected>請選擇</option>
                                         @foreach ($cust_projects as $key => $cust_project)
@@ -83,8 +84,10 @@
                                 <div class="mb-3">
                                     <label class="form-label">預計完成日期：<span class="text-danger">*</span></label>
                                     <div class="input-group mb-2">
-                                        <input type="date" class="form-control" id="end_date" placeholder="日期" required name="estimated_end_date" value="{{ substr($data->estimated_end, 0, 10) }}">
-                                        <input type="time" class="form-control" id="end_time" placeholder="時間" required name="estimated_end_time" value="{{ substr($data->estimated_end, 11, 5) }}">
+                                        <input type="date" class="form-control" id="end_date" placeholder="日期" required
+                                            name="estimated_end_date" value="{{ substr($data->estimated_end, 0, 10) }}">
+                                        <input type="time" class="form-control" id="end_time" placeholder="時間" required
+                                            name="estimated_end_time" value="{{ substr($data->estimated_end, 11, 5) }}">
                                     </div>
                                 </div>
                                 <div class="mb-3">
@@ -104,19 +107,23 @@
                                 <div class="mb-3">
                                     <label for="project-priority" class="form-label">主要派工人<span
                                             class="text-danger">*</span></label>
-                                    <input type="text" class="form-control" name="created_by" value="{{ $data->user_data->name }}"  readonly>
+                                    <input type="text" class="form-control" name="created_by"
+                                        value="{{ $data->user_data->name }}" readonly>
                                 </div>
                                 <div class="mb-3">
-                                    <label for="project-priority" class="form-label">優先序<span
+                                    <label for="project-priority" class="form-label">狀態<span
                                             class="text-danger">*</span></label>
-                                    <select class="form-control" data-toggle="select" data-width="100%" name="priority">
-                                        <option value="0" {{ $data->priority == 0 ? 'selected' : '' }}>緊急</option>
-                                        <option value="1" {{ $data->priority == 1 ? 'selected' : '' }}>高</option>
-                                        <option value="2" {{ $data->priority == 2 ? 'selected' : '' }}>中</option>
-                                        <option value="3" {{ $data->priority == 3 ? 'selected' : '' }}>低</option>
+                                    <select class="form-control" data-toggle="select" data-width="100%" name="status">
+                                        <option value="1" {{ $data->status == 1 ? 'selected' : '' }}>送出派工</option>
+                                        <option value="2" {{ $data->status == 2 ? 'selected' : '' }}>接收派工</option>
+                                        <option value="3" {{ $data->status == 3 ? 'selected' : '' }}>進行中</option>
+                                        <option value="4" {{ $data->status == 4 ? 'selected' : '' }}>移轉</option>
+                                        <option value="8" {{ $data->status == 8 ? 'selected' : '' }}>人員已完成，待確認
+                                        </option>
+                                        <option value="9" {{ $data->status == 9 ? 'selected' : '' }}>完成</option>
                                     </select>
                                 </div>
-                                
+
                             </div> <!-- end col-->
                     </div>
                     <!-- end row -->
