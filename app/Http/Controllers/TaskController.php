@@ -159,7 +159,12 @@ class TaskController extends Controller
         // 篩選客戶名稱
         $project_name = $request->input('project_name');
         if ($project_name) {
-            $projectIds = CustProject::where('name', 'like', '%' . $project_name . '%')->pluck('id'); // 獲取符合條件的用戶 ID 列表
+            $userIds = User::where('status', 1)
+            ->where('group_id', 2)
+            ->where('name', 'like', '%' . $project_name . '%')
+            ->pluck('id'); // 獲取符合條件的用戶 ID 列表
+            $projectIds = CustProject::where('name', 'like', '%' . $project_name . '%')->orWhereIn('user_id',$userIds)->pluck('id'); // 獲取符合條件的用戶 ID 列表
+
             $datas->whereIn('project_id', $projectIds); // 篩選出符合用戶 ID 的專案
         }
 
