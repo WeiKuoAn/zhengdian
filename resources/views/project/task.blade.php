@@ -264,7 +264,7 @@
                                     <div class="input-group mb-2">
                                         <input type="date" class="form-control" name="estimated_end_date"
                                             placeholder="執行內容" required>
-                                        <input type="text" id="24hours-timepicker" name="estimated_end_time"
+                                        <input type="time"  name="estimated_end_time"
                                             class="form-control" placeholder="時：分" required>
                                     </div>
                                 </div>
