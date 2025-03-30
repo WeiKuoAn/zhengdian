@@ -161,15 +161,22 @@
                                             <td>{{ $task_data->estimated_end }}</td>
                                             <td>{{ $task_data->user_data->name }}</td>
                                             <td>
-                                                <button type="button" class="btn btn-sm btn-primary"
-                                                    onclick="openEditModal({{ $task_data->id }})">
-                                                    <i class="mdi mdi-square-edit-outline"></i>
-                                                </button>
-                                                <button type="button" class="btn btn-sm btn-danger"
-                                                    data-id="{{ $task_data->id }}" data-bs-toggle="modal"
-                                                    data-bs-target="#deleteTaskModal">
-                                                    <i class="mdi mdi-trash-can-outline"></i>
-                                                </button>
+                                                @if (Auth::user()->id == $task_data->created_by)
+                                                    <button type="button" class="btn btn-sm btn-primary"
+                                                        onclick="openEditModal({{ $task_data->id }})">
+                                                        <i class="mdi mdi-square-edit-outline"></i>
+                                                    </button>
+                                                    <button type="button" class="btn btn-sm btn-danger"
+                                                        data-id="{{ $task_data->id }}" data-bs-toggle="modal"
+                                                        data-bs-target="#deleteTaskModal">
+                                                        <i class="mdi mdi-trash-can-outline"></i>
+                                                    </button>
+                                                @else
+                                                    <button type="button" class="btn btn-sm btn-secondary "
+                                                        onclick="openCopyModal({{ $task_data->id }})">
+                                                        <i class="mdi mdi-content-copy"></i>
+                                                    </button>
+                                                @endif
                                             </td>
 
 
@@ -396,6 +403,97 @@
         </div>
     </div>
 
+    <div id="copyTaskModal" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">複製派工</h4>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="copyTaskForm" method="POST">
+                        @csrf
+                        <input type="hidden" id="copyTaskId" name="task_id">
+                        <input type="hidden" id="copyProjectId" name="project_id">
+                        <div class="row">
+                            <div class="mb-3">
+                                <label for="copyCheckStatusId" class="form-label">專案執行階段：</label>
+                                <select class="form-control" id="copyCheckStatusId" name="check_status_id" required>
+                                    <option value="" selected>請選擇</option>
+                                    @foreach ($check_statuss as $check_status)
+                                        <optgroup label="{{ $check_status->name }}">
+                                            @foreach ($check_status->check_childrens as $check_children)
+                                                <option value="{{ $check_children->id }}">{{ $check_children->name }}
+                                                </option>
+                                            @endforeach
+                                        </optgroup>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="copyTemplateId" class="form-label">任務項目：</label>
+                                <select class="form-control" id="copyTemplateId" name="template_id" required>
+                                    <option value="">請選擇...</option>
+                                    @foreach ($task_templates as $task_template)
+                                        <option value="{{ $task_template->id }}">{{ $task_template->name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">負責執行人員：</label>
+                                <div id="copyExecutorContainer">
+                                    <div class="executor-container">
+                                        <!-- 動態填充執行人員數據 -->
+                                    </div>
+                                </div>
+                                <button type="button" class="btn btn-link add-executor">+ 新增更多人員或執行內容</button>
+
+                            </div>
+                            <div class="mb-3">
+                                <label for="copyEstimatedEnd" class="form-label">預計完成日期：</label>
+                                <div class="input-group">
+                                    <input type="date" class="form-control" id="copyEstimatedEndDate"
+                                        name="estimated_end_date" required>
+                                    <input type="time" class="form-control" id="copyEstimatedEndTime"
+                                        name="estimated_end_time" required>
+
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="copyPriority" class="form-label">優先序：</label>
+                                <select class="form-control" id="copyPriority" name="priority">
+                                    <option value="0">緊急</option>
+                                    <option value="1">高</option>
+                                    <option value="2">中</option>
+                                    <option value="3">低</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="copyComments" class="form-label">任務項目描述：</label>
+                                <textarea class="form-control" id="copyComments" name="comments" rows="3"></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label for="copyStatus" class="form-label">狀態：</label>
+                                <select class="form-control" id="copyStatus" name="status">
+                                    <option value="1">送出派工</option>
+                                    <option value="2">接收派工</option>
+                                    <option value="3">進行中</option>
+                                    <option value="4">移轉</option>
+                                    <option value="8">人員已完成，待確認</option>
+                                    <option value="9">完成</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="text-center">
+                            <button type="submit" class="btn btn-success">保存</button>
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div id="deleteTaskModal" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">
         <div class="modal-dialog modal-sm">
             <div class="modal-content">
@@ -482,6 +580,61 @@
             };
         });
 
+        document.addEventListener('DOMContentLoaded', function() {
+            const copyModal = new bootstrap.Modal(document.getElementById('copyTaskModal'));
+
+            window.openCopyModal = function(taskId) {
+                // 發送請求獲取任務詳情
+                fetch(`/api/task/${taskId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log('獲取任務數據成功:', data);
+                        // 填充表單數據
+                        document.getElementById('copyTaskId').value = data.id;
+                        document.getElementById('copyProjectId').value = data.project_id;
+                        document.getElementById('copyCheckStatusId').value = data.check_status_id;
+                        document.getElementById('copyTemplateId').value = data.template_id;
+                        document.getElementById('copyEstimatedEndDate').value = data.estimated_end_date;
+                        document.getElementById('copyEstimatedEndTime').value = data.estimated_end_time;
+                        document.getElementById('copyPriority').value = data.priority;
+                        document.getElementById('copyComments').value = data.comments;
+                        document.getElementById('copyStatus').value = data.status;
+
+                        // 動態生成執行人員列表
+                        const executorContainer = document.getElementById('copyExecutorContainer');
+                        executorContainer.innerHTML = '';
+                        data.items.forEach(item => {
+                            executorContainer.innerHTML += `
+                        <div class="input-group mb-2 executor-entry">
+                            <select class="form-control" name="user_ids[]" required>
+                                @foreach ($users as $user)
+                                    <option value="{{ $user->id }}" ${item.user_id == {{ $user->id }} ? 'selected' : ''}>
+                                        {{ $user->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            <input type="text" class="form-control" name="contexts[]" value="${item.context}" placeholder="執行內容">
+                            <button type="button" class="btn btn-danger remove-executor">-</button>
+                        </div>
+                       
+                    `;
+                        });
+                        executorContainer.innerHTML += `<div class="executor-container"> </div>`
+
+                        // 設置表單的動作 URL
+                        const copyForm = document.getElementById('copyTaskForm');
+                        copyForm.action = "{{ route('project.task.data', $data->id) }}";
+
+                        // 顯示模態框
+                        copyModal.show();
+                    })
+                    .catch(error => {
+                        console.error('獲取任務數據失敗:', error);
+                        alert('無法加載數據，請稍後再試！');
+                    });
+            };
+        });
+
 
         $(document).ready(function() {
             // 綁定新增執行人員按鈕
@@ -511,20 +664,31 @@
             });
 
             $('form').on('submit', function(event) {
-                let formAction = $(this).attr('action'); // 取得當前表單的 action 屬性
-                let targetAction = "{{ route('project.task.data', $data->id) }}"; // 目標 action
+                const formId = $(this).attr('id');
 
-                // 只有當前表單的 action 符合時，才執行時間驗證
-                if (formAction === targetAction) {
-                    let timepickerValue = $('#24hours-timepicker').val().trim(); // 取得輸入值並去除空格
-
+                // 新增派工：檢查 24hours-timepicker（只有 addTaskModal 才有這個 id）
+                if (formId === undefined && $('#24hours-timepicker').length) {
+                    const timepickerValue = $('#24hours-timepicker').val().trim();
                     if (timepickerValue === '') {
-                        alert('請輸入預計完成時間！'); // 顯示警告
-                        $('#24hours-timepicker').focus(); // 將焦點放到該輸入框
-                        event.preventDefault(); // 阻止表單提交
+                        alert('請輸入預計完成時間！');
+                        $('#24hours-timepicker').focus();
+                        event.preventDefault();
+                    }
+                }
+
+                // 複製派工：檢查 copyEstimatedEndDate 和 copyEstimatedEndTime
+                if (formId === 'copyTaskForm') {
+                    const date = $('#copyEstimatedEndDate').val().trim();
+                    const time = $('#copyEstimatedEndTime').val().trim();
+
+                    if (date === '' || time === '') {
+                        alert('請輸入完整的預計完成日期與時間！');
+                        $('#copyEstimatedEndDate').focus();
+                        event.preventDefault();
                     }
                 }
             });
+
 
             // 專案執行階段變化時更新任務選項
             $('select[name="check_status_id"]').change(function() {
