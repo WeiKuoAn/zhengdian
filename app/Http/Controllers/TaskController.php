@@ -365,7 +365,7 @@ class TaskController extends Controller
         return view('task.check')->with('data', $data)->with('task_templates', $task_templates)->with('cust_projects', $cust_projects)->with('check_statuss', $check_statuss)->with('users', $users);
     }
 
-    public function check_update($id)
+    public function check_update($id, Request  $request)
     {
         $data = Task::findOrFail($id);
         $data->status = 9;
@@ -377,6 +377,19 @@ class TaskController extends Controller
             $item->status = 9;
             $item->save();
         }
+
+        // $end_time_dates = $request->input('end_time_dates');
+        // $end_time_times = $request->input('end_time_times');
+        // dd($end_time_dates, $end_time_times);
+        // foreach ($user_ids as $index => $user_id) {
+        //     TaskItem::create([
+        //         'user_id' => $user_id,
+        //         'context' => $contexts[$index],
+        //         'end_time' => $end_time_dates[$index] . ' ' . $end_time_times[$index] . ':00',
+        //         'status' => $taskItemStatus, // 確保新建的 TaskItem 也同步狀態
+        //     ]);
+        // }
+
         return redirect()->route('task.check.index');
     }
 

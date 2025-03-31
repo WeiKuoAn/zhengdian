@@ -21,6 +21,7 @@ use App\Http\Controllers\CalendarCategoryController;
 use App\Http\Controllers\CalendarController;
 use App\Http\Controllers\ProjectBusinessController;
 use App\Http\Controllers\ProjectManufacturingController;
+use App\Http\Controllers\SBIRController;
 use App\Http\Controllers\UserCustomerController;
 use App\Models\User; // ✅ 確保引用 Customer Model
 
@@ -84,7 +85,7 @@ Route::post('checkStatus/del/{id}', [CheckStatusController::class, 'destroy'])->
 Route::get('/get-parent-id', [CheckStatusController::class, 'getCheckStatus']);
 Route::get('/get-child-id', [CheckStatusController::class, 'getCheckStatus_child_id']);
 
-/*專案狀態設定 */
+/*派工狀態設定 */
 Route::get('TaskTemplate', [TaskTemplateController::class, 'index'])->name('TaskTemplate');
 Route::get('TaskTemplate/create', [TaskTemplateController::class, 'create'])->name('TaskTemplate.create');
 Route::post('TaskTemplate/create', [TaskTemplateController::class, 'store'])->name('TaskTemplate.create.data');
@@ -94,7 +95,7 @@ Route::get('TaskTemplate/del/{id}', [TaskTemplateController::class, 'delete'])->
 Route::post('TaskTemplate/del/{id}', [TaskTemplateController::class, 'destroy'])->name('TaskTemplate.del.data');
 Route::get('/get-tasktemplate-id', [TaskTemplateController::class, 'getTaskTemplate']);
 
-/*專案狀態設定 */
+/*派工狀態設定 */
 Route::get('task', [TaskController::class, 'index'])->name('task');
 Route::get('task/create', [TaskController::class, 'create'])->name('task.create');
 Route::post('task/create', [TaskController::class, 'store'])->name('task.create.data');
@@ -109,8 +110,6 @@ Route::get('task/check', [TaskController::class, 'check'])->name('task.check.ind
 Route::get('task/check/{id}', [TaskController::class, 'check_show'])->name('task.check');
 Route::post('task/check/{id}', [TaskController::class, 'check_update'])->name('task.check.data');
 Route::get('task/ok', [TaskController::class, 'ok'])->name('task.ok.index');
-
-
 
 /*專案類別設定 */
 Route::get('projectType', [ProjectTypeController::class, 'index'])->name('projectTypes');
@@ -140,6 +139,17 @@ Route::get('project/task/{id}', [ProjectController::class, 'task'])->name('proje
 Route::post('project/task/{id}', [ProjectController::class, 'task_create'])->name('project.task.data');
 Route::put('project/task/update/{id}', [ProjectController::class, 'task_update'])->name('project.task.update.data');
 Route::delete('project/task/delete/{id}', [ProjectController::class, 'task_delete'])->name('project.task.delete.data');
+
+
+//SBIR
+Route::get('project/sbir01', [SBIRController::class, 'sbir01'])->name('project.sbir01');
+Route::get('project/sbir02', [SBIRController::class, 'sbir02'])->name('project.sbir02');
+Route::get('project/sbir03', [SBIRController::class, 'sbir03'])->name('project.sbir03');
+Route::get('project/sbir04', [SBIRController::class, 'sbir04'])->name('project.sbir04');
+Route::get('project/sbir05', [SBIRController::class, 'sbir05'])->name('project.sbir05');
+Route::get('project/sbir06', [SBIRController::class, 'sbir06'])->name('project.sbir06');
+
+
 Route::get('/api/task/{id}', [TaskController::class, 'getTaskDetails']);
 
 Route::get('/get-customer-account/{id}', [ProjectController::class, 'getCustomerAccount']);

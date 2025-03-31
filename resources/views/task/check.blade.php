@@ -19,7 +19,8 @@
                             @csrf
                             <div class="row">
                                 <div class="mb-3">
-                                    <label for="inputEmail3" class="col-4 col-xl-3 col-form-label">專案名稱：<span class="text-danger">*</span></label>
+                                    <label for="inputEmail3" class="col-4 col-xl-3 col-form-label">專案名稱：<span
+                                            class="text-danger">*</span></label>
                                     <select class="form-control" data-toggle="select" data-width="100%" name="project_id"
                                         disabled>
                                         <option value="" selected>請選擇</option>
@@ -59,70 +60,103 @@
                                         <option value="">無</option>
                                     </select>
                                 </div>
-                                <div class="mb-3">
-                                    <label class="form-label">負責執行人員 / 完成時間 / 花費時間(hr) / 詳細內容<span class="text-danger">*</span></label>
-                                    <div id="executor-container">
-                                        @foreach ($data->items as $item)
-                                            <div class="input-group mb-2 executor-entry">
-                                                <select class="form-control" data-toggle="select" data-width="100%"
-                                                    name="user_ids[]" disabled>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">
+                                    負責執行人員 / 執行內容 / 人員花費時間(hr) / 實際完成時間
+                                    <span class="text-danger">*</span>
+                                </label>
+                                @foreach ($data->items as $item)
+                                    <div class="border rounded p-3 mb-3 bg-light" id="executor-container">
+                                        <div class="row g-2 mb-2 align-items-center">
+                                            <!-- 負責人員 -->
+                                            <div class="col-md-4">
+                                                <select class="form-control" name="user_ids[]" >
                                                     @foreach ($users as $key => $user)
                                                         <option value="{{ $user->id }}"
                                                             {{ $item->user_id == $user->id ? 'selected' : '' }}>
-                                                            {{ $user->name }}</option>
+                                                            {{ $user->name }}
+                                                        </option>
                                                     @endforeach
                                                 </select>
-                                                <input type="text" class="form-control" name="contexts[]"
-                                                    placeholder="執行內容" value="{{ $item->end_time }}">
-                                                <input type="text" class="form-control" name="contexts[]"
-                                                    placeholder="執行內容" value="{{ $item->done_time }} hr">
-                                                <input type="text" class="form-control" name="contexts[]"
-                                                    placeholder="執行內容" value="{{ $item->context }}">
                                             </div>
-                                        @endforeach
+                            
+                                            <!-- 執行內容 -->
+                                            <div class="col-md-4">
+                                                <input type="text" class="form-control" name="contexts[]" placeholder="執行內容"
+                                                    value="{{ $item->context }}">
+                                            </div>
+                            
+                                            <!-- 花費時間 -->
+                                            <div class="col-md-4">
+                                                <input type="text" class="form-control" name="done_times[]" placeholder="人員花費時間"
+                                                    value="{{ $item->done_time }} hr">
+                                            </div>
+                                        </div>
+                            
+                                        <div class="row g-2">
+                                            <!-- 日期 -->
+                                            <div class="col-md-6">
+                                                <input type="date" class="form-control" name="end_time_dates[]"
+                                                    value="{{ substr($item->end_time, 0, 10) }}">
+                                            </div>
+                            
+                                            <!-- 時間 -->
+                                            <div class="col-md-6">
+                                                <input type="time" class="form-control" name="end_time_times[]"
+                                                    value="{{ substr($item->end_time, 11, 5) }}">
+                                            </div>
+                                        </div>
                                     </div>
+                                @endforeach
+                            </div>
+                            
+                              
+
+                            <div class="mb-3">
+                                <label class="form-label">原預計完成日期：<span class="text-danger">*</span></label>
+                                <div class="input-group mb-2">
+                                    <input type="date" class="form-control" name="estimated_end_date"
+                                        value="{{ substr($data->estimated_end, 0, 10) }}" disabled>
+                                    <input type="text" id="24hours-timepicker" name="estimated_end_time"
+                                        class="form-control" placeholder="時：分"
+                                        value="{{ substr($data->estimated_end, 11, 5) }}" disabled>
                                 </div>
-                                <div class="mb-3">
-                                    <label class="form-label">預計完成日期：<span class="text-danger">*</span></label>
-                                    <div class="input-group mb-2">
-                                        <input type="date" class="form-control" name="estimated_end_date"
-                                            value="{{ substr($data->estimated_end, 0, 10) }}" disabled>
-                                        <input type="text" id="24hours-timepicker" name="estimated_end_time"
-                                            class="form-control" placeholder="時：分"
-                                            value="{{ substr($data->estimated_end, 11, 5) }}" disabled>
-                                    </div>
-                                </div>
-                                <div class="mb-3">
-                                    <label for="project-priority" class="form-label">優先序<span
-                                            class="text-danger">*</span></label>
-                                    <select class="form-control" data-toggle="select" data-width="100%" name="priority"
-                                        disabled>
-                                        <option value="0" {{ $data->priority == 0 ? 'selected' : '' }}>緊急</option>
-                                        <option value="1" {{ $data->priority == 1 ? 'selected' : '' }}>高</option>
-                                        <option value="2" {{ $data->priority == 2 ? 'selected' : '' }}>中</option>
-                                        <option value="3" {{ $data->priority == 3 ? 'selected' : '' }}>低</option>
-                                    </select>
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label">任務項目描述<span class="text-danger"></span></label>
-                                    <textarea class="form-control" id="floatingTextarea" name="comments" rows="3" readonly>{{ $data->comments }}</textarea>
-                                </div>
-                            </div> <!-- end col-->
-                    </div>
-                    <!-- end row -->
-                    <div class="row mb-3">
-                        <div class="col-12 text-center">
-                            <button type="submit" class="btn btn-success waves-effect waves-light m-1" onclick="if(!confirm('是否已確定派工無誤？')){event.returnValue=false;return false;}"><i
+                            </div>
+                            <div class="mb-3">
+                                <label for="project-priority" class="form-label">優先序<span
+                                        class="text-danger">*</span></label>
+                                <select class="form-control" data-toggle="select" data-width="100%" name="priority"
+                                    disabled>
+                                    <option value="0" {{ $data->priority == 0 ? 'selected' : '' }}>緊急</option>
+                                    <option value="1" {{ $data->priority == 1 ? 'selected' : '' }}>高</option>
+                                    <option value="2" {{ $data->priority == 2 ? 'selected' : '' }}>中</option>
+                                    <option value="3" {{ $data->priority == 3 ? 'selected' : '' }}>低</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">任務項目描述<span class="text-danger"></span></label>
+                                <textarea class="form-control" id="floatingTextarea" name="comments" rows="3" readonly>{{ $data->comments }}</textarea>
+                            </div>
+                    </div> <!-- end col-->
+                </div>
+                <!-- end row -->
+                <div class="row mb-3">
+                    <div class="col-12 text-center">
+                        @if ($data->status != 9)
+                            <button type="submit" class="btn btn-success waves-effect waves-light m-1"
+                                onclick="if(!confirm('是否已確定派工無誤？')){event.returnValue=false;return false;}"><i
                                     class="fe-check-circle me-1"></i>儲存變更</button>
-                            <button type="reset" class="btn btn-secondary waves-effect waves-light m-1"
-                                onclick="history.go(-1)"><i class="fe-x me-1"></i>回上一頁</button>
-                        </div>
+                        @endif
+                        <button type="reset" class="btn btn-secondary waves-effect waves-light m-1"
+                            onclick="history.go(-1)"><i class="fe-x me-1"></i>回上一頁</button>
                     </div>
-                    </form>
-                </div> <!-- end card-body -->
-            </div> <!-- end card-->
-        </div> <!-- end col-->
-        <!-- end row -->
+                </div>
+                </form>
+            </div> <!-- end card-body -->
+        </div> <!-- end card-->
+    </div> <!-- end col-->
+    <!-- end row -->
 
     </div> <!-- container -->
 @endsection

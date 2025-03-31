@@ -75,7 +75,6 @@ class ProjectController extends Controller
                 ->where('group_id', 2)
                 ->where('name', 'like', '%' . $cust_name . '%')
                 ->pluck('id'); // 獲取符合條件的用戶 ID 列表
-
             $datas->whereIn('user_id', $userIds); // 篩選出符合用戶 ID 的專案
         }
 

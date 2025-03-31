@@ -68,6 +68,7 @@
                                         <th scope="col">派工進度</th>
                                         <th scope="col">完成時間</th>
                                         <th scope="col">主要派工人</th>
+                                        <th scope="col">檢視</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -129,6 +130,8 @@
                                             </td>
                                             <td>{{ $data->estimated_end }}</td>
                                             <td>{{ $data->user_data->name }}</td>
+                                            <td><a href="{{ route('task.check', $data->id) }}" class="action-icon">
+                                                <i class="mdi mdi-eye"></i></a></td>
                                         </tr>
                                     @endforeach
                                 </tbody>

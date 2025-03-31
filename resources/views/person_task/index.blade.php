@@ -21,7 +21,7 @@
 
 
 
-        <div class="card">
+        {{-- <div class="card">
             <div class="card-body">
                 <div class="row justify-content-between">
                     <div class="col-md-10">
@@ -39,7 +39,7 @@
                                     value="{{ request()->get('start_date') }}">
                             </div>
                             <div class="me-3">
-                                <input type="date" name="endDate" id="end_date" class="form-control my-1 my-md-0"
+                                <input type="date" name="endDate" id="endDate" class="form-control my-1 my-md-0"
                                     value="{{ request()->get('end_date') }}">
                             </div>
                             <label for="status-select" class="me-2">專案緊急度</label>
@@ -61,7 +61,7 @@
                     </div>
                 </div>
             </div>
-        </div>
+        </div> --}}
         <div class="row">
             <!-- Kanban Board Structure -->
             <div class="col-lg-3">
@@ -323,7 +323,7 @@
                             </div>
 
                             <div class="mb-3" id="completionFields" style="display: none;">
-                                <label class="form-label">預計完成日期：<span class="text-danger">*</span></label>
+                                <label class="form-label">實際完成日期：<span class="text-danger">*</span></label>
                                 <div id="executor-container">
                                     <div class="input-group mb-2">
                                         <input type="date" class="form-control" id="end_date" placeholder="日期"
