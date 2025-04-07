@@ -142,12 +142,20 @@ Route::delete('project/task/delete/{id}', [ProjectController::class, 'task_delet
 
 
 //SBIR
-Route::get('project/sbir01', [SBIRController::class, 'sbir01'])->name('project.sbir01');
-Route::get('project/sbir02', [SBIRController::class, 'sbir02'])->name('project.sbir02');
-Route::get('project/sbir03', [SBIRController::class, 'sbir03'])->name('project.sbir03');
-Route::get('project/sbir04', [SBIRController::class, 'sbir04'])->name('project.sbir04');
-Route::get('project/sbir05', [SBIRController::class, 'sbir05'])->name('project.sbir05');
-Route::get('project/sbir06', [SBIRController::class, 'sbir06'])->name('project.sbir06');
+Route::get('project/sbir01/{id}', [SBIRController::class, 'sbir01'])->name('project.sbir01');
+Route::post('project/sbir01/{id}', [SBIRController::class, 'sbir01_data'])->name('project.sbir01.data');
+Route::get('project/sbir02/{id}', [SBIRController::class, 'sbir02'])->name('project.sbir02');
+Route::post('project/sbir02/{id}', [SBIRController::class, 'sbir02_data'])->name('project.sbir02.data');
+Route::get('project/sbir03/{id}', [SBIRController::class, 'sbir03'])->name('project.sbir03');
+Route::post('project/sbir03/{id}', [SBIRController::class, 'sbir03_data'])->name('project.sbir03.data');
+Route::get('project/sbir04/{id}', [SBIRController::class, 'sbir04'])->name('project.sbir04');
+Route::post('project/sbir04/{id}', [SBIRController::class, 'sbir04_data'])->name('project.sbir04.data');
+Route::get('project/sbir05/{id}', [SBIRController::class, 'sbir05'])->name('project.sbir05');
+Route::post('project/sbir05/{id}', [SBIRController::class, 'sbir05_data'])->name('project.sbir05.data');
+Route::get('project/sbir06/{id}', [SBIRController::class, 'sbir06'])->name('project.sbir06');
+Route::post('project/sbir06/{id}', [SBIRController::class, 'sbir06_data'])->name('project.sbir06.data');
+
+Route::get('project/sbir/{id}/export', [SBIRController::class, 'export'])->name('sbir.export');
 
 
 Route::get('/api/task/{id}', [TaskController::class, 'getTaskDetails']);

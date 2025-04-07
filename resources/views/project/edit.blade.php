@@ -45,6 +45,12 @@
                                 </a>
                             </li>
                             <li class="nav-item">
+                                <a href="{{ route('project.sbir01', $data->id) }}" aria-expanded="false"
+                                    class="nav-link">
+                                    SBIR內容撰寫
+                                </a>
+                            </li>
+                            <li class="nav-item">
                                 <a href="{{ route('project.write', $data->id) }}" aria-expanded="false"
                                     class="nav-link">
                                     內容撰寫
