@@ -114,8 +114,7 @@
                                                 </a>
                                             </li>
                                             <li class="nav-item">
-                                                <a href="{{ route("project.sbir03",$project->id) }}"
-                                                    class="nav-link">
+                                                <a href="{{ route('project.sbir03', $project->id) }}" class="nav-link">
                                                     計畫摘要表
                                                 </a>
                                             </li>
@@ -384,10 +383,10 @@
                                                         <select class="form-select" name="youth_startup">
                                                             <option value="">請選擇</option>
                                                             <option value="yes"
-                                                                @if ($sbir02_data->youth_startup == 'yes') selected @endif>是
+                                                                @if (optional($sbir02_data)->youth_startup == 'yes') selected @endif>是
                                                             </option>
                                                             <option value="no"
-                                                                @if ($sbir02_data->youth_startup == 'no') selected @endif>否
+                                                                @if (optional($sbir02_data)->youth_startup == 'no') selected @endif>否
                                                             </option>
                                                         </select>
                                                     </div>
@@ -396,26 +395,27 @@
                                                         <select class="form-select" name="government_support">
                                                             <option value="">請選擇</option>
                                                             <option value="yes"
-                                                                @if ($sbir02_data->government_support == 'yes') selected @endif>是
+                                                                @if (optional($sbir02_data)->government_support == 'yes') selected @endif>是
                                                             </option>
                                                             <option value="no"
-                                                                @if ($sbir02_data->government_support == 'no') selected @endif>否
+                                                                @if (optional($sbir02_data)->government_support == 'no') selected @endif>否
                                                             </option>
+
                                                         </select>
                                                     </div>
                                                     <div class="col-md-12">
                                                         <label class="form-label">計畫創新技術或服務內容（500字以內）</label>
-                                                        <textarea class="form-control" name="context" rows="5" maxlength="500">{{ $sbir02_data->context }}</textarea>
+                                                        <textarea class="form-control" name="context" rows="5" maxlength="500">{{ optional($sbir02_data)->context }}</textarea>
                                                     </div>
                                                     <div class="col-md-12">
                                                         <label class="form-label">是否具有技術研發能力</label>
                                                         <select class="form-select" name="has_rnd">
                                                             <option value="">請選擇</option>
                                                             <option value="yes"
-                                                                @if ($sbir02_data->has_rnd == 'yes') selected @endif>是
+                                                                @if (optional($sbir02_data)->has_rnd == 'yes') selected @endif>是
                                                             </option>
                                                             <option value="no">
-                                                                @if ($sbir02_data->has_rnd == 'no')
+                                                                @if (optional($sbir02_data)->has_rnd == 'no')
                                                                     selected
                                                                 @endif否
                                                             </option>

@@ -201,8 +201,8 @@ class SBIRController extends Controller
         if (count($cust_factorys) > 0) {
             $cust_factorys = CustFactory::where('project_id', $project->id)->delete();
         }
-        foreach ($request->factory_names as $key => $factory_name) {
-            if (isset($factory_name) && $factory_name != null) {
+        if (isset($request->factory_names) && $request->factory_names != null) {
+            foreach ($request->factory_names as $key => $factory_name) {
                 $cust_factory = new CustFactory;
                 $cust_factory->user_id = $project->user_id;
                 $cust_factory->project_id = $project->id;
