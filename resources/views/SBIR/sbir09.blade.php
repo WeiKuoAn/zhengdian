@@ -120,37 +120,37 @@
                                             </li>
                                             <li class="nav-item">
                                                 <a href="{{ route("project.sbir04",$project->id) }}" 
-                                                    class="nav-link active">
+                                                    class="nav-link ">
                                                     肆、公司概況
                                                 </a>
                                             </li>
                                             <li class="nav-item">
                                                 <a href="{{ route("project.sbir05",$project->id) }}" 
-                                                    class="nav-link">
+                                                    class="nav-link ">
                                                     伍、研發動機
                                                 </a>
                                             </li>
                                             <li class="nav-item">
                                                 <a href="{{ route("project.sbir06",$project->id) }}" 
-                                                    class="nav-link">
+                                                    class="nav-link ">
                                                     陸、計畫目標
                                                 </a>
                                             </li>
                                             <li class="nav-item">
                                                 <a href="{{ route("project.sbir07",$project->id) }}" 
-                                                    class="nav-link">
+                                                    class="nav-link ">
                                                     柒、實施方式
                                                 </a>
                                             </li>
                                             <li class="nav-item">
                                                 <a href="{{ route("project.sbir08",$project->id) }}" 
-                                                    class="nav-link">
+                                                    class="nav-link ">
                                                     捌、智財分析
                                                 </a>
                                             </li>
                                             <li class="nav-item">
                                                 <a href="{{ route("project.sbir09",$project->id) }}" 
-                                                    class="nav-link">
+                                                    class="nav-link active">
                                                     玖、計畫執行查核點說明
                                                 </a>
                                             </li>

@@ -94,7 +94,7 @@
         <!-- end row -->
 
         <div class="row">
-            <form action="{{ route('project.sbir05.data', $project->id) }}" method="POST">
+            <form action="{{ route('project.sbir07.data', $project->id) }}" method="POST">
                 @csrf
                 <div class="row">
                     <div class="col-lg-12">
@@ -128,19 +128,19 @@
                                             </li>
                                             <li class="nav-item">
                                                 <a href="{{ route("project.sbir05",$project->id) }}" 
-                                                    class="nav-link active">
+                                                    class="nav-link ">
                                                     伍、研發動機
                                                 </a>
                                             </li>
                                             <li class="nav-item">
                                                 <a href="{{ route("project.sbir06",$project->id) }}" 
-                                                    class="nav-link">
+                                                    class="nav-link ">
                                                     陸、計畫目標
                                                 </a>
                                             </li>
                                             <li class="nav-item">
                                                 <a href="{{ route("project.sbir07",$project->id) }}" 
-                                                    class="nav-link">
+                                                    class="nav-link active">
                                                     柒、實施方式
                                                 </a>
                                             </li>
@@ -174,25 +174,37 @@
                                             @php
                                                 $sections = [
                                                     [
-                                                        'title' => '(一)研發動機',
+                                                        'title' => '(一)執行步驟及方法',
                                                         'field' => 'text1',
                                                         'description' =>
-                                                            '國內外產業環境之現況需求、產業環境分析與發展及描述企業現今與未來所將面臨的問題或瓶頸。',
+                                                            '(宜對照計畫目標撰寫相關流程。如:技術服務機制流程設計、風險評估及因應策略)',
                                                     ],
                                                     [
-                                                        'title' => '(二)競爭力分析-技術/產品/服務競爭優勢比較',
+                                                        'title' =>
+                                                            '(二)技術及智慧財產權來源對象背景、技術及智慧財產權能力及合作方式說明。',
                                                         'field' => 'text2',
                                                         'description' =>
-                                                            '與同業公司之價格市場占有率和市場區隔等項目進行分析比較。',
+                                                            '(如:合作單位研發實績/背景、工作項目分工說明、提案公司承接規劃等)',
+                                                    ],
+                                                ];
+
+                                                $section2s = [
+                                                    [
+                                                        'title' => '四、聯合開發/研發聯盟計畫分工及智財權管理',
+                                                        'field' => 'text3',
+                                                        'description' =>
+                                                            '(請參考申請須知附件I：研發聯盟成員權利義務待釐清事項填寫)',
                                                     ],
                                                     [
-                                                        'title' => '(三)可行性分析',
-                                                        'field' => 'text3',
-                                                        'description' => '市場需求性與優勢及公司研發能力。',
+                                                        'title' => '五、預期效益',
+                                                        'field' => 'text4',
+                                                        'description' =>
+                                                            '(說明計畫完成後之市場效益、創新突破、產品附加價值提升、對國內產業發展、其他社會貢獻及節能減碳產出等因本計畫所產生之量化或質化效益。)',
                                                     ],
                                                 ];
                                             @endphp
 
+                                            <h5 class="text-uppercase bg-light p-2">三、實施方式：</h5>
                                             @foreach ($sections as $sec)
                                                 <div class="card mb-3">
                                                     <div class="card-body">
@@ -205,6 +217,24 @@
                                                         <button type="button" class="btn btn-sm btn-primary open-editor"
                                                             data-bs-toggle="modal" data-bs-target="#editorModal"
                                                             data-field="{{ $sec['field'] }}">
+                                                            編輯內容
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            @endforeach
+                                            @foreach ($section2s as $sec2)
+                                                <h5 class="text-uppercase bg-light p-2">{{ $sec2['title'] }}　{{ $sec2['description'] }}</h5>
+                                                <div class="card mb-3">
+                                                    <div class="card-body">
+                                                        {{-- <h5 class="card-title">{{ $sec2['title'] }}</h5>
+                                                        <p class="text-muted">{{ $sec2['description'] }}</p> --}}
+                                                        <div id="preview_{{ $sec2['field'] }}"
+                                                            class="border p-3 bg-light mb-2">
+                                                            {!! $data[$sec2['field']] ?? '' !!}
+                                                        </div>
+                                                        <button type="button" class="btn btn-sm btn-primary open-editor"
+                                                            data-bs-toggle="modal" data-bs-target="#editorModal"
+                                                            data-field="{{ $sec2['field'] }}">
                                                             編輯內容
                                                         </button>
                                                     </div>
@@ -268,102 +298,104 @@
     </script>
     <script>
         let editorInstance;
-      
-        document.addEventListener('DOMContentLoaded', function () {
-          tinymce.init({
-            selector: '#modalEditor',
-            height: 500,
-            menubar: true,
-            plugins: 'lists table image code link textcolor',
-            toolbar: 'undo redo | blocks | bold italic underline forecolor backcolor | alignleft aligncenter alignright | bullist numlist | image table link | code',
-            images_upload_url: '/upload-image',
-            automatic_uploads: true,
-            file_picker_types: 'image',
-            file_picker_callback: function (cb, value, meta) {
-              if (meta.filetype === 'image') {
-                const input = document.createElement('input');
-                input.setAttribute('type', 'file');
-                input.setAttribute('accept', 'image/*');
-      
-                input.onchange = function () {
-                  const file = this.files[0];
-                  const formData = new FormData();
-                  formData.append('file', file);
-      
-                  fetch('/upload-image', {
-                    method: 'POST',
-                    body: formData,
-                    headers: {
-                      'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+
+        document.addEventListener('DOMContentLoaded', function() {
+            tinymce.init({
+                selector: '#modalEditor',
+                height: 500,
+                menubar: true,
+                plugins: 'lists table image code link textcolor',
+                toolbar: 'undo redo | blocks | bold italic underline forecolor backcolor | alignleft aligncenter alignright | bullist numlist | image table link | code',
+                images_upload_url: '/upload-image',
+                automatic_uploads: true,
+                file_picker_types: 'image',
+                file_picker_callback: function(cb, value, meta) {
+                    if (meta.filetype === 'image') {
+                        const input = document.createElement('input');
+                        input.setAttribute('type', 'file');
+                        input.setAttribute('accept', 'image/*');
+
+                        input.onchange = function() {
+                            const file = this.files[0];
+                            const formData = new FormData();
+                            formData.append('file', file);
+
+                            fetch('/upload-image', {
+                                    method: 'POST',
+                                    body: formData,
+                                    headers: {
+                                        'X-CSRF-TOKEN': document.querySelector(
+                                            'meta[name="csrf-token"]').getAttribute(
+                                            'content')
+                                    }
+                                })
+                                .then(response => response.json())
+                                .then(result => {
+                                    cb(result.location);
+                                });
+                        };
+
+                        input.click();
                     }
-                  })
-                  .then(response => response.json())
-                  .then(result => {
-                    cb(result.location);
-                  });
-                };
-      
-                input.click();
-              }
-            },
-            setup: function (editor) {
-              editorInstance = editor;
-            }
-          });
-      
-          document.querySelectorAll('.open-editor').forEach(btn => {
-            btn.addEventListener('click', function () {
-              const field = this.getAttribute('data-field');
-      
-              // 改為呼叫正確的 GET 路由
-              fetch(`/project/${projectId}/sbir05/get-field?field=${field}`)
-                .then(res => res.json())
-                .then(data => {
-                  const content = data.value || '';
-                  document.getElementById('currentField').value = field;
-                  const wait = setInterval(() => {
-                    const editor = tinymce.get('modalEditor');
-                    if (editor) {
-                      editor.setContent(content);
-                      clearInterval(wait);
-                    }
-                  }, 100);
+                },
+                setup: function(editor) {
+                    editorInstance = editor;
+                }
+            });
+
+            document.querySelectorAll('.open-editor').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const field = this.getAttribute('data-field');
+
+                    // 改為呼叫正確的 GET 路由
+                    fetch(`/project/${projectId}/sbir07/get-field?field=${field}`)
+                        .then(res => res.json())
+                        .then(data => {
+                            const content = data.value || '';
+                            document.getElementById('currentField').value = field;
+                            const wait = setInterval(() => {
+                                const editor = tinymce.get('modalEditor');
+                                if (editor) {
+                                    editor.setContent(content);
+                                    clearInterval(wait);
+                                }
+                            }, 100);
+                        });
                 });
             });
-          });
         });
-      
+
         function saveEditorContent() {
-          const field = document.getElementById('currentField').value;
-          const content = tinymce.get('modalEditor').getContent();
-      
-          const preview = document.getElementById(`preview_${field}`);
-          if (preview) preview.innerHTML = content;
-      
-          fetch(`/project/${projectId}/sbir05/update-field`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-            },
-            body: JSON.stringify({
-              field: field,
-              value: content
-            })
-          })
-          .then(res => res.json())
-          .then(data => {
-            if (data.success) {
-              const modalInstance = bootstrap.Modal.getInstance(document.getElementById('editorModal'));
-              modalInstance.hide();
-              alert('儲存成功');
-            } else {
-              alert('儲存失敗');
-            }
-          })
-          .catch(err => {
-            alert('錯誤發生：' + err.message);
-          });
+            const field = document.getElementById('currentField').value;
+            const content = tinymce.get('modalEditor').getContent();
+
+            const preview = document.getElementById(`preview_${field}`);
+            if (preview) preview.innerHTML = content;
+
+            fetch(`/project/${projectId}/sbir07/update-field`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    },
+                    body: JSON.stringify({
+                        field: field,
+                        value: content
+                    })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        const modalInstance = bootstrap.Modal.getInstance(document.getElementById('editorModal'));
+                        modalInstance.hide();
+                        alert('儲存成功');
+                    } else {
+                        alert('儲存失敗');
+                    }
+                })
+                .catch(err => {
+                    alert('錯誤發生：' + err.message);
+                });
         }
-      </script>
+    </script>
 @endsection

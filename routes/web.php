@@ -151,6 +151,7 @@ Route::get('project/sbir03/{id}', [SBIRController::class, 'sbir03'])->name('proj
 Route::post('project/sbir03/{id}', [SBIRController::class, 'sbir03_data'])->name('project.sbir03.data');
 Route::get('project/sbir04/{id}', [SBIRController::class, 'sbir04'])->name('project.sbir04');
 Route::post('project/sbir04/{id}', [SBIRController::class, 'sbir04_data'])->name('project.sbir04.data');
+//SBIR05
 Route::get('project/sbir05/{id}', [SBIRController::class, 'sbir05'])->name('project.sbir05');
 Route::post('project/sbir05/{id}', [SBIRController::class, 'sbir05_data'])->name('project.sbir05.data');
 Route::post('/project/{id}/sbir05/update-field', [SBIRController::class, 'sbir05_updateField']);
@@ -160,8 +161,29 @@ Route::get('/project/{id}/sbir05/get-field', function (\Illuminate\Http\Request 
     return response()->json(['value' => $record?->{$field} ?? '']);
 });
 
+//SBIR06
 Route::get('project/sbir06/{id}', [SBIRController::class, 'sbir06'])->name('project.sbir06');
 Route::post('project/sbir06/{id}', [SBIRController::class, 'sbir06_data'])->name('project.sbir06.data');
+Route::post('/project/{id}/sbir06/update-field', [SBIRController::class, 'sbir06_updateField']);
+Route::get('/project/{id}/sbir06/get-field', function (\Illuminate\Http\Request $request, $id) {
+    $field = $request->query('field');
+    $record = \App\Models\SBIR06::where('project_id', $id)->first();
+    return response()->json(['value' => $record?->{$field} ?? '']);
+});
+
+//SBIR07
+Route::get('project/sbir07/{id}', [SBIRController::class, 'sbir07'])->name('project.sbir07');
+Route::post('project/sbir07/{id}', [SBIRController::class, 'sbir07_data'])->name('project.sbir07.data');
+Route::post('/project/{id}/sbir07/update-field', [SBIRController::class, 'sbir07_updateField']);
+Route::get('/project/{id}/sbir07/get-field', function (\Illuminate\Http\Request $request, $id) {
+    $field = $request->query('field');
+    $record = \App\Models\SBIR07::where('project_id', $id)->first();
+    return response()->json(['value' => $record?->{$field} ?? '']);
+});
+
+Route::get('project/sbir08/{id}', [SBIRController::class, 'sbir08'])->name('project.sbir08');
+Route::get('project/sbir09/{id}', [SBIRController::class, 'sbir09'])->name('project.sbir09');
+Route::get('project/sbir10/{id}', [SBIRController::class, 'sbir10'])->name('project.sbir10');
 
 Route::get('project/sbir/{id}/export', [SBIRController::class, 'export'])->name('sbir.export');
 

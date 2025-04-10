@@ -94,7 +94,7 @@
         <!-- end row -->
 
         <div class="row">
-            <form action="{{ route('project.sbir05.data', $project->id) }}" method="POST">
+            <form action="{{ route('project.sbir06.data', $project->id) }}" method="POST">
                 @csrf
                 <div class="row">
                     <div class="col-lg-12">
@@ -128,13 +128,13 @@
                                             </li>
                                             <li class="nav-item">
                                                 <a href="{{ route("project.sbir05",$project->id) }}" 
-                                                    class="nav-link active">
+                                                    class="nav-link ">
                                                     伍、研發動機
                                                 </a>
                                             </li>
                                             <li class="nav-item">
                                                 <a href="{{ route("project.sbir06",$project->id) }}" 
-                                                    class="nav-link">
+                                                    class="nav-link active">
                                                     陸、計畫目標
                                                 </a>
                                             </li>
@@ -174,21 +174,38 @@
                                             @php
                                                 $sections = [
                                                     [
-                                                        'title' => '(一)研發動機',
+                                                        'title' => '(一)計畫目標',
                                                         'field' => 'text1',
                                                         'description' =>
-                                                            '國內外產業環境之現況需求、產業環境分析與發展及描述企業現今與未來所將面臨的問題或瓶頸。',
+                                                            '(如:既有技術/服務缺口提出明確解決方案或開發新興市場，計畫產出可提高公司獲利(益)模式)',
                                                     ],
                                                     [
-                                                        'title' => '(二)競爭力分析-技術/產品/服務競爭優勢比較',
+                                                        'title' => '(二)創新性說明',
                                                         'field' => 'text2',
                                                         'description' =>
-                                                            '與同業公司之價格市場占有率和市場區隔等項目進行分析比較。',
+                                                            '(請說明本計畫在系統、研發、製程、產品功能或規格等構面之創新性。)。',
                                                     ],
                                                     [
-                                                        'title' => '(三)可行性分析',
+                                                        'title' => '(三)功能規格（技術指標）/服務模式（服務指標）',
                                                         'field' => 'text3',
                                                         'description' => '市場需求性與優勢及公司研發能力。',
+                                                    ],
+                                                    [
+                                                        'title' => '(四)主要關鍵技術或服務、零組件及其來源',
+                                                        'field' => 'text4',
+                                                        'description' =>
+                                                            '(計畫開發核心能力掌握程度，如:主要研發人員、原料來源、平台維運、金流收益等)',
+                                                    ],
+                                                    [
+                                                        'title' => '(五)技術或服務應用範圍',
+                                                        'field' => 'text5',
+                                                        'description' =>
+                                                            '(請儘量附圖表配合說明)',
+                                                    ],
+                                                    [
+                                                        'title' => '(六)加值應用說明',
+                                                        'field' => 'text6',
+                                                        'description' => '(申請SBIR Phase2+申請階段必填，並須敘明原Phase 2計畫名稱、研發成果及如何加值應用)',
                                                     ],
                                                 ];
                                             @endphp
@@ -316,7 +333,7 @@
               const field = this.getAttribute('data-field');
       
               // 改為呼叫正確的 GET 路由
-              fetch(`/project/${projectId}/sbir05/get-field?field=${field}`)
+              fetch(`/project/${projectId}/sbir06/get-field?field=${field}`)
                 .then(res => res.json())
                 .then(data => {
                   const content = data.value || '';
@@ -340,7 +357,7 @@
           const preview = document.getElementById(`preview_${field}`);
           if (preview) preview.innerHTML = content;
       
-          fetch(`/project/${projectId}/sbir05/update-field`, {
+          fetch(`/project/${projectId}/sbir06/update-field`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',

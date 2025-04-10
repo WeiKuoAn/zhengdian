@@ -8,6 +8,8 @@ use App\Models\SBIR01;
 use App\Models\SBIR02;
 use App\Models\SBIR03;
 use App\Models\SBIR05;
+use App\Models\SBIR06;
+use App\Models\SBIR07;
 use Carbon\Carbon;
 use App\Models\CustData;
 use App\Models\CustFactory;
@@ -284,27 +286,88 @@ class SBIRController extends Controller
     public function sbir06($id)
     {
         $project = CustProject::where('id', $id)->first();
-        return view('SBIR.sbir06')->with('project', $project);
+        $data = SBIR05::where('project_id', $id)->first();
+        return view('SBIR.sbir06')->with('project', $project)->with('data', $data);
+    }
+
+    public function sbir06_updateField(Request $request, $id)
+    {
+        $project = CustProject::where('id', $id)->first();
+        $request->validate([
+            'field' => 'required|in:text1,text2,text3,text4,text5,text6',
+            'value' => 'required|string',
+        ]);
+
+        $record = SBIR06::firstOrNew(['project_id' => $id]);
+        $record->user_id = $project->user_id;
+        $record->{$request->field} = $request->value;
+        $record->save();
+
+        return response()->json(['success' => true]);
+    }
+
+    public function sbir07($id)
+    {
+        $project = CustProject::where('id', $id)->first();
+        $data = SBIR07::where('project_id', $id)->first();
+        return view('SBIR.sbir07')->with('project', $project)->with('data', $data);
+    }
+
+    public function sbir07_updateField(Request $request, $id)
+    {
+        $project = CustProject::where('id', $id)->first();
+        $request->validate([
+            'field' => 'required|in:text1,text2,text3,text4,text5,text6',
+            'value' => 'required|string',
+        ]);
+
+        $record = SBIR07::firstOrNew(['project_id' => $id]);
+        $record->user_id = $project->user_id;
+        $record->{$request->field} = $request->value;
+        $record->save();
+
+        return response()->json(['success' => true]);
+    }
+
+    public function sbir08($id)
+    {
+        $project = CustProject::where('id', $id)->first();
+        $data = SBIR07::where('project_id', $id)->first();
+        return view('SBIR.sbir08')->with('project', $project)->with('data', $data);
+    }
+
+    public function sbir09($id)
+    {
+        $project = CustProject::where('id', $id)->first();
+        $data = SBIR07::where('project_id', $id)->first();
+        return view('SBIR.sbir09')->with('project', $project)->with('data', $data);
+    }
+
+    public function sbir10($id)
+    {
+        $project = CustProject::where('id', $id)->first();
+        $data = SBIR07::where('project_id', $id)->first();
+        return view('SBIR.sbir10')->with('project', $project)->with('data', $data);
     }
 
     public function export($id)
-{
-    $data = SBIR05::where('project_id', $id)->firstOrFail();
-    $exporter = new WordExporter();
+    {
+        $data = SBIR05::where('project_id', $id)->firstOrFail();
+        $exporter = new WordExporter();
 
-    $text1 = $exporter->cleanHtmlContent($data->text1 ?? '');
+        $text1 = $exporter->cleanHtmlContent($data->text1 ?? '');
 
-    $text2 = $exporter->cleanHtmlContent($data->text2 ?? '');
-    $text3 = $exporter->cleanHtmlContent($data->text3 ?? '');
-    dd($data->text1);
+        $text2 = $exporter->cleanHtmlContent($data->text2 ?? '');
+        $text3 = $exporter->cleanHtmlContent($data->text3 ?? '');
+        dd($data->text1);
 
 
-    $html = "<h2>(一) 研發動機</h2>$text1";
-    $html .= "<h2>(二) 競爭力分析</h2>$text2";
-    $html .= "<h2>(三) 可行性分析</h2>$text3";
+        $html = "<h2>(一) 研發動機</h2>$text1";
+        $html .= "<h2>(二) 競爭力分析</h2>$text2";
+        $html .= "<h2>(三) 可行性分析</h2>$text3";
 
-    return $exporter->exportHtmlToWord($html, '計畫內容_' . now()->format('Ymd_His') . '.docx');
-}
+        return $exporter->exportHtmlToWord($html, '計畫內容_' . now()->format('Ymd_His') . '.docx');
+    }
 
 
 
