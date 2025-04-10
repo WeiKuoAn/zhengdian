@@ -1,6 +1,8 @@
 @extends('layouts.vertical', ['title' => 'CRM Customers'])
 
 @section('content')
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+
     <!-- Start Content-->
     <div class="container-fluid">
 
@@ -118,14 +120,13 @@
                                                 </a>
                                             </li>
                                             <li class="nav-item">
-                                                <a href="{{ route('project.sbir04', $project->id) }}"
-                                                    class="nav-link active">
+                                                <a href="{{ route('project.sbir04', $project->id) }}" class="nav-link ">
                                                     公司概況
                                                 </a>
                                             </li>
                                             <li class="nav-item">
                                                 <a href="#messages" data-bs-toggle="tab" aria-expanded="false"
-                                                    class="nav-link">
+                                                    class="nav-link active">
                                                     計畫內容與實施方式
                                                 </a>
                                             </li>
@@ -150,15 +151,54 @@
                                         </ul>
 
                                         <div class="card-body">
-                                            <!-- 表單欄位 -->
-                                            <textarea id="plan_editor" name="text">{!! old('text', $data->text ?? '') !!}</textarea>
-                                            <button type="submit" class="btn btn-primary mt-3">儲存內容</button>
-                                            <!-- 按鈕 -->
-                                            <div class="d-flex justify-content-start gap-2">
-                                                <button type="submit" class="btn btn-teal btn-success">送出存檔</button>
-                                                <a href="{{ route('sbir.export', $project->id) }}" class="btn btn-primary">匯出</a>
+                                            @php
+                                                $sections = [
+                                                    [
+                                                        'title' => '(一)研發動機',
+                                                        'field' => 'text1',
+                                                        'description' =>
+                                                            '國內外產業環境之現況需求、產業環境分析與發展及描述企業現今與未來所將面臨的問題或瓶頸。',
+                                                    ],
+                                                    [
+                                                        'title' => '(二)競爭力分析-技術/產品/服務競爭優勢比較',
+                                                        'field' => 'text2',
+                                                        'description' =>
+                                                            '與同業公司之價格市場占有率和市場區隔等項目進行分析比較。',
+                                                    ],
+                                                    [
+                                                        'title' => '(三)可行性分析',
+                                                        'field' => 'text3',
+                                                        'description' => '市場需求性與優勢及公司研發能力。',
+                                                    ],
+                                                ];
+                                            @endphp
+
+                                            @foreach ($sections as $sec)
+                                                <div class="card mb-3">
+                                                    <div class="card-body">
+                                                        <h5 class="card-title">{{ $sec['title'] }}</h5>
+                                                        <p class="text-muted">{{ $sec['description'] }}</p>
+                                                        <div id="preview_{{ $sec['field'] }}"
+                                                            class="border p-3 bg-light mb-2">
+                                                            {!! $data[$sec['field']] ?? '' !!}
+                                                        </div>
+                                                        <button type="button" class="btn btn-sm btn-primary open-editor"
+                                                            data-bs-toggle="modal" data-bs-target="#editorModal"
+                                                            data-field="{{ $sec['field'] }}">
+                                                            編輯內容
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            @endforeach
+
+                                            <!-- 匯出 Word 按鈕 -->
+                                            <div class="text-end mt-4">
+                                                <a href="{{ route('sbir.export', $project->id) }}"
+                                                    class="btn btn-success">
+                                                    匯出計畫書 Word 檔
+                                                </a>
                                             </div>
-                                            
+
                                         </div>
                                     </div>
                                 </div>
@@ -169,6 +209,25 @@
         </div>
 
     </div> <!-- container -->
+    <!-- 編輯 Modal -->
+    <div class="modal fade" id="editorModal" tabindex="-1" aria-labelledby="editorModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editorModalLabel">內容編輯器</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <textarea id="modalEditor"></textarea>
+                    <input type="hidden" id="currentField">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-primary" onclick="saveEditorContent()">儲存</button>
+                </div>
+            </div>
+        </div>
+    </div>
 @endsection
 @section('script')
     @if (session('success'))
@@ -181,20 +240,107 @@
     @endif
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <!-- TinyMCE  -->
-    <!-- 取代原本的 cdn.tiny.cloud -->
-    <script src="https://cdn.jsdelivr.net/npm/tinymce@6.8.2/tinymce.min.js"></script>
-
-
-    <!-- Place the following <script> and <textarea> tags your HTML's <body> -->
+    <!-- TinyMCE + Modal 操作邏輯 -->
+    <!--預設，誤動 -->
+    <script src="https://cdn.jsdelivr.net/npm/tinymce@7/tinymce.min.js"></script>
     <script>
-    tinymce.init({
-    selector: '#plan_editor',
-    height: 500,
-    plugins: 'table image lists',
-    toolbar: 'undo redo | styleselect | bold italic underline | alignleft aligncenter alignright | bullist numlist outdent indent | table image',
-    language: 'zh_TW'
-    });
-</script>
+        const projectId = {{ $project->id }};
+    </script>
+    <script>
+        let editorInstance;
 
+        document.addEventListener('DOMContentLoaded', function() {
+            tinymce.init({
+                selector: '#modalEditor',
+                height: 500,
+                menubar: true,
+                plugins: 'lists table image code link textcolor',
+                toolbar: 'undo redo | blocks | bold italic underline forecolor backcolor | alignleft aligncenter alignright | bullist numlist | image table link | code',
+                images_upload_url: '/upload-image',
+                automatic_uploads: true,
+                file_picker_types: 'image',
+                file_picker_callback: function(cb, value, meta) {
+                    if (meta.filetype === 'image') {
+                        const input = document.createElement('input');
+                        input.setAttribute('type', 'file');
+                        input.setAttribute('accept', 'image/*');
+
+                        input.onchange = function() {
+                            const file = this.files[0];
+                            const formData = new FormData();
+                            formData.append('file', file);
+
+                            fetch('/upload-image', {
+                                    method: 'POST',
+                                    body: formData,
+                                    headers: {
+                                        'X-CSRF-TOKEN': document.querySelector(
+                                            'meta[name="csrf-token"]').getAttribute(
+                                            'content')
+                                    }
+                                })
+                                .then(response => response.json())
+                                .then(result => {
+                                    cb(result.location);
+                                });
+                        };
+
+                        input.click();
+                    }
+                },
+                setup: function(editor) {
+                    editorInstance = editor;
+                }
+            });
+
+            document.querySelectorAll('.open-editor').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const field = this.getAttribute('data-field');
+                    const content = document.getElementById(`preview_${field}`).innerHTML;
+                    document.getElementById('currentField').value = field;
+
+                    const wait = setInterval(() => {
+                        const editor = tinymce.get('modalEditor');
+                        if (editor) {
+                            editor.setContent(content);
+                            clearInterval(wait);
+                        }
+                    }, 100);
+                });
+            });
+        });
+
+        function saveEditorContent() {
+            const field = document.getElementById('currentField').value;
+            const content = tinymce.get('modalEditor').getContent();
+
+            const preview = document.getElementById(`preview_${field}`);
+            if (preview) preview.innerHTML = content;
+
+            fetch(`/project/${projectId}/sbir05/update-field`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    },
+                    body: JSON.stringify({
+                        field: field,
+                        value: content
+                    })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        const modalInstance = bootstrap.Modal.getInstance(document.getElementById('editorModal'));
+                        modalInstance.hide();
+                        alert('儲存成功');
+                    } else {
+                        alert('儲存失敗');
+                    }
+                })
+                .catch(err => {
+                    alert('錯誤發生：' + err.message);
+                });
+        }
+    </script>
 @endsection

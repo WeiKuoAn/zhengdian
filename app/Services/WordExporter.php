@@ -123,32 +123,55 @@ class WordExporter
             $this->section->addText('[圖片處理錯誤]');
         }
     }
-    public function exportHtmlToWord(string $html, string $filename = 'export.docx')
+    public function exportHtmlToWord($html, $filename = 'document.docx')
     {
-        // 建立 PhpWord 實例
         $phpWord = new PhpWord();
         $section = $phpWord->addSection();
 
-        // 清理 HTML，移除不支援的 colgroup、style、&nbsp;，並修復 br 與 li 錯誤標籤結構
-        $html = preg_replace('/<colgroup>.*?<\/colgroup>/s', '', $html); // 移除 colgroup
-        $html = preg_replace('/style="[^"]*"/i', '', $html);            // 移除 inline style
-        $html = str_replace('&nbsp;', ' ', $html);                         // 替換空白
-
-        // 修復 <br> 與 <img> 為 self-closing
-        $html = preg_replace('/<br(?!\/)\s*>/i', '<br/>', $html);
-        $html = preg_replace('/<img([^>]*)(?<!\/)>/i', '<img$1/>', $html);
-
-        // 修復未關閉的 <li>
-        $html = preg_replace('/<li>(.*?)<\/li>/is', '<li>$1</li>', $html);
-
-        // 將 HTML 加入 section
         Html::addHtml($section, $html, false, false);
 
-        // 暫存檔案並下載
-        $tempFile = tempnam(sys_get_temp_dir(), 'word');
-        $writer = IOFactory::createWriter($phpWord, 'Word2007');
-        $writer->save($tempFile);
+        $tempStream = fopen('php://temp', 'r+');
+        IOFactory::createWriter($phpWord, 'Word2007')->save($tempStream);
+        rewind($tempStream);
 
-        return response()->download($tempFile, $filename)->deleteFileAfterSend(true);
+        return response()->streamDownload(function () use ($tempStream) {
+            fpassthru($tempStream);
+        }, $filename);
     }
+
+    public function cleanHtmlContent($html)
+{
+    libxml_use_internal_errors(true);
+
+    // 強制自閉 <img>
+    $html = preg_replace('/<img(.*?)>/', '<img$1 />', $html);
+
+    // 包裝成合法 HTML 結構
+    $wrappedHtml = '<!DOCTYPE html><html><body>' . $html . '</body></html>';
+
+    $doc = new \DOMDocument();
+
+    try {
+        $doc->loadHTML(mb_convert_encoding($wrappedHtml, 'HTML-ENTITIES', 'UTF-8'));
+    } catch (\Throwable $e) {
+        libxml_clear_errors();
+        return strip_tags($html); // fallback
+    }
+
+    $body = $doc->getElementsByTagName('body')->item(0);
+    if (!$body || !$body->hasChildNodes()) {
+        libxml_clear_errors();
+        return strip_tags($html); // fallback again
+    }
+
+    $innerHTML = '';
+    foreach ($body->childNodes as $child) {
+        if ($child instanceof \DOMNode) {
+            $innerHTML .= $doc->saveHTML($child);
+        }
+    }
+
+    libxml_clear_errors();
+    return $innerHTML;
+}
 }

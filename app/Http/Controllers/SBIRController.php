@@ -20,7 +20,10 @@ use PhpOffice\PhpWord\PhpWord;
 use PhpOffice\PhpWord\IOFactory;
 use PhpOffice\PhpWord\Shared\Html;
 use DOMDocument;
+use PhpOffice\PhpWord\TemplateProcessor;
+use Illuminate\Support\Str;
 use App\Services\WordExporter;
+use Illuminate\Support\Facades\Response;
 
 class SBIRController extends Controller
 {
@@ -260,20 +263,21 @@ class SBIRController extends Controller
         return view('SBIR.sbir05')->with('project', $project)->with('data', $data);
     }
 
-    public function sbir05_data(Request $request, $id)
+    // SBIRController.php
+    public function sbir05_updateField(Request $request, $id)
     {
-
         $request->validate([
-            'text' => 'required|string',
+            'field' => 'required|in:text1,text2,text3',
+            'value' => 'required|string',
         ]);
-        $project = CustProject::where('id', $id)->first();
-        $sbir_05 = SBIR05::firstOrNew(['project_id' => $id]);
-        $sbir_05->user_id = $project->user_id;
-        $sbir_05->text = $request->text; // HTML 儲存
-        $sbir_05->save();
 
-        return redirect()->back()->with('success', '儲存成功');
+        $record = SBIR05::firstOrNew(['project_id' => $id]);
+        $record->{$request->field} = $request->value;
+        $record->save();
+
+        return response()->json(['success' => true]);
     }
+
 
     public function sbir06($id)
     {
@@ -282,46 +286,44 @@ class SBIRController extends Controller
     }
 
     public function export($id)
-    {
-        $data = SBIR05::where('project_id', $id)->firstOrFail();
+{
+    $data = SBIR05::where('project_id', $id)->firstOrFail();
+    $exporter = new WordExporter();
 
-        $html = $data->text;
+    $text1 = $exporter->cleanHtmlContent($data->text1 ?? '');
 
-        // 清理不相容 HTML：colgroup、style、&nbsp;
-        $html = preg_replace('/<colgroup>.*?<\/colgroup>/s', '', $html); // 移除 colgroup
-        $html = preg_replace('/style="[^"]*"/i', '', $html);             // 移除 inline style
-        $html = str_replace('&nbsp;', ' ', $html);                       // 空白處理
-
-        // 清單縮排優化（可選）
-        $html = preg_replace('/<ul[^>]*>/', '<ul style="margin-left: 24pt;">', $html);
-        $html = preg_replace('/<ol[^>]*>/', '<ol style="margin-left: 24pt;">', $html);
-
-        // 呼叫匯出服務
-        return (new WordExporter)->exportHtmlToWord($html, '計畫內容.docx');
-    }
+    $text2 = $exporter->cleanHtmlContent($data->text2 ?? '');
+    $text3 = $exporter->cleanHtmlContent($data->text3 ?? '');
+    dd($data->text1);
 
 
-    public function cleanHtmlContent($html)
+    $html = "<h2>(一) 研發動機</h2>$text1";
+    $html .= "<h2>(二) 競爭力分析</h2>$text2";
+    $html .= "<h2>(三) 可行性分析</h2>$text3";
+
+    return $exporter->exportHtmlToWord($html, '計畫內容_' . now()->format('Ymd_His') . '.docx');
+}
+
+
+
+
+    private function cleanHtmlContent($html)
     {
         libxml_use_internal_errors(true);
 
-        // 強制自閉 img（TinyMCE 輸出有可能不是 XHTML 格式）
+        // 修正 <img> 沒有自閉的情況
         $html = preg_replace('/<img(.*?)>/', '<img$1 />', $html);
 
-        // 包裝成合法 HTML
         $wrappedHtml = '<!DOCTYPE html><html><body>' . $html . '</body></html>';
 
         $doc = new \DOMDocument();
-
-        // 嘗試解析 HTML
         try {
             $doc->loadHTML(mb_convert_encoding($wrappedHtml, 'HTML-ENTITIES', 'UTF-8'));
         } catch (\Throwable $e) {
             libxml_clear_errors();
-            return strip_tags($html); // fallback：只回傳純文字
+            return strip_tags($html); // fallback
         }
 
-        // 嘗試抓取 <body> 節點
         $bodies = $doc->getElementsByTagName('body');
         if ($bodies->length === 0) {
             libxml_clear_errors();
@@ -329,14 +331,8 @@ class SBIRController extends Controller
         }
 
         $innerHTML = '';
-        $body = $bodies->item(0);
-
-        if ($body && $body->hasChildNodes()) {
-            foreach ($body->childNodes as $child) {
-                if ($child instanceof \DOMNode) {
-                    $innerHTML .= $doc->saveHTML($child);
-                }
-            }
+        foreach ($bodies->item(0)->childNodes as $child) {
+            $innerHTML .= $doc->saveHTML($child);
         }
 
         libxml_clear_errors();
