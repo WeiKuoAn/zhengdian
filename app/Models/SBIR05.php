@@ -12,6 +12,8 @@ class SBIR05 extends Model
     protected $fillable = [
         'user_id',
         'project_id',
-        'text',
+        'text1',
+        'text2',
+        'text3',
     ];
 }
