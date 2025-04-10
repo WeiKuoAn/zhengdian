@@ -154,6 +154,12 @@ Route::post('project/sbir04/{id}', [SBIRController::class, 'sbir04_data'])->name
 Route::get('project/sbir05/{id}', [SBIRController::class, 'sbir05'])->name('project.sbir05');
 Route::post('project/sbir05/{id}', [SBIRController::class, 'sbir05_data'])->name('project.sbir05.data');
 Route::post('/project/{id}/sbir05/update-field', [SBIRController::class, 'sbir05_updateField']);
+Route::get('/project/{id}/sbir05/get-field', function (\Illuminate\Http\Request $request, $id) {
+    $field = $request->query('field');
+    $record = \App\Models\SBIR05::where('project_id', $id)->first();
+    return response()->json(['value' => $record?->{$field} ?? '']);
+});
+
 Route::get('project/sbir06/{id}', [SBIRController::class, 'sbir06'])->name('project.sbir06');
 Route::post('project/sbir06/{id}', [SBIRController::class, 'sbir06_data'])->name('project.sbir06.data');
 

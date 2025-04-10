@@ -266,12 +266,14 @@ class SBIRController extends Controller
     // SBIRController.php
     public function sbir05_updateField(Request $request, $id)
     {
+        $project = CustProject::where('id', $id)->first();
         $request->validate([
             'field' => 'required|in:text1,text2,text3',
             'value' => 'required|string',
         ]);
 
         $record = SBIR05::firstOrNew(['project_id' => $id]);
+        $record->user_id = $project->user_id;
         $record->{$request->field} = $request->value;
         $record->save();
 

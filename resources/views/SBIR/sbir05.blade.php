@@ -248,99 +248,102 @@
     </script>
     <script>
         let editorInstance;
-
-        document.addEventListener('DOMContentLoaded', function() {
-            tinymce.init({
-                selector: '#modalEditor',
-                height: 500,
-                menubar: true,
-                plugins: 'lists table image code link textcolor',
-                toolbar: 'undo redo | blocks | bold italic underline forecolor backcolor | alignleft aligncenter alignright | bullist numlist | image table link | code',
-                images_upload_url: '/upload-image',
-                automatic_uploads: true,
-                file_picker_types: 'image',
-                file_picker_callback: function(cb, value, meta) {
-                    if (meta.filetype === 'image') {
-                        const input = document.createElement('input');
-                        input.setAttribute('type', 'file');
-                        input.setAttribute('accept', 'image/*');
-
-                        input.onchange = function() {
-                            const file = this.files[0];
-                            const formData = new FormData();
-                            formData.append('file', file);
-
-                            fetch('/upload-image', {
-                                    method: 'POST',
-                                    body: formData,
-                                    headers: {
-                                        'X-CSRF-TOKEN': document.querySelector(
-                                            'meta[name="csrf-token"]').getAttribute(
-                                            'content')
-                                    }
-                                })
-                                .then(response => response.json())
-                                .then(result => {
-                                    cb(result.location);
-                                });
-                        };
-
-                        input.click();
-                    }
-                },
-                setup: function(editor) {
-                    editorInstance = editor;
-                }
-            });
-
-            document.querySelectorAll('.open-editor').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const field = this.getAttribute('data-field');
-                    const content = document.getElementById(`preview_${field}`).innerHTML;
-                    document.getElementById('currentField').value = field;
-
-                    const wait = setInterval(() => {
-                        const editor = tinymce.get('modalEditor');
-                        if (editor) {
-                            editor.setContent(content);
-                            clearInterval(wait);
-                        }
-                    }, 100);
-                });
-            });
-        });
-
-        function saveEditorContent() {
-            const field = document.getElementById('currentField').value;
-            const content = tinymce.get('modalEditor').getContent();
-
-            const preview = document.getElementById(`preview_${field}`);
-            if (preview) preview.innerHTML = content;
-
-            fetch(`/project/${projectId}/sbir05/update-field`, {
+      
+        document.addEventListener('DOMContentLoaded', function () {
+          tinymce.init({
+            selector: '#modalEditor',
+            height: 500,
+            menubar: true,
+            plugins: 'lists table image code link textcolor',
+            toolbar: 'undo redo | blocks | bold italic underline forecolor backcolor | alignleft aligncenter alignright | bullist numlist | image table link | code',
+            images_upload_url: '/upload-image',
+            automatic_uploads: true,
+            file_picker_types: 'image',
+            file_picker_callback: function (cb, value, meta) {
+              if (meta.filetype === 'image') {
+                const input = document.createElement('input');
+                input.setAttribute('type', 'file');
+                input.setAttribute('accept', 'image/*');
+      
+                input.onchange = function () {
+                  const file = this.files[0];
+                  const formData = new FormData();
+                  formData.append('file', file);
+      
+                  fetch('/upload-image', {
                     method: 'POST',
+                    body: formData,
                     headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                    },
-                    body: JSON.stringify({
-                        field: field,
-                        value: content
-                    })
-                })
+                      'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    }
+                  })
+                  .then(response => response.json())
+                  .then(result => {
+                    cb(result.location);
+                  });
+                };
+      
+                input.click();
+              }
+            },
+            setup: function (editor) {
+              editorInstance = editor;
+            }
+          });
+      
+          document.querySelectorAll('.open-editor').forEach(btn => {
+            btn.addEventListener('click', function () {
+              const field = this.getAttribute('data-field');
+      
+              // 改為呼叫正確的 GET 路由
+              fetch(`/project/${projectId}/sbir05/get-field?field=${field}`)
                 .then(res => res.json())
                 .then(data => {
-                    if (data.success) {
-                        const modalInstance = bootstrap.Modal.getInstance(document.getElementById('editorModal'));
-                        modalInstance.hide();
-                        alert('儲存成功');
-                    } else {
-                        alert('儲存失敗');
+                  const content = data.value || '';
+                  document.getElementById('currentField').value = field;
+                  const wait = setInterval(() => {
+                    const editor = tinymce.get('modalEditor');
+                    if (editor) {
+                      editor.setContent(content);
+                      clearInterval(wait);
                     }
-                })
-                .catch(err => {
-                    alert('錯誤發生：' + err.message);
+                  }, 100);
                 });
+            });
+          });
+        });
+      
+        function saveEditorContent() {
+          const field = document.getElementById('currentField').value;
+          const content = tinymce.get('modalEditor').getContent();
+      
+          const preview = document.getElementById(`preview_${field}`);
+          if (preview) preview.innerHTML = content;
+      
+          fetch(`/project/${projectId}/sbir05/update-field`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            },
+            body: JSON.stringify({
+              field: field,
+              value: content
+            })
+          })
+          .then(res => res.json())
+          .then(data => {
+            if (data.success) {
+              const modalInstance = bootstrap.Modal.getInstance(document.getElementById('editorModal'));
+              modalInstance.hide();
+              alert('儲存成功');
+            } else {
+              alert('儲存失敗');
+            }
+          })
+          .catch(err => {
+            alert('錯誤發生：' + err.message);
+          });
         }
-    </script>
+      </script>
 @endsection
