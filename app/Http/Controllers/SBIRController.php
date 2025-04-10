@@ -286,7 +286,7 @@ class SBIRController extends Controller
     public function sbir06($id)
     {
         $project = CustProject::where('id', $id)->first();
-        $data = SBIR05::where('project_id', $id)->first();
+        $data = SBIR06::where('project_id', $id)->first();
         return view('SBIR.sbir06')->with('project', $project)->with('data', $data);
     }
 
