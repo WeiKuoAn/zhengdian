@@ -8,6 +8,13 @@ use App\Models\SBIR01;
 use App\Models\SBIR02;
 use App\Models\SBIR03;
 use App\Models\SBIR05;
+use App\Models\Sbir04Applyingplan;
+use App\Models\Sbir04Award;
+use App\Models\Sbir04Patent;
+use App\Models\Sbir04Shareholders;
+use App\Models\Sbir04ThreeYear;
+use App\Models\Sbir04GovPlan;
+use App\Models\Sbir04MainProduct;
 use App\Models\SBIR06;
 use App\Models\SBIR07;
 use Carbon\Carbon;
@@ -255,8 +262,169 @@ class SBIRController extends Controller
     public function sbir04($id)
     {
         $project = CustProject::where('id', $id)->first();
-        return view('SBIR.sbir04')->with('project', $project);
+        $sbir04_applys = Sbir04Applyingplan::where('project_id', $id)->get();
+        $sbir04_awards = Sbir04Award::where('project_id', $id)->get();
+        $sbir04_patents = Sbir04Patent::where('project_id', $id)->get();
+        $sbir04_shareholders = Sbir04Shareholders::where('project_id', $id)->get();
+        $sbir04_three_years = Sbir04ThreeYear::where('project_id', $id)->get();
+        $sbir04_goplans = Sbir04GovPlan::where('project_id', $id)->get();
+        $sbir04_main_products = Sbir04MainProduct::where('project_id', $id)->get();
+        return view('SBIR.sbir04')->with('project', $project)
+            ->with('sbir04_applys', $sbir04_applys)
+            ->with('sbir04_awards', $sbir04_awards)
+            ->with('sbir04_patents', $sbir04_patents)
+            ->with('sbir04_shareholders', $sbir04_shareholders)
+            ->with('sbir04_three_years', $sbir04_three_years)
+            ->with('sbir04_goplans', $sbir04_goplans)
+            ->with('sbir04_main_products', $sbir04_main_products);
     }
+
+    public function sbir04_data(Request $request, $id)
+    {
+        $project = CustProject::where('id', $id)->first();
+        // 1刪除舊的申請紀錄
+        Sbir04Applyingplan::where('project_id', $project->id)->delete();
+        // 依序儲存新的資料
+        if ($request->has('apply_date')) {
+            foreach ($request->apply_date as $index => $date) {
+                Sbir04Applyingplan::create([
+                    'user_id'      => $project->user_id,
+                    'project_id'    => $id,
+                    'apply_date'    => $date,
+                    'apply_org'     => $request->apply_org[$index] ?? null,
+                    'apply_name'    => $request->apply_name[$index] ?? null,
+                    'apply_start'   => $request->apply_start[$index] ?? null,
+                    'apply_end'     => $request->apply_end[$index] ?? null,
+                    'apply_grant'   => $request->apply_grant[$index] ?? null,
+                    'apply_self'    => $request->apply_self[$index] ?? null,
+                ]);
+            }
+        }
+
+        // 2刪除原有資料
+        Sbir04Shareholders::where('project_id', $project->id)->delete();
+
+        // 新增新的股東資料
+        if ($request->has('shareholder_name')) {
+            foreach ($request->shareholder_name as $index => $name) {
+                Sbir04Shareholders::create([
+                    'user_id'      => $project->user_id,
+                    'project_id'          => $project->id,
+                    'shareholder_name'    => $name,
+                    'shareholder_amount'  => $request->shareholder_amount[$index] ?? null,
+                    'shareholder_ratio'   => $request->shareholder_ratio[$index] ?? null,
+                    'shareholder_source'  => $request->shareholder_source[$index] ?? null,
+                ]);
+            }
+        }
+
+        // 3刪除舊資料
+        Sbir04Threeyear::where('project_id', $project->id)->delete();
+
+        // 新增資料
+        if ($request->has('year')) {
+            foreach ($request->year as $index => $year) {
+                $revenue = $request->revenue[$index] ?? 0;
+                $rnd_cost = $request->rnd_cost[$index] ?? 0;
+                $ratio = ($revenue > 0) ? round(($rnd_cost / $revenue) * 100, 2) : 0;
+
+                Sbir04Threeyear::create([
+                    'user_id'      => $project->user_id,
+                    'project_id' => $project->id,
+                    'year'       => $year ?? null,
+                    'revenue'    => $revenue ?? null,
+                    'rnd_cost'   => $rnd_cost ?? null,
+                    'ratio'      => $ratio ?? null,
+                    'note'       => $request->note[$index] ?? null,
+                ]);
+            }
+        }
+
+        // 4刪除原有資料
+        Sbir04MainProduct::where('project_id', $project->id)->delete();
+
+        // 儲存新的資料
+        if ($request->has('product_name')) {
+            foreach ($request->product_name as $index => $name) {
+                Sbir04MainProduct::create([
+                    'user_id'      => $project->user_id,
+                    'project_id'  => $project->id,
+                    'product_name' => $name,
+                    'output_y1'   => $request->output_y1[$index] ?? null,
+                    'sales_y1'    => $request->sales_y1[$index] ?? null,
+                    'share_y1'    => $request->share_y1[$index] ?? null,
+                    'output_y2'   => $request->output_y2[$index] ?? null,
+                    'sales_y2'    => $request->sales_y2[$index] ?? null,
+                    'share_y2'    => $request->share_y2[$index] ?? null,
+                    'output_y3'   => $request->output_y3[$index] ?? null,
+                    'sales_y3'    => $request->sales_y3[$index] ?? null,
+                    'share_y3'    => $request->share_y3[$index] ?? null,
+                ]);
+            }
+        }
+
+        // 5刪除舊有資料
+        Sbir04Award::where('project_id', $project->id)->delete();
+
+        // 儲存新的資料
+        if ($request->has('award_year')) {
+            foreach ($request->award_year as $index => $year) {
+                Sbir04Award::create([
+                    'user_id'      => $project->user_id,
+                    'project_id'   => $project->id,
+                    'award_year'   => $year,
+                    'award_name'   => $request->award_name[$index] ?? null,
+                ]);
+            }
+        }
+
+        // 6先刪除原有資料
+        Sbir04Patent::where('project_id', $project->id)->delete();
+
+        // 儲存新的資料
+        if ($request->has('patent_info')) {
+            foreach ($request->patent_info as $index => $info) {
+                Sbir04Patent::create([
+                    'user_id'      => $project->user_id,
+                    'project_id'   => $project->id,
+                    'patent_info'  => $info,
+                    'patent_desc'  => $request->patent_desc[$index] ?? null,
+                ]);
+            }
+        }
+
+        // 7先刪除原有資料
+        Sbir04GovPlan::where('project_id', $project->id)->delete();
+
+        // 儲存新資料
+        if ($request->has('plan_type')) {
+            foreach ($request->plan_type as $index => $type) {
+                Sbir04GovPlan::create([
+                    'user_id'      => $project->user_id,
+                    'project_id'         => $project->id,
+                    'plan_type'          => $type,
+                    'plan_name'          => $request->plan_name[$index] ?? null,
+                    'start_date'         => $request->start_date[$index] ?? null,
+                    'end_date'           => $request->end_date[$index] ?? null,
+                    'gov_subsidy'        => $request->gov_subsidy[$index] ?? null,
+                    'self_funding'       => $request->self_funding[$index] ?? null,
+                    'plan_focus'         => $request->plan_focus[$index] ?? null,
+                    'man_month'          => $request->man_month[$index] ?? null,
+                    'expected_value'     => $request->expected_value[$index] ?? null,
+                    'expected_patent'    => $request->expected_patent[$index] ?? null,
+                    'expected_employment' => $request->expected_employment[$index] ?? null,
+                    'expected_invest'    => $request->expected_invest[$index] ?? null,
+                    'actual_value'       => $request->actual_value[$index] ?? null,
+                    'actual_patent'      => $request->actual_patent[$index] ?? null,
+                    'actual_employment'  => $request->actual_employment[$index] ?? null,
+                    'actual_invest'      => $request->actual_invest[$index] ?? null,
+                ]);
+            }
+        }
+        return redirect()->back()->with('success', '資料儲存成功');
+    }
+
+
 
     public function sbir05($id)
     {

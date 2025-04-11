@@ -103,66 +103,58 @@
                                         <!--選單-->
                                         <ul class="nav nav-tabs">
                                             <li class="nav-item">
-                                                <a href="{{ route("project.sbir01",$project->id) }}" class="nav-link ">
+                                                <a href="{{ route('project.sbir01', $project->id) }}" class="nav-link ">
                                                     壹、計畫書基本資料
                                                 </a>
                                             </li>
                                             <li class="nav-item">
-                                                <a href="{{ route("project.sbir02",$project->id) }}" class="nav-link ">
+                                                <a href="{{ route('project.sbir02', $project->id) }}" class="nav-link ">
                                                     貳、計畫申請表
                                                 </a>
                                             </li>
                                             <li class="nav-item">
-                                                <a href="{{ route("project.sbir03",$project->id) }}" 
-                                                    class="nav-link ">
+                                                <a href="{{ route('project.sbir03', $project->id) }}" class="nav-link ">
                                                     參、計畫摘要表
                                                 </a>
                                             </li>
                                             <li class="nav-item">
-                                                <a href="{{ route("project.sbir04",$project->id) }}" 
+                                                <a href="{{ route('project.sbir04', $project->id) }}"
                                                     class="nav-link active">
                                                     肆、公司概況
                                                 </a>
                                             </li>
                                             <li class="nav-item">
-                                                <a href="{{ route("project.sbir05",$project->id) }}" 
-                                                    class="nav-link">
+                                                <a href="{{ route('project.sbir05', $project->id) }}" class="nav-link">
                                                     伍、研發動機
                                                 </a>
                                             </li>
                                             <li class="nav-item">
-                                                <a href="{{ route("project.sbir06",$project->id) }}" 
-                                                    class="nav-link">
+                                                <a href="{{ route('project.sbir06', $project->id) }}" class="nav-link">
                                                     陸、計畫目標
                                                 </a>
                                             </li>
                                             <li class="nav-item">
-                                                <a href="{{ route("project.sbir07",$project->id) }}" 
-                                                    class="nav-link">
+                                                <a href="{{ route('project.sbir07', $project->id) }}" class="nav-link">
                                                     柒、實施方式
                                                 </a>
                                             </li>
                                             <li class="nav-item">
-                                                <a href="{{ route("project.sbir08",$project->id) }}" 
-                                                    class="nav-link">
+                                                <a href="{{ route('project.sbir08', $project->id) }}" class="nav-link">
                                                     捌、智財分析
                                                 </a>
                                             </li>
                                             <li class="nav-item">
-                                                <a href="{{ route("project.sbir09",$project->id) }}" 
-                                                    class="nav-link">
+                                                <a href="{{ route('project.sbir09', $project->id) }}" class="nav-link">
                                                     玖、計畫執行查核點說明
                                                 </a>
                                             </li>
                                             <li class="nav-item">
-                                                <a href="{{ route("project.sbir10",$project->id) }}" 
-                                                    class="nav-link">
+                                                <a href="{{ route('project.sbir10', $project->id) }}" class="nav-link">
                                                     拾、經費需求
                                                 </a>
                                             </li>
                                             <li class="nav-item">
-                                                <a href="{{ route("project.sbir07",$project->id) }}" 
-                                                    class="nav-link">
+                                                <a href="{{ route('project.sbir07', $project->id) }}" class="nav-link">
                                                     附件
                                                 </a>
                                             </li>
@@ -182,7 +174,37 @@
                                                                 <th>操作</th>
                                                             </tr>
                                                         </thead>
-                                                        <tbody></tbody>
+                                                        <tbody>
+                                                            @if (count($sbir04_shareholders) > 0)
+                                                                @foreach ($sbir04_shareholders as $shareholder)
+                                                                    <tr>
+                                                                        <td><input type="text"
+                                                                                name="shareholder_name[]"
+                                                                                class="form-control"
+                                                                                value="{{ $shareholder->shareholder_name }}">
+                                                                        </td>
+                                                                        <td><input type="number"
+                                                                                name="shareholder_amount[]"
+                                                                                class="form-control"
+                                                                                value="{{ $shareholder->shareholder_amount }}">
+                                                                        </td>
+                                                                        <td><input type="number"
+                                                                                name="shareholder_ratio[]"
+                                                                                class="form-control"
+                                                                                value="{{ $shareholder->shareholder_ratio }}">
+                                                                        </td>
+                                                                        <td><input type="text"
+                                                                                name="shareholder_source[]"
+                                                                                class="form-control"
+                                                                                value="{{ $shareholder->shareholder_source }}">
+                                                                        </td>
+                                                                        <td><button class="btn btn-danger"
+                                                                                onclick="this.closest('tr').remove()">刪除</button>
+                                                                        </td>
+                                                                    </tr>
+                                                                @endforeach
+                                                            @endif
+                                                        </tbody>
                                                     </table>
                                                     <button class="btn btn-secondary" type="button"
                                                         onclick="addShareholderRow()">新增資料</button>
@@ -202,21 +224,45 @@
                                                             </tr>
                                                         </thead>
                                                         <tbody>
-                                                            @for ($i = 0; $i < 3; $i++)
-                                                                <tr>
-                                                                    <td><input type="number" name="years[]"
-                                                                            class="form-control"></td>
-                                                                    <td><input type="number" name="revenues[]"
-                                                                            class="form-control"></td>
-                                                                    <td><input type="number" name="rnd_costs[]"
-                                                                            class="form-control"></td>
-                                                                    <td><input type="number" name="ratios[]"
-                                                                            class="form-control" readonly></td>
-                                                                    <td>
-                                                                        <textarea name="notes[]" class="form-control"></textarea>
-                                                                    </td>
-                                                                </tr>
-                                                            @endfor
+                                                            @if (count($sbir04_three_years) > 0)
+                                                                @foreach ($sbir04_three_years as $three_year)
+                                                                    <tr>
+                                                                        <td><input type="number" name="year[]"
+                                                                                class="form-control"
+                                                                                value="{{ $three_year->year }}"></td>
+                                                                        <td><input type="number" name="revenue[]"
+                                                                                class="form-control"
+                                                                                value="{{ $three_year->revenue }}"></td>
+                                                                        <td><input type="number" name="rnd_cost[]"
+                                                                                class="form-control"
+                                                                                value="{{ $three_year->rnd_cost }}"></td>
+                                                                        <td><input type="number" name="ratio[]"
+                                                                                class="form-control"
+                                                                                value="{{ $three_year->ratio }}" readonly>
+                                                                        </td>
+                                                                        <td>
+                                                                            <textarea name="note[]" class="form-control">{{ $three_year->note }}</textarea>
+                                                                        </td>
+                                                                    </tr>
+                                                                @endforeach
+                                                            @else
+                                                                @for ($i = 0; $i < 3; $i++)
+                                                                    <tr>
+                                                                        <td><input type="number" name="year[]"
+                                                                                class="form-control"></td>
+                                                                        <td><input type="number" name="revenue[]"
+                                                                                class="form-control"></td>
+                                                                        <td><input type="number" name="rnd_cost[]"
+                                                                                class="form-control"></td>
+                                                                        <td><input type="number" name="ratio[]"
+                                                                                class="form-control" readonly></td>
+                                                                        <td>
+                                                                            <textarea name="note[]" class="form-control"></textarea>
+                                                                        </td>
+                                                                    </tr>
+                                                                @endfor
+                                                            @endif
+
                                                         </tbody>
                                                     </table>
                                                 </div>
@@ -246,7 +292,57 @@
                                                                 <th>前三年度 - 市佔率(%)</th>
                                                             </tr>
                                                         </thead>
-                                                        <tbody></tbody>
+                                                        <tbody>
+                                                            @if (count($sbir04_main_products) > 0)
+                                                                @foreach ($sbir04_main_products as $main_product)
+                                                                    <tr>
+                                                                        <td><input type="text" name="product_name[]"
+                                                                                class="form-control"
+                                                                                value="{{ $main_product->product_name }}">
+                                                                        </td>
+                                                                        <td><input type="number" name="output_y1[]"
+                                                                                class="form-control"
+                                                                                value="{{ $main_product->output_y1 }}">
+                                                                        </td>
+                                                                        <td><input type="number" name="sales_y1[]"
+                                                                                class="form-control"
+                                                                                value="{{ $main_product->sales_y1 }}">
+                                                                        </td>
+                                                                        <td><input type="number" name="share_y1[]"
+                                                                                class="form-control"
+                                                                                value="{{ $main_product->share_y1 }}">
+                                                                        </td>
+                                                                        <td><input type="number" name="output_y2[]"
+                                                                                class="form-control"
+                                                                                value="{{ $main_product->output_y2 }}">
+                                                                        </td>
+                                                                        <td><input type="number" name="sales_y2[]"
+                                                                                class="form-control"
+                                                                                value="{{ $main_product->sales_y2 }}">
+                                                                        </td>
+                                                                        <td><input type="number" name="share_y2[]"
+                                                                                class="form-control"
+                                                                                value="{{ $main_product->share_y2 }}">
+                                                                        </td>
+                                                                        <td><input type="number" name="output_y3[]"
+                                                                                class="form-control"
+                                                                                value="{{ $main_product->output_y3 }}">
+                                                                        </td>
+                                                                        <td><input type="number" name="sales_y3[]"
+                                                                                class="form-control"
+                                                                                value="{{ $main_product->sales_y3 }}">
+                                                                        </td>
+                                                                        <td><input type="number" name="share_y3[]"
+                                                                                class="form-control"
+                                                                                value="{{ $main_product->share_y3 }}">
+                                                                        </td>
+                                                                        <td><button class="btn btn-sm btn-danger"
+                                                                                onclick="this.closest('tr').remove()">刪除</button>
+                                                                        </td>
+                                                                    </tr>
+                                                                @endforeach
+                                                            @endif
+                                                        </tbody>
                                                     </table>
                                                     <button class="btn btn-secondary" type="button"
                                                         onclick="addMainProductRow()">新增資料</button>
@@ -263,7 +359,25 @@
                                                                 <th>操作</th>
                                                             </tr>
                                                         </thead>
-                                                        <tbody></tbody>
+                                                        <tbody>
+                                                            @if (count($sbir04_awards) > 0)
+                                                                @foreach ($sbir04_awards as $award)
+                                                                    <tr>
+                                                                        <td><input type="number" name="award_year[]"
+                                                                                class="form-control"
+                                                                                value="{{ $award->award_year }}">
+                                                                        </td>
+                                                                        <td><input type="text" name="award_name[]"
+                                                                                class="form-control"
+                                                                                value="{{ $award->award_name }}">
+                                                                        </td>
+                                                                        <td><button class="btn btn-danger"
+                                                                                onclick="this.closest('tr').remove()">刪除</button>
+                                                                        </td>
+                                                                    </tr>
+                                                                @endforeach
+                                                            @endif
+                                                        </tbody>
                                                     </table>
                                                     <button class="btn btn-secondary" type="button"
                                                         onclick="addAwardRow()">新增獎項</button>
@@ -280,7 +394,24 @@
                                                                 <th>操作</th>
                                                             </tr>
                                                         </thead>
-                                                        <tbody></tbody>
+                                                        <tbody>
+                                                            @if (count($sbir04_patents) > 0)
+                                                                @foreach ($sbir04_patents as $patent)
+                                                                    <tr>
+                                                                        <td><input type="text" name="patent_info[]"
+                                                                                class="form-control"
+                                                                                value="{{ $patent->patent_info }}">
+                                                                        </td>
+                                                                        <td>
+                                                                            <textarea name="patent_desc[]" class="form-control">{{ $patent->patent_desc }}</textarea>
+                                                                        </td>
+                                                                        <td><button class="btn btn-danger"
+                                                                                onclick="this.closest('tr').remove()">刪除</button>
+                                                                        </td>
+                                                                    </tr>
+                                                                @endforeach
+                                                            @endif
+                                                        </tbody>
                                                     </table>
                                                     <button class="btn btn-secondary" type="button"
                                                         onclick="addPatentRow()">新增專利</button>
@@ -291,49 +422,116 @@
                                                 <div class="mb-3">
                                                     <div class="table-scroll-wrapper">
                                                         <table class="table table-bordered" id="govPlanTable1">
-                                                          <thead>
-                                                            <tr>
-                                                              <th>計畫類別</th>
-                                                              <th>計畫名稱</th>
-                                                              <th>執行期間(起)</th>
-                                                              <th>執行期間(迄)</th>
-                                                              <th>政府補助款(千元)</th>
-                                                              <th>廠商自籌款(千元)</th>
-                                                              <th>操作</th>
-                                                            </tr>
-                                                          </thead>
-                                                          <tbody></tbody>
+                                                            <thead>
+                                                                <tr>
+                                                                    <th>計畫類別</th>
+                                                                    <th>計畫名稱</th>
+                                                                    <th>執行期間(起)</th>
+                                                                    <th>執行期間(迄)</th>
+                                                                    <th>政府補助款(千元)</th>
+                                                                    <th>廠商自籌款(千元)</th>
+                                                                    <th>操作</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                @if (count($sbir04_goplans) > 0)
+                                                                    @foreach ($sbir04_goplans as $goplan)
+                                                                        <tr>
+                                                                            <td><input type="text" name="plan_type[]"
+                                                                                    class="form-control"
+                                                                                    value="{{ $goplan->plan_type }}">
+                                                                            </td>
+                                                                            <td><input type="text" name="plan_name[]"
+                                                                                    class="form-control"
+                                                                                    value="{{ $goplan->plan_name }}">
+                                                                            </td>
+                                                                            <td><input type="date" name="start_date[]"
+                                                                                    class="form-control"
+                                                                                    value="{{ $goplan->start_date }}">
+                                                                            </td>
+                                                                            <td><input type="date" name="end_date[]"
+                                                                                    class="form-control"
+                                                                                    value="{{ $goplan->end_date }}">
+                                                                            </td>
+                                                                            <td><input type="number" name="gov_subsidy[]"
+                                                                                    class="form-control"
+                                                                                    value="{{ $goplan->gov_subsidy }}">
+                                                                            </td>
+                                                                            <td><input type="number"
+                                                                                    name="self_funding[]"
+                                                                                    class="form-control"
+                                                                                    value="{{ $goplan->self_funding }}">
+                                                                            </td>
+                                                                            <td><button class="btn btn-sm btn-danger"
+                                                                                    onclick="this.closest('tr').remove()">刪除</button>
+                                                                            </td>
+                                                                        </tr>
+                                                                    @endforeach
+                                                                @endif
+                                                            </tbody>
                                                         </table>
-                                                      </div>
-                                                      
-                                                      <h5 class="mt-4">政府計畫參與紀錄（效益與研發重點）</h5>
-                                                      <div class="table-scroll-wrapper">
+                                                    </div>
+
+                                                    <h5 class="mt-4">政府計畫參與紀錄（效益與研發重點）</h5>
+                                                    <div class="table-scroll-wrapper">
                                                         <table class="table table-bordered" id="govPlanTable2">
-                                                          <thead>
-                                                            <tr>
-                                                              <th rowspan="2">研發重點</th>
-                                                              <th rowspan="2">投入人力(月)</th>
-                                                              <th colspan="4">預期</th>
-                                                              <th colspan="4">實際</th>
-                                                              <th rowspan="2">操作</th>
-                                                            </tr>
-                                                            <tr>
-                                                                <th>增加產值</th>
-                                                                <th>專利申請</th>
-                                                                <th>增加就業</th>
-                                                                <th>促進投資</th>
-                                                                <th>增加產值</th>
-                                                                <th>專利申請</th>
-                                                                <th>增加就業</th>
-                                                                <th>促進投資</th>
-                                                              </tr>
-                                                          </thead>
-                                                          <tbody></tbody>
+                                                            <thead>
+                                                                <tr>
+                                                                    <th rowspan="2">研發重點</th>
+                                                                    <th rowspan="2">投入人力(月)</th>
+                                                                    <th colspan="4">預期</th>
+                                                                    <th colspan="4">實際</th>
+                                                                    <th rowspan="2">操作</th>
+                                                                </tr>
+                                                                <tr>
+                                                                    <th>增加產值</th>
+                                                                    <th>專利申請</th>
+                                                                    <th>增加就業</th>
+                                                                    <th>促進投資</th>
+                                                                    <th>增加產值</th>
+                                                                    <th>專利申請</th>
+                                                                    <th>增加就業</th>
+                                                                    <th>促進投資</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                @if (count($sbir04_goplans) > 0)
+                                                                    @foreach ($sbir04_goplans as $sbir04_goplan)
+                                                                        <td>
+                                                                            <textarea name="plan_focus[]" class="form-control">{{ $sbir04_goplan->plan_focus }}</textarea>
+                                                                        </td>
+                                                                        <td><input type="number" name="man_month[]"
+                                                                                class="form-control" value="{{ $sbir04_goplan->man_month }}"></td>
+                                                                        <td><input type="number" name="expected_value[]"
+                                                                                class="form-control" value="{{ $sbir04_goplan->expected_value }}"></td>
+                                                                        <td><input type="number" name="expected_patent[]"
+                                                                                class="form-control" value="{{ $sbir04_goplan->expected_patent }}"></td>
+                                                                        <td><input type="number"
+                                                                                name="expected_employment[]"
+                                                                                class="form-control" value="{{ $sbir04_goplan->expected_employment }}"></td>
+                                                                        <td><input type="number" name="expected_invest[]"
+                                                                                class="form-control" value="{{ $sbir04_goplan->expected_invest }}"></td>
+                                                                        <td><input type="number" name="actual_value[]"
+                                                                                class="form-control" value="{{ $sbir04_goplan->actual_value }}"></td>
+                                                                        <td><input type="number" name="actual_patent[]"
+                                                                                class="form-control" value="{{ $sbir04_goplan->actual_patent }}"></td>
+                                                                        <td><input type="number"
+                                                                                name="actual_employment[]"
+                                                                                class="form-control" value="{{ $sbir04_goplan->actual_employment }}"></td>
+                                                                        <td><input type="number" name="actual_invest[]"
+                                                                                class="form-control" value="{{ $sbir04_goplan->actual_invest }}"></td>
+                                                                        <td><button class="btn btn-sm btn-danger"
+                                                                                onclick="this.closest('tr').remove()">刪除</button>
+                                                                        </td>
+                                                                    @endforeach
+                                                                @endif
+                                                            </tbody>
                                                         </table>
-                                                      </div>
-                                                      
-                                                      <button class="btn btn-sm btn-warning" type="button" onclick="addGovPlanRow()">新增資料</button>
-                                                      
+                                                    </div>
+
+                                                    <button class="btn btn-secondary" type="button"
+                                                        onclick="addGovPlanRow()">新增資料</button>
+
                                                 </div>
 
                                                 <hr>
@@ -352,7 +550,38 @@
                                                                 <th>操作</th>
                                                             </tr>
                                                         </thead>
-                                                        <tbody></tbody>
+                                                        <tbody>
+                                                            @if(count($sbir04_applys) > 0)
+                                                                @foreach ($sbir04_applys as $apply)
+                                                                    <tr>
+                                                                        <td><input type="date" name="apply_date[]"
+                                                                                class="form-control"
+                                                                                value="{{ $apply->apply_date }}"></td>
+                                                                        <td><input type="text" name="apply_org[]"
+                                                                                class="form-control"
+                                                                                value="{{ $apply->apply_org }}"></td>
+                                                                        <td><input type="text" name="apply_name[]"
+                                                                                class="form-control"
+                                                                                value="{{ $apply->apply_name }}"></td>
+                                                                        <td><input type="date" name="apply_start[]"
+                                                                                class="form-control"
+                                                                                value="{{ $apply->apply_start }}"></td>
+                                                                        <td><input type="date" name="apply_end[]"
+                                                                                class="form-control"
+                                                                                value="{{ $apply->apply_end }}"></td>
+                                                                        <td><input type="number" name="apply_grant[]"
+                                                                                class="form-control"
+                                                                                value="{{ $apply->apply_grant }}"></td>
+                                                                        <td><input type="number" name="apply_self[]"
+                                                                                class="form-control"
+                                                                                value="{{ $apply->apply_self }}"></td>
+                                                                        <td><button class="btn btn-danger"
+                                                                                onclick="this.closest('tr').remove()">刪除</button>
+                                                                        </td>
+                                                                    </tr>
+                                                                @endforeach
+                                                            @endif
+                                                        </tbody>
                                                     </table>
                                                     <button class="btn btn-secondary" type="button"
                                                         onclick="addApplyingPlanRow()">新增資料</button>
@@ -394,7 +623,7 @@
               <td><input type="text" name="shareholder_name[]" class="form-control"></td>
               <td><input type="number" name="shareholder_amount[]" class="form-control"></td>
               <td><input type="number" name="shareholder_ratio[]" class="form-control"></td>
-              <td><input type="text" name="shareholder_source[]" class="form-control"></td>
+              <td><input type="text" name="shareholder_source[]" class="form-control" value="自填"></td>
               <td><button class="btn btn-danger" onclick="this.closest('tr').remove()">刪除</button></td>
             </tr>`);
         }
@@ -447,7 +676,7 @@
         }
 
         function addGovPlanRow() {
-  document.querySelector('#govPlanTable1 tbody').insertAdjacentHTML('beforeend', `
+            document.querySelector('#govPlanTable1 tbody').insertAdjacentHTML('beforeend', `
     <tr>
       <td><input type="text" name="plan_type[]" class="form-control"></td>
       <td><input type="text" name="plan_name[]" class="form-control"></td>
@@ -458,7 +687,7 @@
       <td><button class="btn btn-sm btn-danger" onclick="this.closest('tr').remove()">刪除</button></td>
     </tr>`);
 
-  document.querySelector('#govPlanTable2 tbody').insertAdjacentHTML('beforeend', `
+            document.querySelector('#govPlanTable2 tbody').insertAdjacentHTML('beforeend', `
     <tr>
       <td><textarea name="plan_focus[]" class="form-control"></textarea></td>
       <td><input type="number" name="man_month[]" class="form-control"></td>
@@ -472,7 +701,8 @@
       <td><input type="number" name="actual_invest[]" class="form-control"></td>
       <td><button class="btn btn-sm btn-danger" onclick="this.closest('tr').remove()">刪除</button></td>
     </tr>`);
-}
+        }
+
         function addApplyingPlanRow() {
             document.querySelector('#applyingPlanTable tbody').insertAdjacentHTML('beforeend', `
             <tr>

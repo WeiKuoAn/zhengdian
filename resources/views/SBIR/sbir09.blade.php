@@ -103,66 +103,58 @@
                                         <!--選單-->
                                         <ul class="nav nav-tabs">
                                             <li class="nav-item">
-                                                <a href="{{ route("project.sbir01",$project->id) }}" class="nav-link ">
+                                                <a href="{{ route('project.sbir01', $project->id) }}" class="nav-link ">
                                                     壹、計畫書基本資料
                                                 </a>
                                             </li>
                                             <li class="nav-item">
-                                                <a href="{{ route("project.sbir02",$project->id) }}" class="nav-link ">
+                                                <a href="{{ route('project.sbir02', $project->id) }}" class="nav-link ">
                                                     貳、計畫申請表
                                                 </a>
                                             </li>
                                             <li class="nav-item">
-                                                <a href="{{ route("project.sbir03",$project->id) }}" 
-                                                    class="nav-link ">
+                                                <a href="{{ route('project.sbir03', $project->id) }}" class="nav-link ">
                                                     參、計畫摘要表
                                                 </a>
                                             </li>
                                             <li class="nav-item">
-                                                <a href="{{ route("project.sbir04",$project->id) }}" 
-                                                    class="nav-link ">
+                                                <a href="{{ route('project.sbir04', $project->id) }}" class="nav-link ">
                                                     肆、公司概況
                                                 </a>
                                             </li>
                                             <li class="nav-item">
-                                                <a href="{{ route("project.sbir05",$project->id) }}" 
-                                                    class="nav-link ">
+                                                <a href="{{ route('project.sbir05', $project->id) }}" class="nav-link ">
                                                     伍、研發動機
                                                 </a>
                                             </li>
                                             <li class="nav-item">
-                                                <a href="{{ route("project.sbir06",$project->id) }}" 
-                                                    class="nav-link ">
+                                                <a href="{{ route('project.sbir06', $project->id) }}" class="nav-link ">
                                                     陸、計畫目標
                                                 </a>
                                             </li>
                                             <li class="nav-item">
-                                                <a href="{{ route("project.sbir07",$project->id) }}" 
-                                                    class="nav-link ">
+                                                <a href="{{ route('project.sbir07', $project->id) }}" class="nav-link ">
                                                     柒、實施方式
                                                 </a>
                                             </li>
                                             <li class="nav-item">
-                                                <a href="{{ route("project.sbir08",$project->id) }}" 
-                                                    class="nav-link ">
+                                                <a href="{{ route('project.sbir08', $project->id) }}" class="nav-link ">
                                                     捌、智財分析
                                                 </a>
                                             </li>
                                             <li class="nav-item">
-                                                <a href="{{ route("project.sbir09",$project->id) }}" 
+                                                <a href="{{ route('project.sbir09', $project->id) }}"
                                                     class="nav-link active">
                                                     玖、計畫執行查核點說明
                                                 </a>
                                             </li>
                                             <li class="nav-item">
-                                                <a href="{{ route("project.sbir10",$project->id) }}" 
-                                                    class="nav-link">
+                                                <a href="{{ route('project.sbir10', $project->id) }}" class="nav-link">
                                                     拾、經費需求
                                                 </a>
                                             </li>
                                             <li class="nav-item">
-                                                <a href="{{ route("project.sbir07",$project->id) }}" 
-                                                    class="nav-link">
+                                                <a href="{{ route('project.sbir07', $project->id) }}" class="nav-link">
                                                     附件
                                                 </a>
                                             </li>
@@ -170,192 +162,210 @@
 
                                         <div class="card-body">
                                             <div class="mb-5">
-                                                <h5 class="text-uppercase bg-light p-2 mt-3 mb-3">董監事持股比例</h5>
-                                                <div class="mb-3">
-                                                    <table class="table table-bordered" id="shareholdersTable">
-                                                        <thead>
-                                                            <tr>
-                                                                <th>董監事或其他負責人</th>
-                                                                <th>持有股份</th>
-                                                                <th>持股比例 (%)</th>
-                                                                <th>資料來源</th>
-                                                                <th>操作</th>
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody></tbody>
-                                                    </table>
-                                                    <button class="btn btn-secondary" type="button"
-                                                        onclick="addShareholderRow()">新增資料</button>
-                                                </div>
+                                                <h5 class="text-uppercase bg-light p-2 mt-3 mb-3">預定查核點說明</h5>
 
-                                                <hr>
-                                                <h5 class="text-uppercase bg-light p-2 mt-3 mb-3">公司主營三年資料</h5>
                                                 <div class="mb-3">
-                                                    <table class="table table-bordered" id="threeYearTable">
+                                                    <table class="table table-bordered" id="checkpointsTable">
                                                         <thead>
                                                             <tr>
-                                                                <th>年度</th>
-                                                                <th>營業額(千元)</th>
-                                                                <th>研發費用(千元)</th>
-                                                                <th>(B/A)%</th>
-                                                                <th>說明</th>
+                                                                <th>查核點編號</th>
+                                                                <th>預定完成時間</th>
+                                                                <th>查核點內容</th>
+                                                                <th>管理</th>
                                                             </tr>
                                                         </thead>
                                                         <tbody>
-                                                            @for ($i = 0; $i < 3; $i++)
-                                                                <tr>
-                                                                    <td><input type="number" name="years[]"
-                                                                            class="form-control"></td>
-                                                                    <td><input type="number" name="revenues[]"
-                                                                            class="form-control"></td>
-                                                                    <td><input type="number" name="rnd_costs[]"
-                                                                            class="form-control"></td>
-                                                                    <td><input type="number" name="ratios[]"
-                                                                            class="form-control" readonly></td>
-                                                                    <td>
-                                                                        <textarea name="notes[]" class="form-control"></textarea>
-                                                                    </td>
-                                                                </tr>
-                                                            @endfor
+                                                            <!-- 預設空 -->
                                                         </tbody>
                                                     </table>
-                                                </div>
-
-                                                <hr>
-                                                <h5 class="text-uppercase bg-light p-2 mt-3 mb-3">主要產品項目</h5>
-                                                <div class="mb-3">
-                                                    <table class="table table-bordered" id="mainProductTable"
-                                                        align="center">
-                                                        <thead>
-                                                            <tr align="center">
-                                                                <th rowspan="2">項目名稱</th>
-                                                                <th colspan="3">前一年度</th>
-                                                                <th colspan="3">前二年度 - 產量</th>
-                                                                <th colspan="3">前三年度 - 產量</th>
-                                                                <th rowspan="2">操作</th>
-                                                            </tr>
-                                                            <tr align="center">
-                                                                <th>前一年度 - 產量</th>
-                                                                <th>前一年度 - 銷售額(千元)</th>
-                                                                <th>前一年度 - 市佔率(%)</th>
-                                                                <th>前二年度 - 產量</th>
-                                                                <th>前二年度 - 銷售額(千元)</th>
-                                                                <th>前二年度 - 市佔率(%)</th>
-                                                                <th>前三年度 - 產量</th>
-                                                                <th>前三年度 - 銷售額(千元)</th>
-                                                                <th>前三年度 - 市佔率(%)</th>
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody></tbody>
-                                                    </table>
                                                     <button class="btn btn-secondary" type="button"
-                                                        onclick="addMainProductRow()">新增資料</button>
+                                                        onclick="addCheckpointRow()">新增資料</button>
                                                 </div>
 
+
                                                 <hr>
-                                                <h5 class="text-uppercase bg-light p-2 mt-3 mb-3">獎項</h5>
+                                                <h5 class="text-uppercase bg-light p-2 mt-3 mb-3">計畫主持人資歷說明</h5>
                                                 <div class="mb-3">
-                                                    <table class="table table-bordered" id="awardTable">
+                                                    <table class="table table-bordered" id="basicInfoTable">
                                                         <thead>
                                                             <tr>
-                                                                <th>年度</th>
-                                                                <th>獎項名稱</th>
+                                                                <th>姓名</th>
+                                                                <th>性別</th>
+                                                                <th>身份證字號</th>
                                                                 <th>操作</th>
                                                             </tr>
                                                         </thead>
-                                                        <tbody></tbody>
+                                                        <tbody>
+                                                            <tr>
+                                                                <td><input type="text" name="name[]"
+                                                                        class="form-control"></td>
+                                                                <td>
+                                                                    <select name="gender[]" class="form-control">
+                                                                        <option value="男">男</option>
+                                                                        <option value="女">女</option>
+                                                                    </select>
+                                                                </td>
+                                                                <td><input type="text" name="id_number[]"
+                                                                        class="form-control"></td>
+                                                                <td><button type="button" class="btn btn-danger"
+                                                                        onclick="this.closest('tr').remove()">刪除</button>
+                                                                </td>
+                                                            </tr>
+                                                        </tbody>
                                                     </table>
                                                     <button class="btn btn-secondary" type="button"
-                                                        onclick="addAwardRow()">新增獎項</button>
+                                                        onclick="addBasicInfoRow()">新增資料</button>
                                                 </div>
 
-                                                <hr>
-                                                <h5 class="text-uppercase bg-light p-2 mt-3 mb-3">專利</h5>
+                                                <h5 class="text-uppercase bg-light p-2 mt-3 mb-3">學歷</h5>
                                                 <div class="mb-3">
-                                                    <table class="table table-bordered" id="patentTable">
+                                                    <table class="table table-bordered" id="educationTable">
                                                         <thead>
                                                             <tr>
-                                                                <th>國別 / 年度 / 類型 / 專利編號</th>
-                                                                <th>專利名稱或內容</th>
-                                                                <th>操作</th>
+                                                                <th>學校(大專以上)</th>
+                                                                <th>時間(年月 ~ 年月)</th>
+                                                                <th>學位</th>
+                                                                <th>科系</th>
+                                                                <th>管理</th>
                                                             </tr>
                                                         </thead>
-                                                        <tbody></tbody>
+                                                        <tbody>
+                                                            <tr>
+                                                                <td><input type="text" name="school[]"
+                                                                        class="form-control"></td>
+                                                                <td><input type="text" name="period[]"
+                                                                        class="form-control"></td>
+                                                                <td><input type="text" name="degree[]"
+                                                                        class="form-control"></td>
+                                                                <td><input type="text" name="department[]"
+                                                                        class="form-control"></td>
+                                                                <td><button class="btn btn-danger"
+                                                                        onclick="this.closest('tr').remove()">刪除</button>
+                                                                </td>
+                                                            </tr>
+                                                        </tbody>
                                                     </table>
                                                     <button class="btn btn-secondary" type="button"
-                                                        onclick="addPatentRow()">新增專利</button>
+                                                        onclick="addEducationRow()">新增學歷</button>
                                                 </div>
 
-                                                <hr>
-                                                <h5 class="text-uppercase bg-light p-2 mt-3 mb-3">政府計畫參與紀錄</h5>
+                                                <h5 class="text-uppercase bg-light p-2 mt-3 mb-3">經歷</h5>
                                                 <div class="mb-3">
-                                                    <div class="table-scroll-wrapper">
-                                                        <table class="table table-bordered" id="govPlanTable1">
-                                                          <thead>
-                                                            <tr>
-                                                              <th>計畫類別</th>
-                                                              <th>計畫名稱</th>
-                                                              <th>執行期間(起)</th>
-                                                              <th>執行期間(迄)</th>
-                                                              <th>政府補助款(千元)</th>
-                                                              <th>廠商自籌款(千元)</th>
-                                                              <th>操作</th>
-                                                            </tr>
-                                                          </thead>
-                                                          <tbody></tbody>
-                                                        </table>
-                                                      </div>
-                                                      
-                                                      <h5 class="mt-4">政府計畫參與紀錄（效益與研發重點）</h5>
-                                                      <div class="table-scroll-wrapper">
-                                                        <table class="table table-bordered" id="govPlanTable2">
-                                                          <thead>
-                                                            <tr>
-                                                              <th rowspan="2">研發重點</th>
-                                                              <th rowspan="2">投入人力(月)</th>
-                                                              <th colspan="4">預期</th>
-                                                              <th colspan="4">實際</th>
-                                                              <th rowspan="2">操作</th>
-                                                            </tr>
-                                                            <tr>
-                                                                <th>增加產值</th>
-                                                                <th>專利申請</th>
-                                                                <th>增加就業</th>
-                                                                <th>促進投資</th>
-                                                                <th>增加產值</th>
-                                                                <th>專利申請</th>
-                                                                <th>增加就業</th>
-                                                                <th>促進投資</th>
-                                                              </tr>
-                                                          </thead>
-                                                          <tbody></tbody>
-                                                        </table>
-                                                      </div>
-                                                      
-                                                      <button class="btn btn-sm btn-warning" type="button" onclick="addGovPlanRow()">新增資料</button>
-                                                      
-                                                </div>
-
-                                                <hr>
-                                                <h5 class="text-uppercase bg-light p-2 mt-3 mb-3">申請中政府研發計畫</h5>
-                                                <div class="mb-3">
-                                                    <table class="table table-bordered" id="applyingPlanTable">
+                                                    <table class="table table-bordered" id="experienceTable">
                                                         <thead>
                                                             <tr>
-                                                                <th>申請日期</th>
-                                                                <th>申請機關</th>
+                                                                <th>公司名稱</th>
+                                                                <th>時間(年月 ~ 年月)</th>
+                                                                <th>部門</th>
+                                                                <th>職稱</th>
+                                                                <th>管理</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            <tr>
+                                                                <td><input type="text" name="company[]"
+                                                                        class="form-control"></td>
+                                                                <td><input type="text" name="work_period[]"
+                                                                        class="form-control"></td>
+                                                                <td><input type="text" name="department[]"
+                                                                        class="form-control"></td>
+                                                                <td><input type="text" name="position[]"
+                                                                        class="form-control"></td>
+                                                                <td><button class="btn btn-danger"
+                                                                        onclick="this.closest('tr').remove()">刪除</button>
+                                                                </td>
+                                                            </tr>
+                                                        </tbody>
+                                                    </table>
+                                                    <button class="btn btn-secondary" type="button"
+                                                        onclick="addExperienceRow()">新增經歷</button>
+                                                </div>
+
+                                                <h5 class="text-uppercase bg-light p-2 mt-3 mb-3">曾參與計畫</h5>
+                                                <div class="mb-3">
+                                                    <table class="table table-bordered" id="planTable">
+                                                        <thead>
+                                                            <tr>
                                                                 <th>計畫名稱</th>
-                                                                <th>執行期間(起)</th>
-                                                                <th>執行期間(迄)</th>
-                                                                <th>政府補助款(千元)</th>
-                                                                <th>廠商自籌款(千元)</th>
+                                                                <th>時間(年月 ~ 年月)</th>
+                                                                <th>公司名稱</th>
+                                                                <th>主要任務</th>
+                                                                <th>管理</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            <tr>
+                                                                <td><input type="text" name="plan_name[]"
+                                                                        class="form-control"></td>
+                                                                <td><input type="text" name="plan_period[]"
+                                                                        class="form-control"></td>
+                                                                <td><input type="text" name="plan_company[]"
+                                                                        class="form-control"></td>
+                                                                <td><input type="text" name="plan_duty[]"
+                                                                        class="form-control"></td>
+                                                                <td><button class="btn btn-danger"
+                                                                        onclick="this.closest('tr').remove()">刪除</button>
+                                                                </td>
+                                                            </tr>
+                                                        </tbody>
+                                                    </table>
+                                                    <button class="btn btn-secondary" type="button"
+                                                        onclick="addPlanRow()">新增曾參與計畫</button>
+                                                </div>
+
+                                                <hr>
+                                                <h5 class="text-uppercase bg-light p-2 mt-3 mb-3">計畫人員簡歷表</h5>
+                                                <div class="mb-3">
+                                                    <table class="table table-bordered" id="staffTable">
+                                                        <thead>
+                                                            <tr>
+                                                                <th>編號</th>
+                                                                <th>姓名</th>
+                                                                <th>職稱</th>
+                                                                <th>會計科目分類</th>
+                                                                <th>研發人員</th>
+                                                                <th>最高學歷(學校系所)</th>
+                                                                <th>主要經歷</th>
+                                                                <th>主要重要成就</th>
+                                                                <th>本業年資</th>
+                                                                <th>參與分項計畫及工作項目</th>
                                                                 <th>操作</th>
                                                             </tr>
                                                         </thead>
-                                                        <tbody></tbody>
+                                                        <tbody>
+                                                            <tr>
+                                                                <td><input type="number" name="staff_no[]"
+                                                                        class="form-control"></td>
+                                                                <td><input type="text" name="staff_name[]"
+                                                                        class="form-control"></td>
+                                                                <td><input type="text" name="staff_title[]"
+                                                                        class="form-control"></td>
+                                                                <td><input type="text" name="account_category[]"
+                                                                        class="form-control"></td>
+                                                                <td>
+                                                                    <select name="is_rnd[]" class="form-control">
+                                                                        <option value="是">是</option>
+                                                                        <option value="否">否</option>
+                                                                    </select>
+                                                                </td>
+                                                                <td><input type="text" name="education[]"
+                                                                        class="form-control"></td>
+                                                                <td><input type="text" name="experience[]"
+                                                                        class="form-control"></td>
+                                                                <td><input type="text" name="achievement[]"
+                                                                        class="form-control"></td>
+                                                                <td><input type="text" name="seniority[]"
+                                                                        class="form-control"></td>
+                                                                <td><input type="text" name="task[]"
+                                                                        class="form-control"></td>
+                                                                <td><button type="button" class="btn btn-danger"
+                                                                        onclick="this.closest('tr').remove()">刪除</button>
+                                                                </td>
+                                                            </tr>
+                                                        </tbody>
                                                     </table>
                                                     <button class="btn btn-secondary" type="button"
-                                                        onclick="addApplyingPlanRow()">新增資料</button>
+                                                        onclick="addStaffRow()">新增資料</button>
                                                 </div>
                                                 <hr>
 
@@ -388,103 +398,93 @@
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
-        function addShareholderRow() {
-            document.querySelector('#shareholdersTable tbody').insertAdjacentHTML('beforeend', `
-            <tr>
-              <td><input type="text" name="shareholder_name[]" class="form-control"></td>
-              <td><input type="number" name="shareholder_amount[]" class="form-control"></td>
-              <td><input type="number" name="shareholder_ratio[]" class="form-control"></td>
-              <td><input type="text" name="shareholder_source[]" class="form-control"></td>
-              <td><button class="btn btn-danger" onclick="this.closest('tr').remove()">刪除</button></td>
-            </tr>`);
+        function addCheckpointRow() {
+            const table = document.getElementById('checkpointsTable').querySelector('tbody');
+            const row = document.createElement('tr');
+
+            row.innerHTML = `
+      <td><input type="text" name="checkpoint_code[]" class="form-control" placeholder="如 A1, B1"></td>
+      <td><input type="month" name="checkpoint_due[]" class="form-control"></td>
+      <td><input type="text" name="checkpoint_content[]" class="form-control"></td>
+      <td><button class="btn btn-danger btn-sm" onclick="this.closest('tr').remove()">刪除</button></td>
+    `;
+
+            table.appendChild(row);
         }
 
-        function addYearRow() {
-            document.querySelector('#threeYearTable tbody').insertAdjacentHTML('beforeend', `
-            <tr>
-              <td><input type="number" name="year[]" class="form-control"></td>
-              <td><input type="number" name="revenue[]" class="form-control"></td>
-              <td><input type="number" name="rnd_cost[]" class="form-control"></td>
-              <td><input type="number" name="ratio[]" class="form-control" readonly></td>
-              <td><textarea name="note[]" class="form-control"></textarea></td>
-              <td><button class="btn btn-danger" onclick="this.closest('tr').remove()">刪除</button></td>
-            </tr>`);
+        function addBasicInfoRow() {
+            const table = document.getElementById('basicInfoTable').getElementsByTagName('tbody')[0];
+            const newRow = table.insertRow();
+            newRow.innerHTML = `
+      <td><input type="text" name="name[]" class="form-control"></td>
+      <td>
+        <select name="gender[]" class="form-control">
+          <option value="男">男</option>
+          <option value="女">女</option>
+        </select>
+      </td>
+      <td><input type="text" name="id_number[]" class="form-control"></td>
+      <td><button type="button" class="btn btn-danger" onclick="this.closest('tr').remove()">刪除</button></td>
+    `;
         }
 
-        function addMainProductRow() {
-            document.querySelector('#mainProductTable tbody').insertAdjacentHTML('beforeend', `
-    <tr>
-      <td><input type="text" name="product_name[]" class="form-control"></td>
-      <td><input type="number" name="output_y1[]" class="form-control"></td>
-      <td><input type="number" name="sales_y1[]" class="form-control"></td>
-      <td><input type="number" name="share_y1[]" class="form-control"></td>
-      <td><input type="number" name="output_y2[]" class="form-control"></td>
-      <td><input type="number" name="sales_y2[]" class="form-control"></td>
-      <td><input type="number" name="share_y2[]" class="form-control"></td>
-      <td><input type="number" name="output_y3[]" class="form-control"></td>
-      <td><input type="number" name="sales_y3[]" class="form-control"></td>
-      <td><input type="number" name="share_y3[]" class="form-control"></td>
-      <td><button class="btn btn-sm btn-danger" onclick="this.closest('tr').remove()">刪除</button></td>
-    </tr>`);
+        function addEducationRow() {
+            const table = document.getElementById('educationTable').getElementsByTagName('tbody')[0];
+            const newRow = table.insertRow();
+            newRow.innerHTML = `
+      <td><input type="text" name="school[]" class="form-control"></td>
+      <td><input type="text" name="period[]" class="form-control"></td>
+      <td><input type="text" name="degree[]" class="form-control"></td>
+      <td><input type="text" name="department[]" class="form-control"></td>
+      <td><button type="button" class="btn btn-danger" onclick="this.closest('tr').remove()">刪除</button></td>
+    `;
         }
 
-        function addAwardRow() {
-            document.querySelector('#awardTable tbody').insertAdjacentHTML('beforeend', `
-            <tr>
-              <td><input type="number" name="award_year[]" class="form-control"></td>
-              <td><input type="text" name="award_name[]" class="form-control"></td>
-              <td><button class="btn btn-danger" onclick="this.closest('tr').remove()">刪除</button></td>
-            </tr>`);
+        function addExperienceRow() {
+            const table = document.getElementById('experienceTable').getElementsByTagName('tbody')[0];
+            const newRow = table.insertRow();
+            newRow.innerHTML = `
+      <td><input type="text" name="company[]" class="form-control"></td>
+      <td><input type="text" name="work_period[]" class="form-control"></td>
+      <td><input type="text" name="department[]" class="form-control"></td>
+      <td><input type="text" name="position[]" class="form-control"></td>
+      <td><button type="button" class="btn btn-danger" onclick="this.closest('tr').remove()">刪除</button></td>
+    `;
         }
 
-        function addPatentRow() {
-            document.querySelector('#patentTable tbody').insertAdjacentHTML('beforeend', `
-            <tr>
-              <td><input type="text" name="patent_info[]" class="form-control"></td>
-              <td><textarea name="patent_desc[]" class="form-control"></textarea></td>
-              <td><button class="btn btn-danger" onclick="this.closest('tr').remove()">刪除</button></td>
-            </tr>`);
-        }
-
-        function addGovPlanRow() {
-  document.querySelector('#govPlanTable1 tbody').insertAdjacentHTML('beforeend', `
-    <tr>
-      <td><input type="text" name="plan_type[]" class="form-control"></td>
+        function addPlanRow() {
+            const table = document.getElementById('planTable').getElementsByTagName('tbody')[0];
+            const newRow = table.insertRow();
+            newRow.innerHTML = `
       <td><input type="text" name="plan_name[]" class="form-control"></td>
-      <td><input type="date" name="start_date[]" class="form-control"></td>
-      <td><input type="date" name="end_date[]" class="form-control"></td>
-      <td><input type="number" name="gov_subsidy[]" class="form-control"></td>
-      <td><input type="number" name="self_funding[]" class="form-control"></td>
-      <td><button class="btn btn-sm btn-danger" onclick="this.closest('tr').remove()">刪除</button></td>
-    </tr>`);
+      <td><input type="text" name="plan_period[]" class="form-control"></td>
+      <td><input type="text" name="plan_company[]" class="form-control"></td>
+      <td><input type="text" name="plan_duty[]" class="form-control"></td>
+      <td><button type="button" class="btn btn-danger" onclick="this.closest('tr').remove()">刪除</button></td>
+    `;
+        }
 
-  document.querySelector('#govPlanTable2 tbody').insertAdjacentHTML('beforeend', `
-    <tr>
-      <td><textarea name="plan_focus[]" class="form-control"></textarea></td>
-      <td><input type="number" name="man_month[]" class="form-control"></td>
-      <td><input type="number" name="expected_value[]" class="form-control"></td>
-      <td><input type="number" name="expected_patent[]" class="form-control"></td>
-      <td><input type="number" name="expected_employment[]" class="form-control"></td>
-      <td><input type="number" name="expected_invest[]" class="form-control"></td>
-      <td><input type="number" name="actual_value[]" class="form-control"></td>
-      <td><input type="number" name="actual_patent[]" class="form-control"></td>
-      <td><input type="number" name="actual_employment[]" class="form-control"></td>
-      <td><input type="number" name="actual_invest[]" class="form-control"></td>
-      <td><button class="btn btn-sm btn-danger" onclick="this.closest('tr').remove()">刪除</button></td>
-    </tr>`);
-}
-        function addApplyingPlanRow() {
-            document.querySelector('#applyingPlanTable tbody').insertAdjacentHTML('beforeend', `
-            <tr>
-              <td><input type="date" name="apply_date[]" class="form-control"></td>
-              <td><input type="text" name="apply_org[]" class="form-control"></td>
-              <td><input type="text" name="apply_name[]" class="form-control"></td>
-              <td><input type="date" name="apply_start[]" class="form-control"></td>
-              <td><input type="date" name="apply_end[]" class="form-control"></td>
-              <td><input type="number" name="apply_grant[]" class="form-control"></td>
-              <td><input type="number" name="apply_self[]" class="form-control"></td>
-              <td><button class="btn btn-danger" onclick="this.closest('tr').remove()">刪除</button></td>
-            </tr>`);
+        function addStaffRow() {
+            const table = document.getElementById('staffTable').getElementsByTagName('tbody')[0];
+            const newRow = table.insertRow();
+            newRow.innerHTML = `
+      <td><input type="number" name="staff_no[]" class="form-control"></td>
+      <td><input type="text" name="staff_name[]" class="form-control"></td>
+      <td><input type="text" name="staff_title[]" class="form-control"></td>
+      <td><input type="text" name="account_category[]" class="form-control"></td>
+      <td>
+        <select name="is_rnd[]" class="form-control">
+          <option value="是">是</option>
+          <option value="否">否</option>
+        </select>
+      </td>
+      <td><input type="text" name="education[]" class="form-control"></td>
+      <td><input type="text" name="experience[]" class="form-control"></td>
+      <td><input type="text" name="achievement[]" class="form-control"></td>
+      <td><input type="text" name="seniority[]" class="form-control"></td>
+      <td><input type="text" name="task[]" class="form-control"></td>
+      <td><button type="button" class="btn btn-danger" onclick="this.closest('tr').remove()">刪除</button></td>
+    `;
         }
     </script>
 @endsection

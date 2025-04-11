@@ -1,6 +1,8 @@
 @extends('layouts.vertical', ['title' => 'CRM Customers'])
 
 @section('content')
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+
     <!-- Start Content-->
     <div class="container-fluid">
 
@@ -92,7 +94,7 @@
         <!-- end row -->
 
         <div class="row">
-            <form action="{{ route('project.sbir04.data', $project->id) }}" method="POST">
+            <form action="{{ route('project.sbir08.data', $project->id) }}" method="POST">
                 @csrf
                 <div class="row">
                     <div class="col-lg-12">
@@ -138,7 +140,7 @@
                                             </li>
                                             <li class="nav-item">
                                                 <a href="{{ route("project.sbir07",$project->id) }}" 
-                                                    class="nav-link ">
+                                                    class="nav-link">
                                                     柒、實施方式
                                                 </a>
                                             </li>
@@ -169,212 +171,72 @@
                                         </ul>
 
                                         <div class="card-body">
-                                            <div class="mb-5">
-                                                <h5 class="text-uppercase bg-light p-2 mt-3 mb-3">董監事持股比例</h5>
-                                                <div class="mb-3">
-                                                    <table class="table table-bordered" id="shareholdersTable">
-                                                        <thead>
-                                                            <tr>
-                                                                <th>董監事或其他負責人</th>
-                                                                <th>持有股份</th>
-                                                                <th>持股比例 (%)</th>
-                                                                <th>資料來源</th>
-                                                                <th>操作</th>
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody></tbody>
-                                                    </table>
-                                                    <button class="btn btn-secondary" type="button"
-                                                        onclick="addShareholderRow()">新增資料</button>
-                                                </div>
+                                            @php
+                                                $sections = [
+                                                    [
+                                                        'title' => '智財分析',
+                                                        'field' => 'text1',
+                                                        'description' =>
+                                                            '本計畫是否涉及他人智慧財產權?若有，應如何解決?是否已掌握關鍵之智慧財產權?關鍵智財或技術是否委外或引進，且是否具承接能力。',
+                                                    ],
+                                                ];
+                                            @endphp
 
-                                                <hr>
-                                                <h5 class="text-uppercase bg-light p-2 mt-3 mb-3">公司主營三年資料</h5>
-                                                <div class="mb-3">
-                                                    <table class="table table-bordered" id="threeYearTable">
-                                                        <thead>
-                                                            <tr>
-                                                                <th>年度</th>
-                                                                <th>營業額(千元)</th>
-                                                                <th>研發費用(千元)</th>
-                                                                <th>(B/A)%</th>
-                                                                <th>說明</th>
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody>
-                                                            @for ($i = 0; $i < 3; $i++)
-                                                                <tr>
-                                                                    <td><input type="number" name="years[]"
-                                                                            class="form-control"></td>
-                                                                    <td><input type="number" name="revenues[]"
-                                                                            class="form-control"></td>
-                                                                    <td><input type="number" name="rnd_costs[]"
-                                                                            class="form-control"></td>
-                                                                    <td><input type="number" name="ratios[]"
-                                                                            class="form-control" readonly></td>
-                                                                    <td>
-                                                                        <textarea name="notes[]" class="form-control"></textarea>
-                                                                    </td>
-                                                                </tr>
-                                                            @endfor
-                                                        </tbody>
-                                                    </table>
+                                            @foreach ($sections as $sec)
+                                                <div class="card mb-3">
+                                                    <div class="card-body">
+                                                        <h5 class="card-title">{{ $sec['title'] }}</h5>
+                                                        <p class="text-muted">{{ $sec['description'] }}</p>
+                                                        <div id="preview_{{ $sec['field'] }}"
+                                                            class="border p-3 bg-light mb-2">
+                                                            {!! $data[$sec['field']] ?? '' !!}
+                                                        </div>
+                                                        <button type="button" class="btn btn-sm btn-primary open-editor"
+                                                            data-bs-toggle="modal" data-bs-target="#editorModal"
+                                                            data-field="{{ $sec['field'] }}">
+                                                            編輯內容
+                                                        </button>
+                                                    </div>
                                                 </div>
+                                            @endforeach
 
-                                                <hr>
-                                                <h5 class="text-uppercase bg-light p-2 mt-3 mb-3">主要產品項目</h5>
-                                                <div class="mb-3">
-                                                    <table class="table table-bordered" id="mainProductTable"
-                                                        align="center">
-                                                        <thead>
-                                                            <tr align="center">
-                                                                <th rowspan="2">項目名稱</th>
-                                                                <th colspan="3">前一年度</th>
-                                                                <th colspan="3">前二年度 - 產量</th>
-                                                                <th colspan="3">前三年度 - 產量</th>
-                                                                <th rowspan="2">操作</th>
-                                                            </tr>
-                                                            <tr align="center">
-                                                                <th>前一年度 - 產量</th>
-                                                                <th>前一年度 - 銷售額(千元)</th>
-                                                                <th>前一年度 - 市佔率(%)</th>
-                                                                <th>前二年度 - 產量</th>
-                                                                <th>前二年度 - 銷售額(千元)</th>
-                                                                <th>前二年度 - 市佔率(%)</th>
-                                                                <th>前三年度 - 產量</th>
-                                                                <th>前三年度 - 銷售額(千元)</th>
-                                                                <th>前三年度 - 市佔率(%)</th>
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody></tbody>
-                                                    </table>
-                                                    <button class="btn btn-secondary" type="button"
-                                                        onclick="addMainProductRow()">新增資料</button>
-                                                </div>
-
-                                                <hr>
-                                                <h5 class="text-uppercase bg-light p-2 mt-3 mb-3">獎項</h5>
-                                                <div class="mb-3">
-                                                    <table class="table table-bordered" id="awardTable">
-                                                        <thead>
-                                                            <tr>
-                                                                <th>年度</th>
-                                                                <th>獎項名稱</th>
-                                                                <th>操作</th>
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody></tbody>
-                                                    </table>
-                                                    <button class="btn btn-secondary" type="button"
-                                                        onclick="addAwardRow()">新增獎項</button>
-                                                </div>
-
-                                                <hr>
-                                                <h5 class="text-uppercase bg-light p-2 mt-3 mb-3">專利</h5>
-                                                <div class="mb-3">
-                                                    <table class="table table-bordered" id="patentTable">
-                                                        <thead>
-                                                            <tr>
-                                                                <th>國別 / 年度 / 類型 / 專利編號</th>
-                                                                <th>專利名稱或內容</th>
-                                                                <th>操作</th>
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody></tbody>
-                                                    </table>
-                                                    <button class="btn btn-secondary" type="button"
-                                                        onclick="addPatentRow()">新增專利</button>
-                                                </div>
-
-                                                <hr>
-                                                <h5 class="text-uppercase bg-light p-2 mt-3 mb-3">政府計畫參與紀錄</h5>
-                                                <div class="mb-3">
-                                                    <div class="table-scroll-wrapper">
-                                                        <table class="table table-bordered" id="govPlanTable1">
-                                                          <thead>
-                                                            <tr>
-                                                              <th>計畫類別</th>
-                                                              <th>計畫名稱</th>
-                                                              <th>執行期間(起)</th>
-                                                              <th>執行期間(迄)</th>
-                                                              <th>政府補助款(千元)</th>
-                                                              <th>廠商自籌款(千元)</th>
-                                                              <th>操作</th>
-                                                            </tr>
-                                                          </thead>
-                                                          <tbody></tbody>
-                                                        </table>
-                                                      </div>
-                                                      
-                                                      <h5 class="mt-4">政府計畫參與紀錄（效益與研發重點）</h5>
-                                                      <div class="table-scroll-wrapper">
-                                                        <table class="table table-bordered" id="govPlanTable2">
-                                                          <thead>
-                                                            <tr>
-                                                              <th rowspan="2">研發重點</th>
-                                                              <th rowspan="2">投入人力(月)</th>
-                                                              <th colspan="4">預期</th>
-                                                              <th colspan="4">實際</th>
-                                                              <th rowspan="2">操作</th>
-                                                            </tr>
-                                                            <tr>
-                                                                <th>增加產值</th>
-                                                                <th>專利申請</th>
-                                                                <th>增加就業</th>
-                                                                <th>促進投資</th>
-                                                                <th>增加產值</th>
-                                                                <th>專利申請</th>
-                                                                <th>增加就業</th>
-                                                                <th>促進投資</th>
-                                                              </tr>
-                                                          </thead>
-                                                          <tbody></tbody>
-                                                        </table>
-                                                      </div>
-                                                      
-                                                      <button class="btn btn-sm btn-warning" type="button" onclick="addGovPlanRow()">新增資料</button>
-                                                      
-                                                </div>
-
-                                                <hr>
-                                                <h5 class="text-uppercase bg-light p-2 mt-3 mb-3">申請中政府研發計畫</h5>
-                                                <div class="mb-3">
-                                                    <table class="table table-bordered" id="applyingPlanTable">
-                                                        <thead>
-                                                            <tr>
-                                                                <th>申請日期</th>
-                                                                <th>申請機關</th>
-                                                                <th>計畫名稱</th>
-                                                                <th>執行期間(起)</th>
-                                                                <th>執行期間(迄)</th>
-                                                                <th>政府補助款(千元)</th>
-                                                                <th>廠商自籌款(千元)</th>
-                                                                <th>操作</th>
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody></tbody>
-                                                    </table>
-                                                    <button class="btn btn-secondary" type="button"
-                                                        onclick="addApplyingPlanRow()">新增資料</button>
-                                                </div>
-                                                <hr>
-
-
-                                                <!-- 按鈕 -->
-                                                <div class="d-flex justify-content-start gap-2">
-                                                    <button type="submit" class="btn btn-teal btn-success">送出存檔</button>
-                                                    <button type="button" class="btn btn-primary">回上一頁</button>
-                                                </div>
+                                            <!-- 匯出 Word 按鈕 -->
+                                            <div class="text-end mt-4">
+                                                <a href="{{ route('sbir.export', $project->id) }}"
+                                                    class="btn btn-success">
+                                                    匯出計畫書 Word 檔
+                                                </a>
                                             </div>
+
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
+                    </div>
             </form>
         </div>
 
     </div> <!-- container -->
+    <!-- 編輯 Modal -->
+    <div class="modal fade" id="editorModal" tabindex="-1" aria-labelledby="editorModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editorModalLabel">內容編輯器</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <textarea id="modalEditor"></textarea>
+                    <input type="hidden" id="currentField">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-primary" onclick="saveEditorContent()">儲存</button>
+                </div>
+            </div>
+        </div>
+    </div>
 @endsection
 @section('script')
     @if (session('success'))
@@ -387,104 +249,110 @@
     @endif
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- TinyMCE + Modal 操作邏輯 -->
+    <!--預設，誤動 -->
+    <script src="https://cdn.jsdelivr.net/npm/tinymce@7/tinymce.min.js"></script>
     <script>
-        function addShareholderRow() {
-            document.querySelector('#shareholdersTable tbody').insertAdjacentHTML('beforeend', `
-            <tr>
-              <td><input type="text" name="shareholder_name[]" class="form-control"></td>
-              <td><input type="number" name="shareholder_amount[]" class="form-control"></td>
-              <td><input type="number" name="shareholder_ratio[]" class="form-control"></td>
-              <td><input type="text" name="shareholder_source[]" class="form-control"></td>
-              <td><button class="btn btn-danger" onclick="this.closest('tr').remove()">刪除</button></td>
-            </tr>`);
-        }
-
-        function addYearRow() {
-            document.querySelector('#threeYearTable tbody').insertAdjacentHTML('beforeend', `
-            <tr>
-              <td><input type="number" name="year[]" class="form-control"></td>
-              <td><input type="number" name="revenue[]" class="form-control"></td>
-              <td><input type="number" name="rnd_cost[]" class="form-control"></td>
-              <td><input type="number" name="ratio[]" class="form-control" readonly></td>
-              <td><textarea name="note[]" class="form-control"></textarea></td>
-              <td><button class="btn btn-danger" onclick="this.closest('tr').remove()">刪除</button></td>
-            </tr>`);
-        }
-
-        function addMainProductRow() {
-            document.querySelector('#mainProductTable tbody').insertAdjacentHTML('beforeend', `
-    <tr>
-      <td><input type="text" name="product_name[]" class="form-control"></td>
-      <td><input type="number" name="output_y1[]" class="form-control"></td>
-      <td><input type="number" name="sales_y1[]" class="form-control"></td>
-      <td><input type="number" name="share_y1[]" class="form-control"></td>
-      <td><input type="number" name="output_y2[]" class="form-control"></td>
-      <td><input type="number" name="sales_y2[]" class="form-control"></td>
-      <td><input type="number" name="share_y2[]" class="form-control"></td>
-      <td><input type="number" name="output_y3[]" class="form-control"></td>
-      <td><input type="number" name="sales_y3[]" class="form-control"></td>
-      <td><input type="number" name="share_y3[]" class="form-control"></td>
-      <td><button class="btn btn-sm btn-danger" onclick="this.closest('tr').remove()">刪除</button></td>
-    </tr>`);
-        }
-
-        function addAwardRow() {
-            document.querySelector('#awardTable tbody').insertAdjacentHTML('beforeend', `
-            <tr>
-              <td><input type="number" name="award_year[]" class="form-control"></td>
-              <td><input type="text" name="award_name[]" class="form-control"></td>
-              <td><button class="btn btn-danger" onclick="this.closest('tr').remove()">刪除</button></td>
-            </tr>`);
-        }
-
-        function addPatentRow() {
-            document.querySelector('#patentTable tbody').insertAdjacentHTML('beforeend', `
-            <tr>
-              <td><input type="text" name="patent_info[]" class="form-control"></td>
-              <td><textarea name="patent_desc[]" class="form-control"></textarea></td>
-              <td><button class="btn btn-danger" onclick="this.closest('tr').remove()">刪除</button></td>
-            </tr>`);
-        }
-
-        function addGovPlanRow() {
-  document.querySelector('#govPlanTable1 tbody').insertAdjacentHTML('beforeend', `
-    <tr>
-      <td><input type="text" name="plan_type[]" class="form-control"></td>
-      <td><input type="text" name="plan_name[]" class="form-control"></td>
-      <td><input type="date" name="start_date[]" class="form-control"></td>
-      <td><input type="date" name="end_date[]" class="form-control"></td>
-      <td><input type="number" name="gov_subsidy[]" class="form-control"></td>
-      <td><input type="number" name="self_funding[]" class="form-control"></td>
-      <td><button class="btn btn-sm btn-danger" onclick="this.closest('tr').remove()">刪除</button></td>
-    </tr>`);
-
-  document.querySelector('#govPlanTable2 tbody').insertAdjacentHTML('beforeend', `
-    <tr>
-      <td><textarea name="plan_focus[]" class="form-control"></textarea></td>
-      <td><input type="number" name="man_month[]" class="form-control"></td>
-      <td><input type="number" name="expected_value[]" class="form-control"></td>
-      <td><input type="number" name="expected_patent[]" class="form-control"></td>
-      <td><input type="number" name="expected_employment[]" class="form-control"></td>
-      <td><input type="number" name="expected_invest[]" class="form-control"></td>
-      <td><input type="number" name="actual_value[]" class="form-control"></td>
-      <td><input type="number" name="actual_patent[]" class="form-control"></td>
-      <td><input type="number" name="actual_employment[]" class="form-control"></td>
-      <td><input type="number" name="actual_invest[]" class="form-control"></td>
-      <td><button class="btn btn-sm btn-danger" onclick="this.closest('tr').remove()">刪除</button></td>
-    </tr>`);
-}
-        function addApplyingPlanRow() {
-            document.querySelector('#applyingPlanTable tbody').insertAdjacentHTML('beforeend', `
-            <tr>
-              <td><input type="date" name="apply_date[]" class="form-control"></td>
-              <td><input type="text" name="apply_org[]" class="form-control"></td>
-              <td><input type="text" name="apply_name[]" class="form-control"></td>
-              <td><input type="date" name="apply_start[]" class="form-control"></td>
-              <td><input type="date" name="apply_end[]" class="form-control"></td>
-              <td><input type="number" name="apply_grant[]" class="form-control"></td>
-              <td><input type="number" name="apply_self[]" class="form-control"></td>
-              <td><button class="btn btn-danger" onclick="this.closest('tr').remove()">刪除</button></td>
-            </tr>`);
-        }
+        const projectId = {{ $project->id }};
     </script>
+    <script>
+        let editorInstance;
+      
+        document.addEventListener('DOMContentLoaded', function () {
+          tinymce.init({
+            selector: '#modalEditor',
+            height: 500,
+            menubar: true,
+            plugins: 'lists table image code link textcolor',
+            toolbar: 'undo redo | blocks | bold italic underline forecolor backcolor | alignleft aligncenter alignright | bullist numlist | image table link | code',
+            images_upload_url: '/upload-image',
+            automatic_uploads: true,
+            file_picker_types: 'image',
+            file_picker_callback: function (cb, value, meta) {
+              if (meta.filetype === 'image') {
+                const input = document.createElement('input');
+                input.setAttribute('type', 'file');
+                input.setAttribute('accept', 'image/*');
+      
+                input.onchange = function () {
+                  const file = this.files[0];
+                  const formData = new FormData();
+                  formData.append('file', file);
+      
+                  fetch('/upload-image', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                      'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    }
+                  })
+                  .then(response => response.json())
+                  .then(result => {
+                    cb(result.location);
+                  });
+                };
+      
+                input.click();
+              }
+            },
+            setup: function (editor) {
+              editorInstance = editor;
+            }
+          });
+      
+          document.querySelectorAll('.open-editor').forEach(btn => {
+            btn.addEventListener('click', function () {
+              const field = this.getAttribute('data-field');
+      
+              // 改為呼叫正確的 GET 路由
+              fetch(`/project/${projectId}/sbir06/get-field?field=${field}`)
+                .then(res => res.json())
+                .then(data => {
+                  const content = data.value || '';
+                  document.getElementById('currentField').value = field;
+                  const wait = setInterval(() => {
+                    const editor = tinymce.get('modalEditor');
+                    if (editor) {
+                      editor.setContent(content);
+                      clearInterval(wait);
+                    }
+                  }, 100);
+                });
+            });
+          });
+        });
+      
+        function saveEditorContent() {
+          const field = document.getElementById('currentField').value;
+          const content = tinymce.get('modalEditor').getContent();
+      
+          const preview = document.getElementById(`preview_${field}`);
+          if (preview) preview.innerHTML = content;
+      
+          fetch(`/project/${projectId}/sbir06/update-field`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            },
+            body: JSON.stringify({
+              field: field,
+              value: content
+            })
+          })
+          .then(res => res.json())
+          .then(data => {
+            if (data.success) {
+              const modalInstance = bootstrap.Modal.getInstance(document.getElementById('editorModal'));
+              modalInstance.hide();
+              alert('儲存成功');
+            } else {
+              alert('儲存失敗');
+            }
+          })
+          .catch(err => {
+            alert('錯誤發生：' + err.message);
+          });
+        }
+      </script>
 @endsection
