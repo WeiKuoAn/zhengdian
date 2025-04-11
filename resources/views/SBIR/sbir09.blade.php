@@ -78,7 +78,7 @@
                                     <div class="modal-body">
                                         <div class="text-center">
                                             <i class="bx bx-check-circle display-1 text-success"></i>
-                                            <h4 class="mt-3">儲存商業類資料成功！</h4>
+                                            <h4 class="mt-3">儲存SBIR資料成功！</h4>
                                         </div>
                                     </div>
                                 </div><!-- /.modal-content -->
@@ -213,8 +213,6 @@
                                                             </tr>
                                                         </tbody>
                                                     </table>
-                                                    <button class="btn btn-secondary" type="button"
-                                                        onclick="addBasicInfoRow()">新增資料</button>
                                                 </div>
 
                                                 <h5 class="text-uppercase bg-light p-2 mt-3 mb-3">學歷</h5>
@@ -319,6 +317,57 @@
                                                     <table class="table table-bordered" id="staffTable">
                                                         <thead>
                                                             <tr>
+                                                                <th>姓名</th>
+                                                                <th>職稱</th>
+                                                                <th>會計科目分類</th>
+                                                                <th>研發人員</th>
+                                                                <th>最高學歷(學校系所)</th>
+                                                                <th>主要經歷</th>
+                                                                <th>主要重要成就</th>
+                                                                <th>本業年資</th>
+                                                                <th>參與分項計畫及工作項目</th>
+                                                                <th>操作</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            <tr>
+                                                                <td><input type="text" name="staff_name[]"
+                                                                        class="form-control"></td>
+                                                                <td><input type="text" name="staff_title[]"
+                                                                        class="form-control"></td>
+                                                                <td><input type="text" name="account_category[]"
+                                                                        class="form-control"></td>
+                                                                <td>
+                                                                    <select name="is_rnd[]" class="form-control">
+                                                                        <option value="是">是</option>
+                                                                        <option value="否">否</option>
+                                                                    </select>
+                                                                </td>
+                                                                <td><input type="text" name="education[]"
+                                                                        class="form-control"></td>
+                                                                <td><input type="text" name="experience[]"
+                                                                        class="form-control"></td>
+                                                                <td><input type="text" name="achievement[]"
+                                                                        class="form-control"></td>
+                                                                <td><input type="text" name="seniority[]"
+                                                                        class="form-control"></td>
+                                                                <td><input type="text" name="task[]"
+                                                                        class="form-control"></td>
+                                                                <td><button type="button" class="btn btn-danger"
+                                                                        onclick="this.closest('tr').remove()">刪除</button>
+                                                                </td>
+                                                            </tr>
+                                                        </tbody>
+                                                    </table>
+                                                    <button class="btn btn-secondary" type="button"
+                                                        onclick="addStaffRow()">新增資料</button>
+                                                </div>
+                                                <hr>
+                                                <h5 class="text-uppercase bg-light p-2 mt-3 mb-3">計畫人員簡歷表</h5>
+                                                <div class="mb-3">
+                                                    <table class="table table-bordered" id="staffTable">
+                                                        <thead>
+                                                            <tr>
                                                                 <th>編號</th>
                                                                 <th>姓名</th>
                                                                 <th>職稱</th>
@@ -367,11 +416,48 @@
                                                     <button class="btn btn-secondary" type="button"
                                                         onclick="addStaffRow()">新增資料</button>
                                                 </div>
-                                                <hr>
 
+                                                <h5 class="text-uppercase bg-light p-2 mt-5 mb-3">計畫研究發展人力統計 (不含兼職顧問)</h5>
+                                                <div class="row g-3">
+                                                    <div class="col-md-4">
+                                                        <label class="form-label">* 學歷博士</label>
+                                                        <input type="number" name="count_phd" class="form-control"
+                                                            value="0">
+                                                    </div>
+                                                    <div class="col-md-4">
+                                                        <label class="form-label">* 學歷碩士</label>
+                                                        <input type="number" name="count_master" class="form-control"
+                                                            value="0">
+                                                    </div>
+                                                    <div class="col-md-4">
+                                                        <label class="form-label">* 學歷學士</label>
+                                                        <input type="number" name="count_bachelor" class="form-control"
+                                                            value="0">
+                                                    </div>
+                                                    <div class="col-md-4">
+                                                        <label class="form-label">* 專科以下</label>
+                                                        <input type="number" name="count_others" class="form-control"
+                                                            value="0">
+                                                    </div>
+                                                    <div class="col-md-4">
+                                                        <label class="form-label">* 男性</label>
+                                                        <input type="number" name="count_male" class="form-control"
+                                                            value="0">
+                                                    </div>
+                                                    <div class="col-md-4">
+                                                        <label class="form-label">* 女性</label>
+                                                        <input type="number" name="count_female" class="form-control"
+                                                            value="0">
+                                                    </div>
+                                                    <div class="col-md-4">
+                                                        <label class="form-label">* 待聘人數</label>
+                                                        <input type="number" name="count_pending" class="form-control"
+                                                            value="0">
+                                                    </div>
+                                                </div>
 
                                                 <!-- 按鈕 -->
-                                                <div class="d-flex justify-content-start gap-2">
+                                                <div class="d-flex justify-content-start gap-2 mt-3">
                                                     <button type="submit" class="btn btn-teal btn-success">送出存檔</button>
                                                     <button type="button" class="btn btn-primary">回上一頁</button>
                                                 </div>

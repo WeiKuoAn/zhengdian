@@ -78,7 +78,7 @@
                                     <div class="modal-body">
                                         <div class="text-center">
                                             <i class="bx bx-check-circle display-1 text-success"></i>
-                                            <h4 class="mt-3">儲存商業類資料成功！</h4>
+                                            <h4 class="mt-3">儲存SBIR資料成功！</h4>
                                         </div>
                                     </div>
                                 </div><!-- /.modal-content -->
@@ -170,7 +170,7 @@
 
                                         <div class="card-body">
                                             <div class="mb-5">
-                                                <h5 class="text-uppercase bg-light p-2 mt-3 mb-3">董監事持股比例</h5>
+                                                <h5 class="text-uppercase bg-light p-2 mt-3 mb-3">計畫總經費預算表</h5>
                                                 <div class="mb-3">
                                                     <table class="table table-bordered" id="shareholdersTable">
                                                         <thead>
@@ -189,176 +189,6 @@
                                                 </div>
 
                                                 <hr>
-                                                <h5 class="text-uppercase bg-light p-2 mt-3 mb-3">公司主營三年資料</h5>
-                                                <div class="mb-3">
-                                                    <table class="table table-bordered" id="threeYearTable">
-                                                        <thead>
-                                                            <tr>
-                                                                <th>年度</th>
-                                                                <th>營業額(千元)</th>
-                                                                <th>研發費用(千元)</th>
-                                                                <th>(B/A)%</th>
-                                                                <th>說明</th>
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody>
-                                                            @for ($i = 0; $i < 3; $i++)
-                                                                <tr>
-                                                                    <td><input type="number" name="years[]"
-                                                                            class="form-control"></td>
-                                                                    <td><input type="number" name="revenues[]"
-                                                                            class="form-control"></td>
-                                                                    <td><input type="number" name="rnd_costs[]"
-                                                                            class="form-control"></td>
-                                                                    <td><input type="number" name="ratios[]"
-                                                                            class="form-control" readonly></td>
-                                                                    <td>
-                                                                        <textarea name="notes[]" class="form-control"></textarea>
-                                                                    </td>
-                                                                </tr>
-                                                            @endfor
-                                                        </tbody>
-                                                    </table>
-                                                </div>
-
-                                                <hr>
-                                                <h5 class="text-uppercase bg-light p-2 mt-3 mb-3">主要產品項目</h5>
-                                                <div class="mb-3">
-                                                    <table class="table table-bordered" id="mainProductTable"
-                                                        align="center">
-                                                        <thead>
-                                                            <tr align="center">
-                                                                <th rowspan="2">項目名稱</th>
-                                                                <th colspan="3">前一年度</th>
-                                                                <th colspan="3">前二年度 - 產量</th>
-                                                                <th colspan="3">前三年度 - 產量</th>
-                                                                <th rowspan="2">操作</th>
-                                                            </tr>
-                                                            <tr align="center">
-                                                                <th>前一年度 - 產量</th>
-                                                                <th>前一年度 - 銷售額(千元)</th>
-                                                                <th>前一年度 - 市佔率(%)</th>
-                                                                <th>前二年度 - 產量</th>
-                                                                <th>前二年度 - 銷售額(千元)</th>
-                                                                <th>前二年度 - 市佔率(%)</th>
-                                                                <th>前三年度 - 產量</th>
-                                                                <th>前三年度 - 銷售額(千元)</th>
-                                                                <th>前三年度 - 市佔率(%)</th>
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody></tbody>
-                                                    </table>
-                                                    <button class="btn btn-secondary" type="button"
-                                                        onclick="addMainProductRow()">新增資料</button>
-                                                </div>
-
-                                                <hr>
-                                                <h5 class="text-uppercase bg-light p-2 mt-3 mb-3">獎項</h5>
-                                                <div class="mb-3">
-                                                    <table class="table table-bordered" id="awardTable">
-                                                        <thead>
-                                                            <tr>
-                                                                <th>年度</th>
-                                                                <th>獎項名稱</th>
-                                                                <th>操作</th>
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody></tbody>
-                                                    </table>
-                                                    <button class="btn btn-secondary" type="button"
-                                                        onclick="addAwardRow()">新增獎項</button>
-                                                </div>
-
-                                                <hr>
-                                                <h5 class="text-uppercase bg-light p-2 mt-3 mb-3">專利</h5>
-                                                <div class="mb-3">
-                                                    <table class="table table-bordered" id="patentTable">
-                                                        <thead>
-                                                            <tr>
-                                                                <th>國別 / 年度 / 類型 / 專利編號</th>
-                                                                <th>專利名稱或內容</th>
-                                                                <th>操作</th>
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody></tbody>
-                                                    </table>
-                                                    <button class="btn btn-secondary" type="button"
-                                                        onclick="addPatentRow()">新增專利</button>
-                                                </div>
-
-                                                <hr>
-                                                <h5 class="text-uppercase bg-light p-2 mt-3 mb-3">政府計畫參與紀錄</h5>
-                                                <div class="mb-3">
-                                                    <div class="table-scroll-wrapper">
-                                                        <table class="table table-bordered" id="govPlanTable1">
-                                                          <thead>
-                                                            <tr>
-                                                              <th>計畫類別</th>
-                                                              <th>計畫名稱</th>
-                                                              <th>執行期間(起)</th>
-                                                              <th>執行期間(迄)</th>
-                                                              <th>政府補助款(千元)</th>
-                                                              <th>廠商自籌款(千元)</th>
-                                                              <th>操作</th>
-                                                            </tr>
-                                                          </thead>
-                                                          <tbody></tbody>
-                                                        </table>
-                                                      </div>
-                                                      
-                                                      <h5 class="mt-4">政府計畫參與紀錄（效益與研發重點）</h5>
-                                                      <div class="table-scroll-wrapper">
-                                                        <table class="table table-bordered" id="govPlanTable2">
-                                                          <thead>
-                                                            <tr>
-                                                              <th rowspan="2">研發重點</th>
-                                                              <th rowspan="2">投入人力(月)</th>
-                                                              <th colspan="4">預期</th>
-                                                              <th colspan="4">實際</th>
-                                                              <th rowspan="2">操作</th>
-                                                            </tr>
-                                                            <tr>
-                                                                <th>增加產值</th>
-                                                                <th>專利申請</th>
-                                                                <th>增加就業</th>
-                                                                <th>促進投資</th>
-                                                                <th>增加產值</th>
-                                                                <th>專利申請</th>
-                                                                <th>增加就業</th>
-                                                                <th>促進投資</th>
-                                                              </tr>
-                                                          </thead>
-                                                          <tbody></tbody>
-                                                        </table>
-                                                      </div>
-                                                      
-                                                      <button class="btn btn-sm btn-warning" type="button" onclick="addGovPlanRow()">新增資料</button>
-                                                      
-                                                </div>
-
-                                                <hr>
-                                                <h5 class="text-uppercase bg-light p-2 mt-3 mb-3">申請中政府研發計畫</h5>
-                                                <div class="mb-3">
-                                                    <table class="table table-bordered" id="applyingPlanTable">
-                                                        <thead>
-                                                            <tr>
-                                                                <th>申請日期</th>
-                                                                <th>申請機關</th>
-                                                                <th>計畫名稱</th>
-                                                                <th>執行期間(起)</th>
-                                                                <th>執行期間(迄)</th>
-                                                                <th>政府補助款(千元)</th>
-                                                                <th>廠商自籌款(千元)</th>
-                                                                <th>操作</th>
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody></tbody>
-                                                    </table>
-                                                    <button class="btn btn-secondary" type="button"
-                                                        onclick="addApplyingPlanRow()">新增資料</button>
-                                                </div>
-                                                <hr>
-
 
                                                 <!-- 按鈕 -->
                                                 <div class="d-flex justify-content-start gap-2">

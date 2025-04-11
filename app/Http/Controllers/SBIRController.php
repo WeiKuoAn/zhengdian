@@ -521,20 +521,31 @@ class SBIRController extends Controller
     public function export($id)
     {
         $data = SBIR05::where('project_id', $id)->firstOrFail();
-        $exporter = new WordExporter();
 
-        $text1 = $exporter->cleanHtmlContent($data->text1 ?? '');
-
-        $text2 = $exporter->cleanHtmlContent($data->text2 ?? '');
-        $text3 = $exporter->cleanHtmlContent($data->text3 ?? '');
-        dd($data->text1);
-
-
-        $html = "<h2>(一) 研發動機</h2>$text1";
-        $html .= "<h2>(二) 競爭力分析</h2>$text2";
-        $html .= "<h2>(三) 可行性分析</h2>$text3";
-
-        return $exporter->exportHtmlToWord($html, '計畫內容_' . now()->format('Ymd_His') . '.docx');
+        $template = new \PhpOffice\PhpWord\TemplateProcessor(storage_path('app/templates/sbir05.docx'));
+    
+        // 可清理 html 再塞入（可選）
+        $exporter = new \App\Services\WordExporter();
+        $text1 = $exporter->cleanHtmlContent($data->text1);
+        $text2 = $exporter->cleanHtmlContent($data->text2);
+        $text3 = $exporter->cleanHtmlContent($data->text3);
+    
+        $template->setValue('text1', $text1);
+        $template->setValue('text2', $text2);
+        $template->setValue('text3', $text3);
+    
+        // 建立臨時檔案（注意：此為 string 路徑）
+        $filename = '計畫內容_' . now()->format('Ymd_His') . '.docx';
+        $tempPath = storage_path('app/temp/' . $filename);
+    
+        if (!file_exists(dirname($tempPath))) {
+            mkdir(dirname($tempPath), 0777, true);
+        }
+    
+        $template->saveAs($tempPath);
+    
+        // 回傳下載並自動刪除
+        return response()->download($tempPath)->deleteFileAfterSend(true);
     }
 
 
