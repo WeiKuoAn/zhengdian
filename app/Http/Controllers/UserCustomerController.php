@@ -201,7 +201,7 @@ class UserCustomerController extends Controller
                 }
             }
         }
-
+        
         //營收
         $cust_income_datas = ManufactureThreeIncome::where('project_id',$cust_data->id)->get();
         // dd($cust_income_datas);

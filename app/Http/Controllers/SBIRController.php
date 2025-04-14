@@ -32,7 +32,12 @@ use DOMDocument;
 use PhpOffice\PhpWord\TemplateProcessor;
 use Illuminate\Support\Str;
 use App\Services\WordExporter;
-use Illuminate\Support\Facades\Response;
+use PhpOffice\PhpWord\Element\Text;
+use Illuminate\Support\Facades\File;
+use ZipArchive;
+use RecursiveIteratorIterator;
+use RecursiveDirectoryIterator;
+
 
 class SBIRController extends Controller
 {
@@ -518,35 +523,173 @@ class SBIRController extends Controller
         return view('SBIR.sbir10')->with('project', $project)->with('data', $data);
     }
 
+    //匯出
     public function export($id)
     {
         $data = SBIR05::where('project_id', $id)->firstOrFail();
 
-        $template = new \PhpOffice\PhpWord\TemplateProcessor(storage_path('app/templates/sbir05.docx'));
-    
-        // 可清理 html 再塞入（可選）
-        $exporter = new \App\Services\WordExporter();
-        $text1 = $exporter->cleanHtmlContent($data->text1);
-        $text2 = $exporter->cleanHtmlContent($data->text2);
-        $text3 = $exporter->cleanHtmlContent($data->text3);
-    
-        $template->setValue('text1', $text1);
-        $template->setValue('text2', $text2);
-        $template->setValue('text3', $text3);
-    
-        // 建立臨時檔案（注意：此為 string 路徑）
-        $filename = '計畫內容_' . now()->format('Ymd_His') . '.docx';
-        $tempPath = storage_path('app/temp/' . $filename);
-    
-        if (!file_exists(dirname($tempPath))) {
-            mkdir(dirname($tempPath), 0777, true);
+        // ✅ Step 1: 將 text1~text3 HTML 內容轉成 WordML
+        $wordXml1 = $this->htmlToWordXml($data->text1);
+        $wordXml2 = $this->htmlToWordXml($data->text2);
+        $wordXml3 = $this->htmlToWordXml($data->text3);
+
+        // ✅ Step 2: 解壓 Word 範本 sbir05.docx
+        $templatePath = storage_path('app/templates/sbir05.docx');
+        $tempDir = storage_path('app/temp_word_' . time());
+        File::makeDirectory($tempDir);
+
+        $zip = new ZipArchive;
+        $zip->open($templatePath);
+        $zip->extractTo($tempDir);
+        $zip->close();
+
+        // ✅ Step 3: 替換 document.xml 中的三個 placeholder
+        $docXmlPath = $tempDir . '/word/document.xml';
+        $documentXml = File::get($docXmlPath);
+
+        // 依據你的範本中 placeholder，例如：##HTML_PLACEHOLDER_text1##
+        $documentXml = str_replace('<w:t>##HTML_PLACEHOLDER_text1##</w:t>', $wordXml1, $documentXml);
+        $documentXml = str_replace('<w:t>##HTML_PLACEHOLDER_text2##</w:t>', $wordXml2, $documentXml);
+        $documentXml = str_replace('<w:t>##HTML_PLACEHOLDER_text3##</w:t>', $wordXml3, $documentXml);
+
+        File::put($docXmlPath, $documentXml);
+
+        // ✅ Step 4: 壓回成 Word
+        $newDocxPath = storage_path('app/public/sbir05_export_' . now()->format('Ymd_His') . '.docx');
+        $zip = new ZipArchive;
+        $zip->open($newDocxPath, ZipArchive::CREATE);
+
+        $files = new RecursiveIteratorIterator(
+            new RecursiveDirectoryIterator($tempDir),
+            RecursiveIteratorIterator::LEAVES_ONLY
+        );
+
+        foreach ($files as $file) {
+            if (!$file->isDir()) {
+                $filePath = $file->getRealPath();
+                $relativePath = substr($filePath, strlen($tempDir) + 1);
+                $zip->addFile($filePath, $relativePath);
+            }
         }
-    
-        $template->saveAs($tempPath);
-    
-        // 回傳下載並自動刪除
-        return response()->download($tempPath)->deleteFileAfterSend(true);
+
+        $zip->close();
+        File::deleteDirectory($tempDir);
+
+        return response()->download($newDocxPath)->deleteFileAfterSend(true);
     }
+
+
+    private function htmlToWordXml($html, $numIdOverride = null)
+    {
+        $xml = '';
+        libxml_use_internal_errors(true);
+        $dom = new \DOMDocument();
+        $dom->loadHTML('<?xml encoding="utf-8" ?>' . $html);
+        libxml_clear_errors();
+
+        $body = $dom->getElementsByTagName('body')->item(0);
+        if (!$body) return '';
+
+        foreach ($body->childNodes as $node) {
+            if (in_array($node->nodeName, ['ul', 'ol'])) {
+                // ✅ 根據傳入參數選擇 numId（用來防止清單自動接續）
+                $currentNumId = $node->nodeName === 'ul' ? 1 : ($numIdOverride ?? 4);
+
+                foreach ($node->childNodes as $li) {
+                    if ($li->nodeName !== 'li') continue;
+
+                    $liInnerXml = '';
+                    foreach ($li->childNodes as $child) {
+                        if ($child->nodeName === 'br') {
+                            $liInnerXml .= '<w:br/>';
+                        } elseif ($child->nodeType === XML_TEXT_NODE || $child->nodeName === '#text') {
+                            $text = trim($child->textContent);
+                            if ($text !== '') {
+                                $liInnerXml .= $this->buildRunXml($text);
+                            }
+                        } else {
+                            $text = trim($child->textContent);
+                            if ($text !== '') {
+                                $isBold = in_array($child->nodeName, ['b', 'strong']);
+                                $isItalic = in_array($child->nodeName, ['i', 'em']);
+                                $liInnerXml .= $this->buildRunXml($text, $isBold, $isItalic);
+                            }
+                        }
+                    }
+
+                    $xml .= <<<XML
+<w:p>
+  <w:pPr>
+    <w:numPr>
+      <w:ilvl w:val="0"/>
+      <w:numId w:val="{$currentNumId}"/>
+    </w:numPr>
+  </w:pPr>
+  {$liInnerXml}
+</w:p>
+
+XML;
+                }
+            }
+
+            // ✅ 處理一般段落
+            elseif ($node->nodeName === 'p') {
+                $text = trim($node->textContent);
+                if ($text !== '') {
+                    $run = $this->buildRunXml($text);
+                    $xml .= <<<XML
+<w:p>
+  {$run}
+</w:p>
+
+XML;
+                }
+            }
+        }
+
+        return trim($xml);
+    }
+
+
+    private function normalizeTinyHtml($html)
+    {
+        // 先將多餘空白清掉，處理 br
+        $html = preg_replace('/(<br\s*\/?>\s*){2,}/i', '</p><p>', $html); // 2 個 <br> 以上換成段落
+        $html = preg_replace('/^(?!<p>)/', '<p>', $html); // 若開頭不是 <p> 加上
+        $html = preg_replace('/(?<!<\/p>)$/', '</p>', $html); // 若結尾不是 </p> 加上
+        return $html;
+    }
+
+    
+    private function buildRunXml($text, $bold = false, $italic = false)
+    {
+        $escaped = $this->escapeXml($text);
+        $rPr = '<w:rPr>';
+        $rPr .= '<w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="DFKai-SB"/>';
+        $rPr .= '<w:sz w:val="24"/>'; // 12pt
+        if ($bold) $rPr .= '<w:b/>';
+        if ($italic) $rPr .= '<w:i/>';
+        $rPr .= '</w:rPr>';
+
+        return <<<XML
+    <w:r>
+      {$rPr}
+      <w:t xml:space="preserve">{$escaped}</w:t>
+    </w:r>
+    XML;
+    }
+
+
+
+
+
+
+    private function escapeXml($string)
+    {
+        return htmlspecialchars($string, ENT_XML1 | ENT_QUOTES, 'UTF-8');
+    }
+
+
 
 
 
