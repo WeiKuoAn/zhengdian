@@ -129,6 +129,7 @@
                                     <div class="mb-3">
                                         <label class="form-label">專案狀態</label>
                                         <select class="form-select" name="contract_status">
+                                            <option value="0">尚未設定</option>
                                             @foreach ($contract_status as $status)
                                                 <option value="{{ $status->id }}">{{ $status->name }}</option>
                                             @endforeach
