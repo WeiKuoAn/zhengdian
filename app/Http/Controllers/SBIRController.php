@@ -612,7 +612,7 @@ class SBIRController extends Controller
                 }
             }
 
-            // 統一縮排整段（非首行縮排）：<w:left="420"/> 表示整段縮排 420 Twips = 0.42 公分 = 約一個中文字寬
+            // 段落本身（含縮排）
             $xml .= <<<XML
 <w:p>
   <w:pPr>
@@ -622,11 +622,23 @@ class SBIRController extends Controller
 </w:p>
 
 XML;
+
+            // 額外插入一個空白段落（空行）
+            $xml .= <<<XML
+<w:p>
+  <w:pPr>
+    <w:ind w:left="1100"/>
+  </w:pPr>
+  <w:r><w:t xml:space="preserve"></w:t></w:r>
+</w:p>
+
+XML;
         }
     }
 
     return trim($xml);
 }
+
 
 
 
