@@ -529,12 +529,12 @@ class SBIRController extends Controller
         // 加載 Word 模板
         $templateProcessor =  new TemplateProcessor(storage_path('app/templates/sbir_word.docx'));
         // 獲取客戶資料
-        $user_data = User::where('id', $id)->first();
         $cust_data = CustData::where('user_id', $id)->first();
-        $project = CustProject::where('user_id', $id)->where('type', 0)->first();
+        $project = CustProject::where('id', $id)->first();
         $sbir01 = SBIR01::where('project_id', $id)->first();
         $sbir02 = SBIR02::where('project_id', $id)->first();
         $sbir03 = SBIR03::where('project_id', $id)->first();
+        $user_data = User::where('id', $project->user_id)->first();
         $project_host_data = ProjectHost::where('project_id', $project->id)->first();
         $project_contact_data = ProjectContact::where('project_id', $project->id)->first();
         $project_accounting_data = ProjectAccounting::where('project_id', $project->id)->first();
