@@ -10,7 +10,7 @@ class ProjectHost extends Model
     use HasFactory;
     protected $table = 'project_host';
     protected $fillable = [
-        'user_id', 'project_id', 'name', 'department', 'job', 
+        'user_id', 'project_id', 'name', 'department', 'job','fax',
         'context', 'mobile', 'phone', 'experience', 'email','salary','past_experience','month'
     ];
 }

@@ -523,7 +523,100 @@ class SBIRController extends Controller
         return view('SBIR.sbir10')->with('project', $project)->with('data', $data);
     }
 
-    //匯出
+    //匯出初版計畫書
+    public function exportWord($id)
+    {
+        // 加載 Word 模板
+        $templateProcessor =  new TemplateProcessor(storage_path('app/templates/sbir_word.docx'));
+        // 獲取客戶資料
+        $user_data = User::where('id', $id)->first();
+        $cust_data = CustData::where('user_id', $id)->first();
+        $project = CustProject::where('user_id', $id)->where('type', 0)->first();
+        $sbir01 = SBIR01::where('project_id', $id)->first();
+        $sbir02 = SBIR02::where('project_id', $id)->first();
+        $sbir03 = SBIR03::where('project_id', $id)->first();
+        $project_host_data = ProjectHost::where('project_id', $project->id)->first();
+        $project_contact_data = ProjectContact::where('project_id', $project->id)->first();
+        $project_accounting_data = ProjectAccounting::where('project_id', $project->id)->first();
+
+        // 確保 $cust_data 存在
+        if (!$cust_data) {
+            return response()->json(['error' => '客戶資料未找到'], 404);
+        }
+
+        //part0.封面
+        $templateProcessor->setValue('plan_name', $sbir01->plan_name ?? ' '); // 計畫名稱
+        $templateProcessor->setValue('cust_name', $user_data->name ?? ' '); // 公司名稱
+
+        //計畫申請表
+        $templateProcessor->setValue('cust_address', ($cust_data->zipcode ?? '') . ($cust_data->county ?? '') . ($cust_data->district ?? '') . ($cust_data->address ?? ' ')); // 通訊地址
+        $templateProcessor->setValue('project_host_name', $project_host_data->name ?? ' '); // 計畫主持人
+        $templateProcessor->setValue('project_host_mobile', $project_host_data->mobile ?? ' ');
+        $templateProcessor->setValue('project_host_phone', $project_host_data->phone ?? ' ');
+        $templateProcessor->setValue('project_host_fax', $project_host_data->fax ?? ' ');
+        $templateProcessor->setValue('project_host_email', $project_host_data->email ?? ' ');
+        $templateProcessor->setValue('project_contact_name', $project_contact_data->name ?? ' '); // 計畫主持人
+        $templateProcessor->setValue('project_contact_mobile', $project_contact_data->mobile ?? ' ');
+        $templateProcessor->setValue('project_contact_phone', $project_contact_data->phone ?? ' ');
+        $templateProcessor->setValue('project_contact_fax', $project_contact_data->fax ?? ' ');
+        $templateProcessor->setValue('project_contact_email', $project_contact_data->email ?? ' ');
+        $templateProcessor->setValue('project_accounting_name', $project_accounting_data->name ?? ' '); // 計畫會計
+        $templateProcessor->setValue('project_accounting_mobile', $project_accounting_data->mobile ?? ' ');
+        $templateProcessor->setValue('project_accounting_phone', $project_accounting_data->phone ?? ' ');
+        $templateProcessor->setValue('project_accounting_fax', $project_accounting_data->fax ?? ' ');
+        $templateProcessor->setValue('project_accounting_email', $project_accounting_data->email ?? ' ');
+
+        //申請公司基本資料表
+        $templateProcessor->setValue('cust_create_date', $cust_data->create_date ?? ' ');  // 成立日期
+        $templateProcessor->setValue('cust_registration_no', $cust_data->registration_no ?? ' ');
+        $templateProcessor->setValue('cust_mobile', $cust_data->mobile ?? ' ');
+        $templateProcessor->setValue('cust_fax', $cust_data->fax ?? ' '); 
+        $templateProcessor->setValue('cust_principal_name', $cust_data->principal_name ?? ' ');
+        $templateProcessor->setValue('cust_id_card', $cust_data->id_card ?? ' ');
+        $templateProcessor->setValue('cust_birthday', $cust_data->birthday ?? ' ');
+        $templateProcessor->setValue('cust_capital', $cust_data->capital ?? ' ');
+        $templateProcessor->setValue('cust_last_year_revenue', $cust_data->last_year_revenue ?? ' ');
+        $templateProcessor->setValue('cust_insurance_total', $cust_data->insurance_total ?? ' ');
+        $templateProcessor->setValue('cust_profit_margin', $cust_data->profit_margin ?? ' ');
+        $templateProcessor->setValue('cust_insurance_total', $cust_data->insurance_total ?? ' ');
+
+        $templateProcessor->setValue('sbir02_serve', $sbir02->serve ?? ' ');
+        $templateProcessor->setValue('sbir02_rd_zipcode', $sbir02->rd_zipcode ?? ' ');
+        $templateProcessor->setValue('sbir02_rd_address', $sbir02->rd_address ?? ' ');
+        
+        //計畫書摘要表
+        $templateProcessor->setValue('sbir03_plan_summary', str_replace("\n\n", '</w:t><w:br/><w:t>',$sbir03->plan_summary ?? ' '));
+        $templateProcessor->setValue('sbir03_innovation_focus', str_replace("\n\n", '</w:t><w:br/><w:t>',$sbir03->innovation_focus ?? ' '));
+        $templateProcessor->setValue('sbir03_execution_advantage', str_replace("\n\n", '</w:t><w:br/><w:t>',$sbir03->execution_advantage ?? ' '));
+        $templateProcessor->setValue('sbir03_benefit_output_value', $sbir03->benefit_output_value ?? ' ');
+        $templateProcessor->setValue('sbir03_benefit_new_products', $sbir03->benefit_new_products ?? ' ');
+        $templateProcessor->setValue('sbir03_benefit_derived_products', $sbir03->benefit_derived_products ?? ' ');
+        $templateProcessor->setValue('sbir03_benefit_rnd_cost', $sbir03->benefit_rnd_cost ?? ' ');
+
+        $templateProcessor->setValue('sbir03_benefit_investment', strval($sbir03->benefit_investment ?? ' '));
+        $templateProcessor->setValue('sbir03_benefit_cost_reduction', strval($sbir03->benefit_cost_reduction ?? ' '));
+        $templateProcessor->setValue('sbir03_benefit_jobs_created', strval($sbir03->benefit_jobs_created ?? ' '));
+        $templateProcessor->setValue('sbir03_benefit_new_companies', strval($sbir03->benefit_new_companies ?? ' '));
+        $templateProcessor->setValue('sbir03_benefit_patents', strval($sbir03->benefit_patents ?? ' '));
+        $templateProcessor->setValue('sbir03_benefit_new_patents', strval($sbir03->benefit_new_patents ?? ' '));
+        
+        // dd($sbir03);
+
+
+
+
+
+
+        // 保存修改後的文件到臨時路徑
+        $fileName = $user_data->name . '-商業服務業計畫書' . '.docx';
+        $tempFilePath = tempnam(sys_get_temp_dir(), 'phpword') . '.docx';
+        $templateProcessor->saveAs($tempFilePath);
+
+        // 將文件作為下載返回，並在傳送後刪除臨時文件
+        return response()->download($tempFilePath, $fileName)->deleteFileAfterSend(true);
+    }
+
+    //匯出研發動機
     public function export($id)
     {
         $data = SBIR05::where('project_id', $id)->firstOrFail();

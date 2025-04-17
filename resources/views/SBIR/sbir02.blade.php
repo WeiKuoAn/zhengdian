@@ -530,7 +530,7 @@
                                                                 @if (isset($project_accounting_data)) value="{{ $project_accounting_data->name }}" @endif>
                                                         </div>
                                                         <div class="col-md-2">
-                                                            <label class="form-label">聯絡電話</label>
+                                                            <label class="form-label">聯絡電話(  )#分機</label>
                                                             <input type="text" class="form-control required-input"
                                                                 name="accounting_mobile"
                                                                 @if (isset($project_accounting_data)) value="{{ $project_accounting_data->mobile }}" @endif>

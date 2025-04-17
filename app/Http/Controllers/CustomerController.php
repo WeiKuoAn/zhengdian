@@ -358,6 +358,7 @@ class CustomerController extends Controller
             $cust_data->zipcode = $request->zipcode;
             $cust_data->address = $request->address;
             $cust_data->principal_name = $request->principal_name;
+            $cust_data->contract_status = $request->contract_status;
             if ((Auth::user()->level == 2)) {
                 $cust_data->limit_status = Auth::user()->group_id;
             } else {

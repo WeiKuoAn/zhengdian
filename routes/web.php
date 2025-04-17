@@ -151,6 +151,10 @@ Route::get('project/sbir03/{id}', [SBIRController::class, 'sbir03'])->name('proj
 Route::post('project/sbir03/{id}', [SBIRController::class, 'sbir03_data'])->name('project.sbir03.data');
 Route::get('project/sbir04/{id}', [SBIRController::class, 'sbir04'])->name('project.sbir04');
 Route::post('project/sbir04/{id}', [SBIRController::class, 'sbir04_data'])->name('project.sbir04.data');
+
+//匯出初版計劃書
+Route::get('project/sbir/{id}/exportWord', [SBIRController::class, 'exportWord'])->name('sbir.exportWord');
+
 //SBIR05
 Route::get('project/sbir05/{id}', [SBIRController::class, 'sbir05'])->name('project.sbir05');
 Route::post('project/sbir05/{id}', [SBIRController::class, 'sbir05_data'])->name('project.sbir05.data');

@@ -11,6 +11,6 @@ class ProjectAccounting extends Model
     protected $table = 'project_accounting';
     protected $fillable = [
         'user_id', 'project_id', 'name', 'department', 'job', 
-        'context', 'mobile', 'phone', 'experience', 'email','salary','past_experience','month'
+        'context', 'mobile', 'phone', 'experience', 'email','salary','past_experience','month','fax'
     ];
 }
