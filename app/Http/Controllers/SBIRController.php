@@ -600,8 +600,32 @@ class SBIRController extends Controller
         $templateProcessor->setValue('sbir03_benefit_patents', strval($sbir03->benefit_patents ?? ' '));
         $templateProcessor->setValue('sbir03_benefit_new_patents', strval($sbir03->benefit_new_patents ?? ' '));
         
-        // dd($sbir03);
+        $sbir04_shareholders = Sbir04Shareholders::where('project_id', $project->id)->get();
+        $templateProcessor->cloneRow('sbir04_shareholder_name', count($sbir04_shareholders));
+        foreach ($sbir04_shareholders as $key => $sbir04_shareholder) {
+            $rowIndex = $key + 1;
+            $templateProcessor->setValue("sbir04_shareholder_name#{$rowIndex}", $sbir04_shareholder->shareholder_name ?? ' '); // 動態生成行號
+            $templateProcessor->setValue("sbir04_shareholder_amount#{$rowIndex}", number_format($sbir04_shareholder->shareholder_amount) ?? ' '); // 問題
+            $templateProcessor->setValue("sbir04_shareholder_ratio#{$rowIndex}", $sbir04_shareholder->shareholder_ratio.'%' ?? ' '); // 動態生成解決方案 ID
+        }
 
+        $sbir04_awards = Sbir04Award::where('project_id', $project->id)->get();
+        $templateProcessor->cloneRow('sbir04_award_year', count($sbir04_awards));
+        foreach ($sbir04_awards as $key => $sbir04_award) {
+            $rowIndex = $key + 1;
+            $templateProcessor->setValue("sbir04_award_key#{$rowIndex}", $rowIndex ?? ' ');
+            $templateProcessor->setValue("sbir04_award_year#{$rowIndex}", $sbir04_award->award_year ?? ' ');
+            $templateProcessor->setValue("sbir04_award_name#{$rowIndex}", $sbir04_award->award_name ?? ' ');
+        }
+
+        $sbir04_patents = Sbir04Patent::where('project_id', $project->id)->get();
+        $templateProcessor->cloneRow('sbir04_patent_info', count($sbir04_patents));
+        foreach ($sbir04_patents as $key => $sbir04_patent) {
+            $rowIndex = $key + 1;
+            $templateProcessor->setValue("sbir04_patent_key#{$rowIndex}", $rowIndex ?? ' ');
+            $templateProcessor->setValue("sbir04_patent_info#{$rowIndex}", $sbir04_patent->patent_info ?? ' ');
+            $templateProcessor->setValue("sbir04_patent_desc#{$rowIndex}", $sbir04_patent->patent_desc ?? ' ');
+        }
 
 
 

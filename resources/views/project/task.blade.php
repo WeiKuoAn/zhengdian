@@ -171,12 +171,11 @@
                                                         data-bs-target="#deleteTaskModal">
                                                         <i class="mdi mdi-trash-can-outline"></i>
                                                     </button>
-                                                @else
-                                                    <button type="button" class="btn btn-sm btn-secondary "
-                                                        onclick="openCopyModal({{ $task_data->id }})">
-                                                        <i class="mdi mdi-content-copy"></i>
-                                                    </button>
                                                 @endif
+                                                <button type="button" class="btn btn-sm btn-secondary "
+                                                    onclick="openCopyModal({{ $task_data->id }})">
+                                                    <i class="mdi mdi-content-copy"></i>
+                                                </button>
                                             </td>
 
 
@@ -264,8 +263,8 @@
                                     <div class="input-group mb-2">
                                         <input type="date" class="form-control" name="estimated_end_date"
                                             placeholder="執行內容" required>
-                                        <input type="time"  name="estimated_end_time"
-                                            class="form-control" placeholder="時：分" required>
+                                        <input type="time" name="estimated_end_time" class="form-control"
+                                            placeholder="時：分" required>
                                     </div>
                                 </div>
                             </div>

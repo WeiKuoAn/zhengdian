@@ -31,7 +31,7 @@
                                 <div class="mb-3">
                                     <label for="project-priority" class="form-label">客戶名稱<span
                                             class="text-danger">*</span></label>
-                                    <select class="form-control" data-toggle="select" data-width="100%" name="user_id" id="cust_select">
+                                    <select class="form-control"data-toggle="select2" data-width="100%" name="user_id" id="cust_select">
                                         <option value="" selected>請選擇</option>
                                         @foreach ($cust_datas as $key => $cust_data)
                                             <option value="{{ $cust_data->id }}">{{ $cust_data->name }}</option>

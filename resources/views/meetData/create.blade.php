@@ -1,6 +1,6 @@
 @extends('layouts.vertical', ['title' => 'CRM Customers'])
 @section('css')
-    @vite(['node_modules/spectrum-colorpicker2/dist/spectrum.min.css', 'node_modules/flatpickr/dist/flatpickr.min.css', 'node_modules/clockpicker/dist/bootstrap-clockpicker.min.css', 'node_modules/bootstrap-datepicker/dist/css/bootstrap-datepicker.min.css'])
+    @vite(['node_modules/selectize/dist/css/selectize.bootstrap3.css', 'node_modules/mohithg-switchery/dist/switchery.min.css', 'node_modules/bootstrap-touchspin/dist/jquery.bootstrap-touchspin.min.css', 'node_modules/select2/dist/css/select2.min.css', 'node_modules/multiselect/css/multi-select.css'])
 @endsection
 @section('content')
     <!-- Start Content-->
@@ -18,7 +18,7 @@
                                 <label for="inputEmail3" class="col-4 col-xl-3 col-form-label"
                                     style="text-align: right;">客戶名稱：</label>
                                 <div class="col-8 col-xl-9">
-                                    <select class="form-control" data-toggle="select" data-width="100%" name="user_id">
+                                    <select class="form-control" data-toggle="select2" data-width="100%" name="user_id">
                                         <option value="" selected>請選擇</option>
                                         @foreach ($cust_datas as $key => $cust_data)
                                             <option value="{{ $cust_data->id }}">{{ $cust_data->name }}</option>
@@ -113,6 +113,7 @@
     </div> <!-- container -->
 @endsection
 @section('script')
+@vite(['resources/js/pages/form-advanced.init.js'])
     @vite(['resources/js/pages/form-pickers.init.js'])
     <script>
         $(document).ready(function() {
