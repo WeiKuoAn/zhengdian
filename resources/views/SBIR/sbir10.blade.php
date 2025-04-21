@@ -234,7 +234,7 @@
                                                                 </td>
                                                             </tr>
                                                             <tr data-category="2">
-                                                                <td>(1) 原材料 <a href="#" class="ms-2"><i
+                                                                <td>(1) 消耗性器材及原材料費 <a href="#" class="ms-2"><i
                                                                             class="bi bi-pencil"></i></a></td>
                                                                 <td><input type="number" class="form-control"
                                                                         name="subsidy_2_1"></td>
@@ -243,19 +243,9 @@
                                                                 <td class="text-center text-danger calc-sum"
                                                                     data-category="2">0</td>
                                                                 <td class="text-center calc-rate">0%</td>
-                                                                <td></td>
-                                                            </tr>
-                                                            <tr data-category="2">
-                                                                <td>(2) 零件組件 <a href="#" class="ms-2"><i
-                                                                            class="bi bi-pencil"></i></a></td>
-                                                                <td><input type="number" class="form-control"
-                                                                        name="subsidy_2_2"></td>
-                                                                <td><input type="number" class="form-control"
-                                                                        name="self_2_2"></td>
-                                                                <td class="text-center text-danger calc-sum"
-                                                                    data-category="2">0</td>
-                                                                <td class="text-center calc-rate">0%</td>
-                                                                <td></td>
+                                                                <td>
+                                                                    <textarea class="form-control"></textarea>
+                                                                </td>
                                                             </tr>
                                                             <tr>
                                                                 <td><strong>消耗性器材及原材料費 小計</strong></td>
@@ -270,11 +260,11 @@
 
                                                             <tr class="table-primary">
                                                                 <td colspan="6">
-                                                                    3.研發設備維護費
+                                                                    3.研發設備使用費
                                                                 </td>
                                                             </tr>
                                                             <tr data-category="3">
-                                                                <td>(1) 維修材料 <a href="#" class="ms-2"><i
+                                                                <td>(1) 已有設備 <a href="#" class="ms-2"><i
                                                                             class="bi bi-pencil"></i></a></td>
                                                                 <td><input type="number" class="form-control"
                                                                         name="subsidy_3_1"></td>
@@ -286,7 +276,7 @@
                                                                 <td></td>
                                                             </tr>
                                                             <tr data-category="3">
-                                                                <td>(2) 工具/耗材 <a href="#" class="ms-2"><i
+                                                                <td>(2) 計畫新增設備 <a href="#" class="ms-2"><i
                                                                             class="bi bi-pencil"></i></a></td>
                                                                 <td><input type="number" class="form-control"
                                                                         name="subsidy_3_2"></td>
@@ -298,7 +288,7 @@
                                                                 <td></td>
                                                             </tr>
                                                             <tr>
-                                                                <td><strong>研發設備維護費 小計</strong></td>
+                                                                <td><strong>研發設備使用費 小計</strong></td>
                                                                 <td class="text-center text-danger calc-subtotal"
                                                                     data-category="3">0</td>
                                                                 <td class="text-center text-danger calc-subtotal"
@@ -310,11 +300,11 @@
 
                                                             <tr class="table-primary">
                                                                 <td colspan="6">
-                                                                    4.國內差旅費 
+                                                                    4.研發設備維護費
                                                                 </td>
                                                             </tr>
                                                             <tr data-category="4">
-                                                                <td>(1) 交通費 <a href="#" class="ms-2"><i
+                                                                <td>(1) 研發設備維護費 <a href="#" class="ms-2"><i
                                                                             class="bi bi-pencil"></i></a></td>
                                                                 <td><input type="number" class="form-control"
                                                                         name="subsidy_4_1"></td>
@@ -325,20 +315,8 @@
                                                                 <td class="text-center calc-rate">0%</td>
                                                                 <td></td>
                                                             </tr>
-                                                            <tr data-category="4">
-                                                                <td>(2) 住宿與膳食費 <a href="#" class="ms-2"><i
-                                                                            class="bi bi-pencil"></i></a></td>
-                                                                <td><input type="number" class="form-control"
-                                                                        name="subsidy_4_2"></td>
-                                                                <td><input type="number" class="form-control"
-                                                                        name="self_4_2"></td>
-                                                                <td class="text-center text-danger calc-sum"
-                                                                    data-category="4">0</td>
-                                                                <td class="text-center calc-rate">0%</td>
-                                                                <td></td>
-                                                            </tr>
                                                             <tr>
-                                                                <td><strong>國內差旅費 小計</strong></td>
+                                                                <td><strong>研發設備維護費 小計</strong></td>
                                                                 <td class="text-center text-danger calc-subtotal"
                                                                     data-category="4">0</td>
                                                                 <td class="text-center text-danger calc-subtotal"
@@ -347,6 +325,115 @@
                                                                     data-category="4">0</td>
                                                                 <td colspan="2"></td>
                                                             </tr>
+
+                                                            <tr class="table-primary">
+                                                                <td colspan="6">
+                                                                    5.技術移轉費 
+                                                                </td>
+                                                            </tr>
+                                                            <tr data-category="5">
+                                                                <td>(1) 技術或智慧財產權購買費 <a href="#" class="ms-2"><i
+                                                                            class="bi bi-pencil"></i></a><br><span
+                                                                        class="text-danger small">(自籌款+補助款)需等於合計，自籌款不得小於補助款，且金額不得為0。</span>
+                                                                </td>
+                                                                <td><input type="number" class="form-control"
+                                                                        name="subsidy_5_1" value="0"></td>
+                                                                <td><input type="number" class="form-control"
+                                                                        name="self_5_1" value="0"></td>
+                                                                <td class="text-center text-danger calc-sum"
+                                                                    data-category="5">0</td>
+                                                                <td class="text-center calc-rate">0%</td>
+                                                                <td></td>
+                                                            </tr>
+                                                            <tr data-category="5">
+                                                                <td>(2) 委託研究費 <a href="#" class="ms-2"><i
+                                                                            class="bi bi-pencil"></i></a></td>
+                                                                <td><input type="number" class="form-control"
+                                                                        name="subsidy_5_2" value="0"></td>
+                                                                <td><input type="number" class="form-control"
+                                                                        name="self_5_2" value="0"></td>
+                                                                <td class="text-center text-danger calc-sum"
+                                                                    data-category="5">0</td>
+                                                                <td class="text-center calc-rate">0%</td>
+                                                                <td></td>
+                                                            </tr>
+                                                            <tr data-category="5">
+                                                                <td>(3) 委託勞務費 <a href="#" class="ms-2"><i
+                                                                            class="bi bi-pencil"></i></a></td>
+                                                                <td><input type="number" class="form-control"
+                                                                        name="subsidy_5_3" value="0"></td>
+                                                                <td><input type="number" class="form-control"
+                                                                        name="self_5_3" value="0"></td>
+                                                                <td class="text-center text-danger calc-sum"
+                                                                    data-category="5">0</td>
+                                                                <td class="text-center calc-rate">0%</td>
+                                                                <td></td>
+                                                            </tr>
+                                                            <tr data-category="5">
+                                                                <td>(4) 委託設計費 <a href="#" class="ms-2"><i
+                                                                            class="bi bi-pencil"></i></a></td>
+                                                                <td><input type="number" class="form-control"
+                                                                        name="subsidy_5_4" value="0"></td>
+                                                                <td><input type="number" class="form-control"
+                                                                        name="self_5_4" value="0"></td>
+                                                                <td class="text-center text-danger calc-sum"
+                                                                    data-category="5">0</td>
+                                                                <td class="text-center calc-rate">0%</td>
+                                                                <td></td>
+                                                            </tr>
+                                                            <tr data-category="5">
+                                                                <td>(5) 委託諮詢費 <a href="#" class="ms-2"><i
+                                                                            class="bi bi-pencil"></i></a><br><span
+                                                                        class="small">以占計畫總經費之5%為上限，且以首次申請SBIR計畫，每家企業以申請1次為限</span>
+                                                                </td>
+                                                                <td><input type="number" class="form-control"
+                                                                        name="subsidy_5_5" value="0"></td>
+                                                                <td><input type="number" class="form-control"
+                                                                        name="self_5_5" value="0"></td>
+                                                                <td class="text-center text-danger calc-sum"
+                                                                    data-category="5">0</td>
+                                                                <td class="text-center calc-rate">0%</td>
+                                                                <td></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td><strong>技術移轉費 小計</strong></td>
+                                                                <td class="text-center text-danger calc-subtotal"
+                                                                    data-category="5">0</td>
+                                                                <td class="text-center text-danger calc-subtotal"
+                                                                    data-category="5">0</td>
+                                                                <td class="text-center text-danger calc-subtotal"
+                                                                    data-category="5">0</td>
+                                                                <td colspan="2"></td>
+                                                            </tr>
+
+                                                            <tr class="table-primary">
+                                                                <td colspan="6">
+                                                                    6.國內差旅費
+                                                                </td>
+                                                            </tr>
+                                                            <tr data-category="6">
+                                                                <td>(1) 國內差旅費 <a href="#" class="ms-2"><i
+                                                                            class="bi bi-pencil"></i></a></td>
+                                                                <td><input type="number" class="form-control"
+                                                                        name="subsidy_6_1" value="0"></td>
+                                                                <td><input type="number" class="form-control"
+                                                                        name="self_6_1" value="0"></td>
+                                                                <td class="text-center text-danger calc-sum"
+                                                                    data-category="6">0</td>
+                                                                <td class="text-center calc-rate">0%</td>
+                                                                <td></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td><strong>國內差旅費 小計</strong></td>
+                                                                <td class="text-center text-danger calc-subtotal"
+                                                                    data-category="6">0</td>
+                                                                <td class="text-center text-danger calc-subtotal"
+                                                                    data-category="6">0</td>
+                                                                <td class="text-center text-danger calc-subtotal"
+                                                                    data-category="6">0</td>
+                                                                <td colspan="2"></td>
+                                                            </tr>
+
                                                         </tbody>
                                                         <tfoot class="table-secondary">
                                                             <tr>
@@ -399,7 +486,7 @@
             document.querySelectorAll('tbody tr[data-category]').forEach(row => {
                 const category = row.dataset.category;
                 const inputs = row.querySelectorAll('input[type="number"]');
-                if (inputs.length === 2) {
+                if (inputs.length >= 2) {
                     const sub = parseInt(inputs[0].value) || 0;
                     const self = parseInt(inputs[1].value) || 0;
                     const sum = sub + self;
@@ -442,7 +529,6 @@
                 if (total) total.innerText = (subtotals[cat].sub + subtotals[cat].self).toLocaleString();
             });
         }
-
 
         setTimeout(() => {
             document.querySelectorAll('input[type="number"]').forEach(input => {
