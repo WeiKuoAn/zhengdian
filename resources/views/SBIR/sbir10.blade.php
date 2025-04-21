@@ -103,66 +103,58 @@
                                         <!--選單-->
                                         <ul class="nav nav-tabs">
                                             <li class="nav-item">
-                                                <a href="{{ route("project.sbir01",$project->id) }}" class="nav-link ">
+                                                <a href="{{ route('project.sbir01', $project->id) }}" class="nav-link ">
                                                     壹、計畫書基本資料
                                                 </a>
                                             </li>
                                             <li class="nav-item">
-                                                <a href="{{ route("project.sbir02",$project->id) }}" class="nav-link ">
+                                                <a href="{{ route('project.sbir02', $project->id) }}" class="nav-link ">
                                                     貳、計畫申請表
                                                 </a>
                                             </li>
                                             <li class="nav-item">
-                                                <a href="{{ route("project.sbir03",$project->id) }}" 
-                                                    class="nav-link ">
+                                                <a href="{{ route('project.sbir03', $project->id) }}" class="nav-link ">
                                                     參、計畫摘要表
                                                 </a>
                                             </li>
                                             <li class="nav-item">
-                                                <a href="{{ route("project.sbir04",$project->id) }}" 
-                                                    class="nav-link ">
+                                                <a href="{{ route('project.sbir04', $project->id) }}" class="nav-link ">
                                                     肆、公司概況
                                                 </a>
                                             </li>
                                             <li class="nav-item">
-                                                <a href="{{ route("project.sbir05",$project->id) }}" 
-                                                    class="nav-link ">
+                                                <a href="{{ route('project.sbir05', $project->id) }}" class="nav-link ">
                                                     伍、研發動機
                                                 </a>
                                             </li>
                                             <li class="nav-item">
-                                                <a href="{{ route("project.sbir06",$project->id) }}" 
-                                                    class="nav-link ">
+                                                <a href="{{ route('project.sbir06', $project->id) }}" class="nav-link ">
                                                     陸、計畫目標
                                                 </a>
                                             </li>
                                             <li class="nav-item">
-                                                <a href="{{ route("project.sbir07",$project->id) }}" 
-                                                    class="nav-link ">
+                                                <a href="{{ route('project.sbir07', $project->id) }}" class="nav-link ">
                                                     柒、實施方式
                                                 </a>
                                             </li>
                                             <li class="nav-item">
-                                                <a href="{{ route("project.sbir08",$project->id) }}" 
-                                                    class="nav-link ">
+                                                <a href="{{ route('project.sbir08', $project->id) }}" class="nav-link ">
                                                     捌、智財分析
                                                 </a>
                                             </li>
                                             <li class="nav-item">
-                                                <a href="{{ route("project.sbir09",$project->id) }}" 
-                                                    class="nav-link ">
+                                                <a href="{{ route('project.sbir09', $project->id) }}" class="nav-link ">
                                                     玖、計畫執行查核點說明
                                                 </a>
                                             </li>
                                             <li class="nav-item">
-                                                <a href="{{ route("project.sbir10",$project->id) }}" 
+                                                <a href="{{ route('project.sbir10', $project->id) }}"
                                                     class="nav-link active">
                                                     拾、經費需求
                                                 </a>
                                             </li>
                                             <li class="nav-item">
-                                                <a href="{{ route("project.sbir07",$project->id) }}" 
-                                                    class="nav-link">
+                                                <a href="{{ route('project.sbir07', $project->id) }}" class="nav-link">
                                                     附件
                                                 </a>
                                             </li>
@@ -172,20 +164,201 @@
                                             <div class="mb-5">
                                                 <h5 class="text-uppercase bg-light p-2 mt-3 mb-3">計畫總經費預算表</h5>
                                                 <div class="mb-3">
-                                                    <table class="table table-bordered" id="shareholdersTable">
-                                                        <thead>
+                                                    <table class="table table-bordered" id="budgetTable">
+                                                        <thead class="table-light">
                                                             <tr>
-                                                                <th>董監事或其他負責人</th>
-                                                                <th>持有股份</th>
-                                                                <th>持股比例 (%)</th>
-                                                                <th>資料來源</th>
-                                                                <th>操作</th>
+                                                                <th>費用項目</th>
+                                                                <th>補助款(千元)</th>
+                                                                <th>自籌款(千元)</th>
+                                                                <th>合計(千元)</th>
+                                                                <th>比例%</th>
+                                                                <th>備註</th>
                                                             </tr>
                                                         </thead>
-                                                        <tbody></tbody>
+                                                        <tbody>
+                                                            <tr class="table-primary">
+                                                                <td colspan="6">
+                                                                    1.人事費
+                                                                </td>
+                                                            </tr>
+                                                            <tr data-category="1">
+                                                                <td>(1) 研發人員 <a href="#" class="ms-2"><i
+                                                                            class="bi bi-pencil"></i></a></td>
+                                                                <td><input type="number" class="form-control"
+                                                                        name="subsidy_1_1"></td>
+                                                                <td><input type="number" class="form-control"
+                                                                        name="self_1_1"></td>
+                                                                <td class="text-center text-danger calc-sum"
+                                                                    data-category="1">0</td>
+                                                                <td class="text-center calc-rate">0%</td>
+                                                                <td></td>
+                                                            </tr>
+                                                            <tr data-category="1">
+                                                                <td>(2) 國際研發人員 <a href="#" class="ms-2"><i
+                                                                            class="bi bi-pencil"></i></a></td>
+                                                                <td><input type="number" class="form-control"
+                                                                        name="subsidy_1_2"></td>
+                                                                <td><input type="number" class="form-control"
+                                                                        name="self_1_2"></td>
+                                                                <td class="text-center text-danger calc-sum"
+                                                                    data-category="1">0</td>
+                                                                <td class="text-center calc-rate">0%</td>
+                                                                <td></td>
+                                                            </tr>
+                                                            <tr data-category="1">
+                                                                <td>(3) 顧問 <a href="#" class="ms-2"><i
+                                                                            class="bi bi-pencil"></i></a></td>
+                                                                <td><input type="number" class="form-control"
+                                                                        name="subsidy_1_3"></td>
+                                                                <td><input type="number" class="form-control"
+                                                                        name="self_1_3"></td>
+                                                                <td class="text-center text-danger calc-sum"
+                                                                    data-category="1">0</td>
+                                                                <td class="text-center calc-rate">0%</td>
+                                                                <td></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td><strong>人事費 小計</strong></td>
+                                                                <td class="text-center text-danger calc-subtotal"
+                                                                    data-category="1">0</td>
+                                                                <td class="text-center text-danger calc-subtotal"
+                                                                    data-category="1">0</td>
+                                                                <td class="text-center text-danger calc-subtotal"
+                                                                    data-category="1">0</td>
+                                                                <td colspan="2"></td>
+                                                            </tr>
+
+                                                            <tr class="table-primary">
+                                                                <td colspan="6">
+                                                                    2.消耗性器材及原材料費
+                                                                </td>
+                                                            </tr>
+                                                            <tr data-category="2">
+                                                                <td>(1) 原材料 <a href="#" class="ms-2"><i
+                                                                            class="bi bi-pencil"></i></a></td>
+                                                                <td><input type="number" class="form-control"
+                                                                        name="subsidy_2_1"></td>
+                                                                <td><input type="number" class="form-control"
+                                                                        name="self_2_1"></td>
+                                                                <td class="text-center text-danger calc-sum"
+                                                                    data-category="2">0</td>
+                                                                <td class="text-center calc-rate">0%</td>
+                                                                <td></td>
+                                                            </tr>
+                                                            <tr data-category="2">
+                                                                <td>(2) 零件組件 <a href="#" class="ms-2"><i
+                                                                            class="bi bi-pencil"></i></a></td>
+                                                                <td><input type="number" class="form-control"
+                                                                        name="subsidy_2_2"></td>
+                                                                <td><input type="number" class="form-control"
+                                                                        name="self_2_2"></td>
+                                                                <td class="text-center text-danger calc-sum"
+                                                                    data-category="2">0</td>
+                                                                <td class="text-center calc-rate">0%</td>
+                                                                <td></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td><strong>消耗性器材及原材料費 小計</strong></td>
+                                                                <td class="text-center text-danger calc-subtotal"
+                                                                    data-category="2">0</td>
+                                                                <td class="text-center text-danger calc-subtotal"
+                                                                    data-category="2">0</td>
+                                                                <td class="text-center text-danger calc-subtotal"
+                                                                    data-category="2">0</td>
+                                                                <td colspan="2"></td>
+                                                            </tr>
+
+                                                            <tr class="table-primary">
+                                                                <td colspan="6">
+                                                                    3.研發設備維護費
+                                                                </td>
+                                                            </tr>
+                                                            <tr data-category="3">
+                                                                <td>(1) 維修材料 <a href="#" class="ms-2"><i
+                                                                            class="bi bi-pencil"></i></a></td>
+                                                                <td><input type="number" class="form-control"
+                                                                        name="subsidy_3_1"></td>
+                                                                <td><input type="number" class="form-control"
+                                                                        name="self_3_1"></td>
+                                                                <td class="text-center text-danger calc-sum"
+                                                                    data-category="3">0</td>
+                                                                <td class="text-center calc-rate">0%</td>
+                                                                <td></td>
+                                                            </tr>
+                                                            <tr data-category="3">
+                                                                <td>(2) 工具/耗材 <a href="#" class="ms-2"><i
+                                                                            class="bi bi-pencil"></i></a></td>
+                                                                <td><input type="number" class="form-control"
+                                                                        name="subsidy_3_2"></td>
+                                                                <td><input type="number" class="form-control"
+                                                                        name="self_3_2"></td>
+                                                                <td class="text-center text-danger calc-sum"
+                                                                    data-category="3">0</td>
+                                                                <td class="text-center calc-rate">0%</td>
+                                                                <td></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td><strong>研發設備維護費 小計</strong></td>
+                                                                <td class="text-center text-danger calc-subtotal"
+                                                                    data-category="3">0</td>
+                                                                <td class="text-center text-danger calc-subtotal"
+                                                                    data-category="3">0</td>
+                                                                <td class="text-center text-danger calc-subtotal"
+                                                                    data-category="3">0</td>
+                                                                <td colspan="2"></td>
+                                                            </tr>
+
+                                                            <tr class="table-primary">
+                                                                <td colspan="6">
+                                                                    4.國內差旅費 
+                                                                </td>
+                                                            </tr>
+                                                            <tr data-category="4">
+                                                                <td>(1) 交通費 <a href="#" class="ms-2"><i
+                                                                            class="bi bi-pencil"></i></a></td>
+                                                                <td><input type="number" class="form-control"
+                                                                        name="subsidy_4_1"></td>
+                                                                <td><input type="number" class="form-control"
+                                                                        name="self_4_1"></td>
+                                                                <td class="text-center text-danger calc-sum"
+                                                                    data-category="4">0</td>
+                                                                <td class="text-center calc-rate">0%</td>
+                                                                <td></td>
+                                                            </tr>
+                                                            <tr data-category="4">
+                                                                <td>(2) 住宿與膳食費 <a href="#" class="ms-2"><i
+                                                                            class="bi bi-pencil"></i></a></td>
+                                                                <td><input type="number" class="form-control"
+                                                                        name="subsidy_4_2"></td>
+                                                                <td><input type="number" class="form-control"
+                                                                        name="self_4_2"></td>
+                                                                <td class="text-center text-danger calc-sum"
+                                                                    data-category="4">0</td>
+                                                                <td class="text-center calc-rate">0%</td>
+                                                                <td></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td><strong>國內差旅費 小計</strong></td>
+                                                                <td class="text-center text-danger calc-subtotal"
+                                                                    data-category="4">0</td>
+                                                                <td class="text-center text-danger calc-subtotal"
+                                                                    data-category="4">0</td>
+                                                                <td class="text-center text-danger calc-subtotal"
+                                                                    data-category="4">0</td>
+                                                                <td colspan="2"></td>
+                                                            </tr>
+                                                        </tbody>
+                                                        <tfoot class="table-secondary">
+                                                            <tr>
+                                                                <td class="text-end"><strong>合計</strong></td>
+                                                                <td id="total-subsidy" class="text-center text-danger">0
+                                                                </td>
+                                                                <td id="total-self" class="text-center text-danger">0</td>
+                                                                <td id="total-all" class="text-center text-danger">0</td>
+                                                                <td colspan="2"></td>
+                                                            </tr>
+                                                        </tfoot>
                                                     </table>
-                                                    <button class="btn btn-secondary" type="button"
-                                                        onclick="addShareholderRow()">新增資料</button>
                                                 </div>
 
                                                 <hr>
@@ -218,103 +391,63 @@
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
-        function addShareholderRow() {
-            document.querySelector('#shareholdersTable tbody').insertAdjacentHTML('beforeend', `
-            <tr>
-              <td><input type="text" name="shareholder_name[]" class="form-control"></td>
-              <td><input type="number" name="shareholder_amount[]" class="form-control"></td>
-              <td><input type="number" name="shareholder_ratio[]" class="form-control"></td>
-              <td><input type="text" name="shareholder_source[]" class="form-control"></td>
-              <td><button class="btn btn-danger" onclick="this.closest('tr').remove()">刪除</button></td>
-            </tr>`);
+        function updateSums() {
+            let totalSubsidy = 0;
+            let totalSelf = 0;
+            const subtotals = {};
+
+            document.querySelectorAll('tbody tr[data-category]').forEach(row => {
+                const category = row.dataset.category;
+                const inputs = row.querySelectorAll('input[type="number"]');
+                if (inputs.length === 2) {
+                    const sub = parseInt(inputs[0].value) || 0;
+                    const self = parseInt(inputs[1].value) || 0;
+                    const sum = sub + self;
+
+                    if (!subtotals[category]) subtotals[category] = {
+                        sub: 0,
+                        self: 0
+                    };
+                    subtotals[category].sub += sub;
+                    subtotals[category].self += self;
+
+                    row.querySelector('.calc-sum').innerText = sum.toLocaleString();
+
+                    totalSubsidy += sub;
+                    totalSelf += self;
+                }
+            });
+
+            const totalAll = totalSubsidy + totalSelf;
+            document.getElementById('total-subsidy').innerText = totalSubsidy.toLocaleString();
+            document.getElementById('total-self').innerText = totalSelf.toLocaleString();
+            document.getElementById('total-all').innerText = totalAll.toLocaleString();
+
+            document.querySelectorAll('tbody tr[data-category]').forEach(row => {
+                const sumCell = row.querySelector('.calc-sum');
+                const rateCell = row.querySelector('.calc-rate');
+                if (sumCell && rateCell) {
+                    const rowSum = parseInt(sumCell.innerText.replace(/,/g, '')) || 0;
+                    const percent = totalAll ? (rowSum / totalAll * 100).toFixed(1) : 0;
+                    rateCell.innerText = percent + '%';
+                }
+            });
+
+            Object.keys(subtotals).forEach(cat => {
+                const sub = document.querySelector(`.calc-subtotal[data-category="${cat}"]`);
+                if (sub) sub.innerText = subtotals[cat].sub.toLocaleString();
+                const self = sub?.nextElementSibling;
+                if (self) self.innerText = subtotals[cat].self.toLocaleString();
+                const total = self?.nextElementSibling;
+                if (total) total.innerText = (subtotals[cat].sub + subtotals[cat].self).toLocaleString();
+            });
         }
 
-        function addYearRow() {
-            document.querySelector('#threeYearTable tbody').insertAdjacentHTML('beforeend', `
-            <tr>
-              <td><input type="number" name="year[]" class="form-control"></td>
-              <td><input type="number" name="revenue[]" class="form-control"></td>
-              <td><input type="number" name="rnd_cost[]" class="form-control"></td>
-              <td><input type="number" name="ratio[]" class="form-control" readonly></td>
-              <td><textarea name="note[]" class="form-control"></textarea></td>
-              <td><button class="btn btn-danger" onclick="this.closest('tr').remove()">刪除</button></td>
-            </tr>`);
-        }
 
-        function addMainProductRow() {
-            document.querySelector('#mainProductTable tbody').insertAdjacentHTML('beforeend', `
-    <tr>
-      <td><input type="text" name="product_name[]" class="form-control"></td>
-      <td><input type="number" name="output_y1[]" class="form-control"></td>
-      <td><input type="number" name="sales_y1[]" class="form-control"></td>
-      <td><input type="number" name="share_y1[]" class="form-control"></td>
-      <td><input type="number" name="output_y2[]" class="form-control"></td>
-      <td><input type="number" name="sales_y2[]" class="form-control"></td>
-      <td><input type="number" name="share_y2[]" class="form-control"></td>
-      <td><input type="number" name="output_y3[]" class="form-control"></td>
-      <td><input type="number" name="sales_y3[]" class="form-control"></td>
-      <td><input type="number" name="share_y3[]" class="form-control"></td>
-      <td><button class="btn btn-sm btn-danger" onclick="this.closest('tr').remove()">刪除</button></td>
-    </tr>`);
-        }
-
-        function addAwardRow() {
-            document.querySelector('#awardTable tbody').insertAdjacentHTML('beforeend', `
-            <tr>
-              <td><input type="number" name="award_year[]" class="form-control"></td>
-              <td><input type="text" name="award_name[]" class="form-control"></td>
-              <td><button class="btn btn-danger" onclick="this.closest('tr').remove()">刪除</button></td>
-            </tr>`);
-        }
-
-        function addPatentRow() {
-            document.querySelector('#patentTable tbody').insertAdjacentHTML('beforeend', `
-            <tr>
-              <td><input type="text" name="patent_info[]" class="form-control"></td>
-              <td><textarea name="patent_desc[]" class="form-control"></textarea></td>
-              <td><button class="btn btn-danger" onclick="this.closest('tr').remove()">刪除</button></td>
-            </tr>`);
-        }
-
-        function addGovPlanRow() {
-  document.querySelector('#govPlanTable1 tbody').insertAdjacentHTML('beforeend', `
-    <tr>
-      <td><input type="text" name="plan_type[]" class="form-control"></td>
-      <td><input type="text" name="plan_name[]" class="form-control"></td>
-      <td><input type="date" name="start_date[]" class="form-control"></td>
-      <td><input type="date" name="end_date[]" class="form-control"></td>
-      <td><input type="number" name="gov_subsidy[]" class="form-control"></td>
-      <td><input type="number" name="self_funding[]" class="form-control"></td>
-      <td><button class="btn btn-sm btn-danger" onclick="this.closest('tr').remove()">刪除</button></td>
-    </tr>`);
-
-  document.querySelector('#govPlanTable2 tbody').insertAdjacentHTML('beforeend', `
-    <tr>
-      <td><textarea name="plan_focus[]" class="form-control"></textarea></td>
-      <td><input type="number" name="man_month[]" class="form-control"></td>
-      <td><input type="number" name="expected_value[]" class="form-control"></td>
-      <td><input type="number" name="expected_patent[]" class="form-control"></td>
-      <td><input type="number" name="expected_employment[]" class="form-control"></td>
-      <td><input type="number" name="expected_invest[]" class="form-control"></td>
-      <td><input type="number" name="actual_value[]" class="form-control"></td>
-      <td><input type="number" name="actual_patent[]" class="form-control"></td>
-      <td><input type="number" name="actual_employment[]" class="form-control"></td>
-      <td><input type="number" name="actual_invest[]" class="form-control"></td>
-      <td><button class="btn btn-sm btn-danger" onclick="this.closest('tr').remove()">刪除</button></td>
-    </tr>`);
-}
-        function addApplyingPlanRow() {
-            document.querySelector('#applyingPlanTable tbody').insertAdjacentHTML('beforeend', `
-            <tr>
-              <td><input type="date" name="apply_date[]" class="form-control"></td>
-              <td><input type="text" name="apply_org[]" class="form-control"></td>
-              <td><input type="text" name="apply_name[]" class="form-control"></td>
-              <td><input type="date" name="apply_start[]" class="form-control"></td>
-              <td><input type="date" name="apply_end[]" class="form-control"></td>
-              <td><input type="number" name="apply_grant[]" class="form-control"></td>
-              <td><input type="number" name="apply_self[]" class="form-control"></td>
-              <td><button class="btn btn-danger" onclick="this.closest('tr').remove()">刪除</button></td>
-            </tr>`);
-        }
+        setTimeout(() => {
+            document.querySelectorAll('input[type="number"]').forEach(input => {
+                input.addEventListener('input', updateSums);
+            });
+        }, 100);
     </script>
 @endsection
