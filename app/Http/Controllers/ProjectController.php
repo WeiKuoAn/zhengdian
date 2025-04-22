@@ -283,7 +283,7 @@ class ProjectController extends Controller
         $years = [];
         $now = Carbon::now();
 
-        for ($i = 1; $i <= 3; $i++) {
+        for ($i = 1; $i <= 4; $i++) {
             $years[] = $now->copy()->subYears($i)->year;
         }
         $cust_data = CustData::where('user_id', Auth::user()->id)->first();
@@ -368,7 +368,7 @@ class ProjectController extends Controller
         $years = [];
         $now = Carbon::now();
 
-        for ($i = 1; $i <= 3; $i++) {
+        for ($i = 1; $i <= 4; $i++) {
             $years[] = $now->copy()->subYears($i)->year;
         }
         // 从数据库中获取用户的自定义数据

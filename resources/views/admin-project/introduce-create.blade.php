@@ -384,7 +384,7 @@
                                                         $year,
                                                     );
                                                 @endphp
-                                                <div class="col-md-4">
+                                                <div class="col-md-3">
                                                     <label class="form-label"
                                                         for="AddNew-Phone"><b>{{ $year }}年度</b><span
                                                             class="text-danger">*</span></label>
@@ -394,7 +394,7 @@
                                                         value="{{ $incomeData->income }}">
                                                 </div>
                                             @else
-                                                <div class="col-md-4">
+                                                <div class="col-md-3">
                                                     <label class="form-label"
                                                         for="AddNew-Phone"><b>{{ $year }}年度</b><span
                                                             class="text-danger">*</span></label>
