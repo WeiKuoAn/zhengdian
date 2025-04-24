@@ -225,7 +225,7 @@
                                                                 <td>
                                                                     <input type="text" name="name"
                                                                         class="form-control"
-                                                                        value="{{ $project_host_data->name }}">
+                                                                        @if (isset($project_host_data))  value="{{ $project_host_data->name }}" @endif>
                                                                 </td>
                                                                 <td>
                                                                     <select name="gender" class="form-control">
