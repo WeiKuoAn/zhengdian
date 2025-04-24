@@ -16,7 +16,5 @@ class Sbir09CheckPoint extends Model
         'checkpoint_code',
         'checkpoint_due',
         'checkpoint_content',
-        'ratio',
-        'note',
     ];
 }

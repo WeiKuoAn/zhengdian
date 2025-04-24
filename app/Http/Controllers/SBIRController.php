@@ -25,6 +25,7 @@ use App\Models\Word;
 use App\Models\ProjectHost;
 use App\Models\ProjectContact;
 use App\Models\ProjectAccounting;
+use App\Models\ProjectPersonnel;
 use PhpOffice\PhpWord\PhpWord;
 use PhpOffice\PhpWord\IOFactory;
 use PhpOffice\PhpWord\Shared\Html;
@@ -37,6 +38,13 @@ use Illuminate\Support\Facades\File;
 use ZipArchive;
 use RecursiveIteratorIterator;
 use RecursiveDirectoryIterator;
+use App\Models\Sbir09CheckPoint;
+use App\Models\Sbir09HostEducation;
+use App\Models\Sbir09HostExperience;
+use App\Models\Sbir09HostPlan;
+use App\Models\SBIRStaff;
+use App\Models\Sbir09PersonCount;
+
 
 
 class SBIRController extends Controller
@@ -398,7 +406,6 @@ class SBIRController extends Controller
             }
         }
 
-        // 7先刪除原有資料
         Sbir04GovPlan::where('project_id', $project->id)->delete();
 
         // 儲存新資料
@@ -513,7 +520,143 @@ class SBIRController extends Controller
     {
         $project = CustProject::where('id', $id)->first();
         $data = SBIR07::where('project_id', $id)->first();
-        return view('SBIR.sbir09')->with('project', $project)->with('data', $data);
+        $checkpoints = Sbir09CheckPoint::where('project_id', $id)->get();
+        $project_host_data = ProjectHost::where('project_id', $id)->first();
+        $host_educations = Sbir09HostEducation::where('project_id', $id)->get();
+        $host_Experiences = Sbir09HostExperience::where('project_id', $id)->get();
+        $host_plans = Sbir09HostPlan::where('project_id', $id)->get();
+        $project_host_data = ProjectHost::where('project_id', $id)->first();
+        $project_contact_data = ProjectContact::where('project_id', $id)->first();
+        $project_personnels = ProjectPersonnel::where('project_id', $id)->get();
+        $project_staffs = SBIRStaff::where('project_id', $id)->get();
+        $project_personnel_count = Sbir09PersonCount::where('project_id', $id)->first();
+        $personCount = Sbir09PersonCount::where('project_id', $project->id)->first();
+
+        return view('SBIR.sbir09')->with('project', $project)
+            ->with('data', $data)
+            ->with('checkpoints', $checkpoints)
+            ->with('project_host_data', $project_host_data)
+            ->with('project_contact_data', $project_contact_data)
+            ->with('project_personnels', $project_personnels)
+            ->with('host_educations', $host_educations)
+            ->with('host_Experiences', $host_Experiences)
+            ->with('host_plans', $host_plans)
+            ->with('project_staffs', $project_staffs)
+            ->with('project_personnel_count', $project_personnel_count)
+            ->with('personCount', $personCount)
+        ;
+    }
+
+    public function sbir09_data(Request $request, $id)
+    {
+        $project = CustProject::where('id', $id)->first();
+
+        if ($request->has('checkpoint_codes')) {
+            Sbir09CheckPoint::where('project_id', $project->id)->delete();
+
+            foreach ($request->checkpoint_codes as $index => $checkpoint_code) {
+                Sbir09CheckPoint::create([
+                    'user_id'  => $project->user_id,
+                    'project_id' => $project->id,
+                    'checkpoint_code' => $request->checkpoint_codes[$index] ?? null,
+                    'checkpoint_due' => $request->checkpoint_dues[$index] ?? null,
+                    'checkpoint_content'  => $request->checkpoint_contents[$index] ?? null,
+                ]);
+            }
+        }
+        // 計畫主持人
+        $project_host_data = ProjectHost::where('project_id', $id)->first();
+        $project_host_data->name = $request->name;
+        $project_host_data->gender = $request->gender;
+        $project_host_data->id_card = $request->id_card;
+        $project_host_data->save();
+
+        // 計畫主持人學歷
+        if ($request->has('school')) {
+            Sbir09HostEducation::where('project_id', $project->id)->delete();
+
+            foreach ($request->school as $index => $school) {
+                Sbir09HostEducation::create([
+                    'user_id'  => $project->user_id,
+                    'project_id' => $project->id,
+                    'school' => $request->school[$index] ?? null,
+                    'period' => $request->period[$index] ?? null,
+                    'degree'  => $request->degree[$index] ?? null,
+                    'department' => $request->department[$index] ?? null,
+                    'host_id' => $project_host_data->id ?? null,
+                ]);
+            }
+        }
+
+        // 計畫主持人經歷
+        Sbir09HostExperience::where('project_id', $project->id)->delete();
+        if ($request->has('company')) {
+            Sbir09HostExperience::where('project_id', $project->id)->delete();
+            foreach ($request->school as $index => $school) {
+                Sbir09HostExperience::create([
+                    'user_id'  => $project->user_id,
+                    'project_id' => $project->id,
+                    'company' => $request->company[$index] ?? null,
+                    'work_period' => $request->work_period[$index] ?? null,
+                    'department'  => $request->department[$index] ?? null,
+                    'position' => $request->position[$index] ?? null,
+                    'host_id' => $project_host_data->id ?? null,
+                ]);
+            }
+        }
+
+        // 計畫主持人計畫
+        Sbir09HostPlan::where('project_id', $project->id)->delete();
+        if ($request->has('plan_name')) {
+            Sbir09HostPlan::where('project_id', $project->id)->delete();
+            foreach ($request->plan_name as $index => $plan_name) {
+                Sbir09HostPlan::create([
+                    'user_id'  => $project->user_id,
+                    'project_id' => $project->id,
+                    'plan_name' => $request->plan_name[$index] ?? null,
+                    'plan_period' => $request->plan_period[$index] ?? null,
+                    'plan_company'  => $request->plan_company[$index] ?? null,
+                    'plan_duty'  => $request->plan_duty[$index] ?? null,
+                    'host_id' => $project_host_data->id ?? null,
+                ]);
+            }
+        }
+
+        //計畫成員
+        SBIRStaff::where('project_id', $project->id)->delete();
+        if ($request->has('staff_name')) {
+            foreach ($request->staff_name as $index => $name) {
+                SBIRStaff::create([
+                    'user_id'  => $project->user_id,
+                    'project_id' => $project->id,
+                    'staff_name' => $request->staff_name[$index] ?? null,
+                    'staff_title' => $request->staff_title[$index] ?? null,
+                    'account_category' => $request->account_category[$index] ?? null,
+                    'is_rnd' => $request->is_rnd[$index] ?? null,
+                    'education' => $request->education[$index] ?? null,
+                    'experience' => $request->experience[$index] ?? null,
+                    'achievement' => $request->achievement[$index] ?? null,
+                    'seniority' => $request->seniority[$index] ?? null,
+                    'task' => $request->task[$index] ?? null,
+                ]);
+            }
+        };
+
+        // 計畫人力
+        $personCount = Sbir09PersonCount::firstOrNew(['project_id' => $project->id]);
+        $personCount->user_id = $project->user_id;
+        $personCount->project_id = $project->id;
+        $personCount->count_phd = $request->count_phd;
+        $personCount->count_master = $request->count_master;
+        $personCount->count_bachelor = $request->count_bachelor;
+        $personCount->count_others = $request->count_others;
+        $personCount->count_male = $request->count_male;
+        $personCount->count_female = $request->count_female;
+        $personCount->count_pending = $request->count_pending;
+        $personCount->save();
+
+
+        return redirect()->back()->with('success', '資料儲存成功');
     }
 
     public function sbir10($id)
@@ -570,7 +713,7 @@ class SBIRController extends Controller
         $templateProcessor->setValue('cust_create_date', $cust_data->create_date ?? ' ');  // 成立日期
         $templateProcessor->setValue('cust_registration_no', $cust_data->registration_no ?? ' ');
         $templateProcessor->setValue('cust_mobile', $cust_data->mobile ?? ' ');
-        $templateProcessor->setValue('cust_fax', $cust_data->fax ?? ' '); 
+        $templateProcessor->setValue('cust_fax', $cust_data->fax ?? ' ');
         $templateProcessor->setValue('cust_principal_name', $cust_data->principal_name ?? ' ');
         $templateProcessor->setValue('cust_id_card', $cust_data->id_card ?? ' ');
         $templateProcessor->setValue('cust_birthday', $cust_data->birthday ?? ' ');
@@ -583,11 +726,11 @@ class SBIRController extends Controller
         $templateProcessor->setValue('sbir02_serve', $sbir02->serve ?? ' ');
         $templateProcessor->setValue('sbir02_rd_zipcode', $sbir02->rd_zipcode ?? ' ');
         $templateProcessor->setValue('sbir02_rd_address', $sbir02->rd_address ?? ' ');
-        
+
         //計畫書摘要表
-        $templateProcessor->setValue('sbir03_plan_summary', str_replace("\n\n", '</w:t><w:br/><w:t>',$sbir03->plan_summary ?? ' '));
-        $templateProcessor->setValue('sbir03_innovation_focus', str_replace("\n\n", '</w:t><w:br/><w:t>',$sbir03->innovation_focus ?? ' '));
-        $templateProcessor->setValue('sbir03_execution_advantage', str_replace("\n\n", '</w:t><w:br/><w:t>',$sbir03->execution_advantage ?? ' '));
+        $templateProcessor->setValue('sbir03_plan_summary', str_replace("\n\n", '</w:t><w:br/><w:t>', $sbir03->plan_summary ?? ' '));
+        $templateProcessor->setValue('sbir03_innovation_focus', str_replace("\n\n", '</w:t><w:br/><w:t>', $sbir03->innovation_focus ?? ' '));
+        $templateProcessor->setValue('sbir03_execution_advantage', str_replace("\n\n", '</w:t><w:br/><w:t>', $sbir03->execution_advantage ?? ' '));
         $templateProcessor->setValue('sbir03_benefit_output_value', $sbir03->benefit_output_value ?? ' ');
         $templateProcessor->setValue('sbir03_benefit_new_products', $sbir03->benefit_new_products ?? ' ');
         $templateProcessor->setValue('sbir03_benefit_derived_products', $sbir03->benefit_derived_products ?? ' ');
@@ -599,14 +742,14 @@ class SBIRController extends Controller
         $templateProcessor->setValue('sbir03_benefit_new_companies', strval($sbir03->benefit_new_companies ?? ' '));
         $templateProcessor->setValue('sbir03_benefit_patents', strval($sbir03->benefit_patents ?? ' '));
         $templateProcessor->setValue('sbir03_benefit_new_patents', strval($sbir03->benefit_new_patents ?? ' '));
-        
+
         $sbir04_shareholders = Sbir04Shareholders::where('project_id', $project->id)->get();
         $templateProcessor->cloneRow('sbir04_shareholder_name', count($sbir04_shareholders));
         foreach ($sbir04_shareholders as $key => $sbir04_shareholder) {
             $rowIndex = $key + 1;
             $templateProcessor->setValue("sbir04_shareholder_name#{$rowIndex}", $sbir04_shareholder->shareholder_name ?? ' '); // 動態生成行號
             $templateProcessor->setValue("sbir04_shareholder_amount#{$rowIndex}", number_format($sbir04_shareholder->shareholder_amount) ?? ' '); // 問題
-            $templateProcessor->setValue("sbir04_shareholder_ratio#{$rowIndex}", $sbir04_shareholder->shareholder_ratio.'%' ?? ' '); // 動態生成解決方案 ID
+            $templateProcessor->setValue("sbir04_shareholder_ratio#{$rowIndex}", $sbir04_shareholder->shareholder_ratio . '%' ?? ' '); // 動態生成解決方案 ID
         }
 
         $sbir04_awards = Sbir04Award::where('project_id', $project->id)->get();
@@ -698,39 +841,39 @@ class SBIRController extends Controller
 
 
     private function htmlToWordXml($html)
-{
-    $xml = '';
-    libxml_use_internal_errors(true);
-    $dom = new \DOMDocument();
-    $dom->loadHTML('<?xml encoding="utf-8" ?>' . $html);
-    libxml_clear_errors();
+    {
+        $xml = '';
+        libxml_use_internal_errors(true);
+        $dom = new \DOMDocument();
+        $dom->loadHTML('<?xml encoding="utf-8" ?>' . $html);
+        libxml_clear_errors();
 
-    $body = $dom->getElementsByTagName('body')->item(0);
-    if (!$body) return '';
+        $body = $dom->getElementsByTagName('body')->item(0);
+        if (!$body) return '';
 
-    foreach ($body->childNodes as $node) {
-        if ($node->nodeName === 'p') {
-            $paragraphXml = '';
-            foreach ($node->childNodes as $child) {
-                if ($child->nodeName === 'br') {
-                    $paragraphXml .= '<w:br/>';
-                } elseif ($child->nodeType === XML_TEXT_NODE || $child->nodeName === '#text') {
-                    $text = trim($child->textContent);
-                    if ($text !== '') {
-                        $paragraphXml .= $this->buildRunXml($text);
-                    }
-                } else {
-                    $text = trim($child->textContent);
-                    if ($text !== '') {
-                        $isBold = in_array($child->nodeName, ['b', 'strong']);
-                        $isItalic = in_array($child->nodeName, ['i', 'em']);
-                        $paragraphXml .= $this->buildRunXml($text, $isBold, $isItalic);
+        foreach ($body->childNodes as $node) {
+            if ($node->nodeName === 'p') {
+                $paragraphXml = '';
+                foreach ($node->childNodes as $child) {
+                    if ($child->nodeName === 'br') {
+                        $paragraphXml .= '<w:br/>';
+                    } elseif ($child->nodeType === XML_TEXT_NODE || $child->nodeName === '#text') {
+                        $text = trim($child->textContent);
+                        if ($text !== '') {
+                            $paragraphXml .= $this->buildRunXml($text);
+                        }
+                    } else {
+                        $text = trim($child->textContent);
+                        if ($text !== '') {
+                            $isBold = in_array($child->nodeName, ['b', 'strong']);
+                            $isItalic = in_array($child->nodeName, ['i', 'em']);
+                            $paragraphXml .= $this->buildRunXml($text, $isBold, $isItalic);
+                        }
                     }
                 }
-            }
 
-            // 段落本身（含縮排）
-            $xml .= <<<XML
+                // 段落本身（含縮排）
+                $xml .= <<<XML
 <w:p>
   <w:pPr>
     <w:ind w:left="1100"/>
@@ -740,8 +883,8 @@ class SBIRController extends Controller
 
 XML;
 
-            // 額外插入一個空白段落（空行）
-            $xml .= <<<XML
+                // 額外插入一個空白段落（空行）
+                $xml .= <<<XML
 <w:p>
   <w:pPr>
     <w:ind w:left="1100"/>
@@ -750,11 +893,11 @@ XML;
 </w:p>
 
 XML;
+            }
         }
-    }
 
-    return trim($xml);
-}
+        return trim($xml);
+    }
 
 
 

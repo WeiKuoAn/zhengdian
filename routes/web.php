@@ -24,6 +24,7 @@ use App\Http\Controllers\ProjectManufacturingController;
 use App\Http\Controllers\SBIRController;
 use App\Http\Controllers\UserCustomerController;
 use App\Http\Controllers\UploadController;
+use App\Http\Controllers\SBIRFundController;
 use App\Models\User; // ✅ 確保引用 Customer Model
 
 
@@ -196,7 +197,11 @@ Route::get('/project/{id}/sbir08/get-field', function (\Illuminate\Http\Request 
 });
 
 Route::get('project/sbir09/{id}', [SBIRController::class, 'sbir09'])->name('project.sbir09');
+Route::post('project/sbir09/{id}', [SBIRController::class, 'sbir09_data'])->name('project.sbir09.data');
+
 Route::get('project/sbir10/{id}', [SBIRController::class, 'sbir10'])->name('project.sbir10');
+
+Route::get('project/sbir10/fund01/{id}', [SBIRFundController::class, 'fund01'])->name('project.fund01');
 
 Route::get('project/sbir/{id}/export', [SBIRController::class, 'export'])->name('sbir.export');
 

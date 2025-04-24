@@ -182,7 +182,7 @@
                                                                 </td>
                                                             </tr>
                                                             <tr data-category="1">
-                                                                <td>(1) 研發人員 <a href="#" class="ms-2"><i
+                                                                <td>(1) 研發人員 <a href="{{ route('project.fund01',$project->id) }}" class="ms-2"><i
                                                                             class="bi bi-pencil"></i></a></td>
                                                                 <td><input type="number" class="form-control"
                                                                         name="subsidy_1_1"></td>
