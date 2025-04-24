@@ -565,7 +565,7 @@ class SBIRController extends Controller
             }
         }
         // 計畫主持人
-        $project_host_data = ProjectHost::firstOrNew(['project_id' => $project->id]);
+        $project_host_data = ProjectHost::firstOrNew(['project_id' => $project->id,'user_id' => $project->user_id]);
         $project_host_data->name = $request->name;
         $project_host_data->gender = $request->gender;
         $project_host_data->id_card = $request->id_card;
