@@ -305,7 +305,7 @@
               const field = this.getAttribute('data-field');
       
               // 改為呼叫正確的 GET 路由
-              fetch(`/project/${projectId}/sbir06/get-field?field=${field}`)
+              fetch(`/project/${projectId}/sbir08/get-field?field=${field}`)
                 .then(res => res.json())
                 .then(data => {
                   const content = data.value || '';
@@ -329,7 +329,7 @@
           const preview = document.getElementById(`preview_${field}`);
           if (preview) preview.innerHTML = content;
       
-          fetch(`/project/${projectId}/sbir06/update-field`, {
+          fetch(`/project/${projectId}/sbir08/update-field`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',

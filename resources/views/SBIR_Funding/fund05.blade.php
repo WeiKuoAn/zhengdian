@@ -100,76 +100,37 @@
                             <div class="col-12 mb-4">
                                 <div class="card">
                                     <div class="card-body">
-                                        <table class="table table-bordered" id="staffTable">
+                                        <table class="table table-bordered" id="equipmentTable">
                                             <thead>
                                                 <tr>
-                                                    <th>編號</th>
-                                                    <th>姓名</th>
-                                                    <th>職稱</th>
-                                                    <th>平均月薪(A) (千元)</th>
-                                                    <th>人月數(B)</th>
-                                                    <th>人事費概算(A×B)</th>
+                                                    <th>設備名稱</th>
+                                                    <th>財產編號</th>
+                                                    <th>單套購置金額</th>
+                                                    <th>購入日期(年/月)</th>
+                                                    <th>單套帳面價值 A (千元)</th>
+                                                    <th>套數 B</th>
+                                                    <th>剩餘使用年限</th>
+                                                    <th>投入月數</th>
                                                     <th>操作</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                @if (count($datas) > 0)
-                                                    @foreach ($datas as $key => $data)
-                                                        <tr>
-                                                            <td class="staff-number">{{ $key + 1 }}</td>
-                                                            <td><input type="text" name="name[]" class="form-control"
-                                                                    value="{{ $data->name }}"></td>
-                                                            </td>
-                                                            <td>
-                                                                <select name="title[]" class="form-control">
-                                                                    <option value="計畫主持人">計畫主持人</option>
-                                                                    <option value="研究員級">研究員級</option>
-                                                                    <option value="副研究員級">副研究員級</option>
-                                                                    <option value="助理研究員級">助理研究員級</option>
-                                                                    <option value="研究助理級">研究助理級</option>
-                                                                </select>
-                                                            </td>
-                                                            <td><input type="number" name="salary[]" class="form-control"
-                                                                    value="{{ $data->salary }}"></td>
-                                                            <td><input type="number" name="man_month[]"
-                                                                    class="form-control" value="{{ $data->man_month }}">
-                                                            </td>
-                                                            <td class="budget">{{ $data->man_month }}</td>
-                                                            <td><button type="button" class="btn btn-danger"
-                                                                onclick="removeStaffRow(this)">刪除</button></td>
-                                                    @endforeach
-                                                @else
-                                                    @foreach ($staffs as $key => $staff)
-                                                        <tr>
-                                                            <td class="staff-number">{{ $key + 1 }}</td>
-                                                            <td><input type="text" name="name[]" class="form-control"
-                                                                    value="{{ $staff->staff_name }}"></td>
-                                                            </td>
-                                                            <td>
-                                                                <select name="title[]" class="form-control">
-                                                                    <option value="計畫主持人">計畫主持人</option>
-                                                                    <option value="研究員級">研究員級</option>
-                                                                    <option value="副研究員級">副研究員級</option>
-                                                                    <option value="助理研究員級">助理研究員級</option>
-                                                                    <option value="研究助理級">研究助理級</option>
-                                                                </select>
-                                                            </td>
-                                                            <td><input type="number" name="salary[]"
-                                                                    class="form-control">
-                                                            </td>
-                                                            <td><input type="number" name="man_month[]"
-                                                                    class="form-control">
-                                                            </td>
-                                                            <td class="budget">0</td>
-                                                            <td><button type="button" class="btn btn-danger"
-                                                                    onclick="removeStaffRow(this)">刪除</button></td>
-                                                        </tr>
-                                                    @endforeach
-                                                @endif
+                                                <tr>
+                                                    <td><input type="text" name="equipment_name[]" class="form-control"></td>
+                                                    <td><input type="text" name="property_code[]" class="form-control"></td>
+                                                    <td><input type="text" name="purchase_amount[]" class="form-control"></td>
+                                                    <td><input type="text" name="purchase_date[]" class="form-control"></td>
+                                                    <td><input type="text" name="book_value[]" class="form-control"></td>
+                                                    <td><input type="text" name="quantity[]" class="form-control"></td>
+                                                    <td><input type="text" name="useful_life[]" class="form-control"></td>
+                                                    <td><input type="text" name="input_months[]" class="form-control"></td>
+                                                    <td><button type="button" class="btn btn-danger" onclick="removeRow(this)">刪除</button></td>
+                                                </tr>
                                             </tbody>
                                         </table>
+                                        <button class="btn btn-secondary" type="button" onclick="addEquipmentRow()">新增資料</button>
                                         <!-- 按鈕 -->
-                                        <div class="d-flex justify-content-start gap-2">
+                                        <div class="d-flex justify-content-start gap-2 mt-4">
                                             <button type="submit" class="btn btn-teal btn-success">送出存檔</button>
                                             <button type="button" class="btn btn-primary">回上一頁</button>
                                         </div>

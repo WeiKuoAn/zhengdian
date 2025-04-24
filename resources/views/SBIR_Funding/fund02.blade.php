@@ -113,59 +113,28 @@
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                @if (count($datas) > 0)
-                                                    @foreach ($datas as $key => $data)
-                                                        <tr>
-                                                            <td class="staff-number">{{ $key + 1 }}</td>
-                                                            <td><input type="text" name="name[]" class="form-control"
-                                                                    value="{{ $data->name }}"></td>
-                                                            </td>
-                                                            <td>
-                                                                <select name="title[]" class="form-control">
-                                                                    <option value="計畫主持人">計畫主持人</option>
-                                                                    <option value="研究員級">研究員級</option>
-                                                                    <option value="副研究員級">副研究員級</option>
-                                                                    <option value="助理研究員級">助理研究員級</option>
-                                                                    <option value="研究助理級">研究助理級</option>
-                                                                </select>
-                                                            </td>
-                                                            <td><input type="number" name="salary[]" class="form-control"
-                                                                    value="{{ $data->salary }}"></td>
-                                                            <td><input type="number" name="man_month[]"
-                                                                    class="form-control" value="{{ $data->man_month }}">
-                                                            </td>
-                                                            <td class="budget">{{ $data->man_month }}</td>
-                                                            <td><button type="button" class="btn btn-danger"
-                                                                onclick="removeStaffRow(this)">刪除</button></td>
-                                                    @endforeach
-                                                @else
-                                                    @foreach ($staffs as $key => $staff)
-                                                        <tr>
-                                                            <td class="staff-number">{{ $key + 1 }}</td>
-                                                            <td><input type="text" name="name[]" class="form-control"
-                                                                    value="{{ $staff->staff_name }}"></td>
-                                                            </td>
-                                                            <td>
-                                                                <select name="title[]" class="form-control">
-                                                                    <option value="計畫主持人">計畫主持人</option>
-                                                                    <option value="研究員級">研究員級</option>
-                                                                    <option value="副研究員級">副研究員級</option>
-                                                                    <option value="助理研究員級">助理研究員級</option>
-                                                                    <option value="研究助理級">研究助理級</option>
-                                                                </select>
-                                                            </td>
-                                                            <td><input type="number" name="salary[]"
-                                                                    class="form-control">
-                                                            </td>
-                                                            <td><input type="number" name="man_month[]"
-                                                                    class="form-control">
-                                                            </td>
-                                                            <td class="budget">0</td>
-                                                            <td><button type="button" class="btn btn-danger"
-                                                                    onclick="removeStaffRow(this)">刪除</button></td>
-                                                        </tr>
-                                                    @endforeach
-                                                @endif
+                                                @foreach ($staffs as $key => $staff)
+                                                    <tr>
+                                                        <td class="staff-number">{{ $key + 1 }}</td>
+                                                        <td><input type="text" name="name[]" class="form-control"
+                                                                value="{{ $staff->staff_name }}"></td>
+                                                        </td>
+                                                        <td>
+                                                            <select name="title[]" class="form-control">
+                                                                <option value="計畫主持人">計畫主持人</option>
+                                                                <option value="研究員級">研究員級</option>
+                                                                <option value="副研究員級">副研究員級</option>
+                                                                <option value="助理研究員級">助理研究員級</option>
+                                                                <option value="研究助理級">研究助理級</option>
+                                                            </select>
+                                                        </td>
+                                                        <td><input type="number" name="salary[]" class="form-control"></td>
+                                                        <td><input type="number" name="man_month[]" class="form-control">
+                                                        </td>
+                                                        <td class="budget">0</td>
+                                                        <td><button type="button" class="btn btn-danger" onclick="removeStaffRow(this)">刪除</button></td>
+                                                    </tr>
+                                                @endforeach
                                             </tbody>
                                         </table>
                                         <!-- 按鈕 -->

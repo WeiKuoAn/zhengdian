@@ -192,7 +192,7 @@ Route::post('project/sbir08/{id}', [SBIRController::class, 'sbir08_data'])->name
 Route::post('/project/{id}/sbir08/update-field', [SBIRController::class, 'sbir08_updateField']);
 Route::get('/project/{id}/sbir08/get-field', function (\Illuminate\Http\Request $request, $id) {
     $field = $request->query('field');
-    $record = \App\Models\SBIR07::where('project_id', $id)->first();
+    $record = \App\Models\SBIR08::where('project_id', $id)->first();
     return response()->json(['value' => $record?->{$field} ?? '']);
 });
 
@@ -202,6 +202,15 @@ Route::post('project/sbir09/{id}', [SBIRController::class, 'sbir09_data'])->name
 Route::get('project/sbir10/{id}', [SBIRController::class, 'sbir10'])->name('project.sbir10');
 
 Route::get('project/sbir10/fund01/{id}', [SBIRFundController::class, 'fund01'])->name('project.fund01');
+Route::post('project/sbir10/fund01/{id}', [SBIRFundController::class, 'fund01_data'])->name('project.fund01.data');
+Route::get('project/sbir10/fund02/{id}', [SBIRFundController::class, 'fund02'])->name('project.fund02');
+Route::post('project/sbir10/fund02/{id}', [SBIRFundController::class, 'fund02_data'])->name('project.fund02.data');
+Route::get('project/sbir10/fund03/{id}', [SBIRFundController::class, 'fund03'])->name('project.fund03');
+Route::post('project/sbir10/fund03/{id}', [SBIRFundController::class, 'fund03_data'])->name('project.fund03.data');
+Route::get('project/sbir10/fund04/{id}', [SBIRFundController::class, 'fund04'])->name('project.fund04');
+Route::post('project/sbir10/fund04/{id}', [SBIRFundController::class, 'fund04_data'])->name('project.fund04.data');
+Route::get('project/sbir10/fund05/{id}', [SBIRFundController::class, 'fund05'])->name('project.fund05');
+Route::post('project/sbir10/fund05/{id}', [SBIRFundController::class, 'fund05_data'])->name('project.fund05.data');
 
 Route::get('project/sbir/{id}/export', [SBIRController::class, 'export'])->name('sbir.export');
 

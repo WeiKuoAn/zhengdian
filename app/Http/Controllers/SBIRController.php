@@ -17,6 +17,7 @@ use App\Models\Sbir04GovPlan;
 use App\Models\Sbir04MainProduct;
 use App\Models\SBIR06;
 use App\Models\SBIR07;
+use App\Models\SBIR08;
 use Carbon\Carbon;
 use App\Models\CustData;
 use App\Models\CustFactory;
@@ -44,8 +45,7 @@ use App\Models\Sbir09HostExperience;
 use App\Models\Sbir09HostPlan;
 use App\Models\SBIRStaff;
 use App\Models\Sbir09PersonCount;
-
-
+use App\Models\SbirFund;
 
 class SBIRController extends Controller
 {
@@ -516,6 +516,22 @@ class SBIRController extends Controller
         return view('SBIR.sbir08')->with('project', $project)->with('data', $data);
     }
 
+    public function sbir08_updateField(Request $request, $id)
+    {
+        $project = CustProject::where('id', $id)->first();
+        $request->validate([
+            'field' => 'required|in:text1,text2,text3,text4,text5,text6',
+            'value' => 'required|string',
+        ]);
+
+        $record = SBIR08::firstOrNew(['project_id' => $id]);
+        $record->user_id = $project->user_id;
+        $record->{$request->field} = $request->value;
+        $record->save();
+
+        return response()->json(['success' => true]);
+    }
+
     public function sbir09($id)
     {
         $project = CustProject::where('id', $id)->first();
@@ -662,6 +678,14 @@ class SBIRController extends Controller
     public function sbir10($id)
     {
         $project = CustProject::where('id', $id)->first();
+        $data = SbirFund::where('project_id', $id)->first();
+
+        return view('SBIR.sbir10')->with('project', $project)->with('data', $data);
+    }
+
+    public function sbir10_data($id)
+    {
+        $project = CustProject::where('id', $id)->first();
         $data = SBIR07::where('project_id', $id)->first();
         return view('SBIR.sbir10')->with('project', $project)->with('data', $data);
     }
@@ -698,6 +722,7 @@ class SBIRController extends Controller
         $templateProcessor->setValue('project_host_phone', $project_host_data->phone ?? ' ');
         $templateProcessor->setValue('project_host_fax', $project_host_data->fax ?? ' ');
         $templateProcessor->setValue('project_host_email', $project_host_data->email ?? ' ');
+        $templateProcessor->setValue('project_host_id_card', $project_host_data->id_card ?? ' ');
         $templateProcessor->setValue('project_contact_name', $project_contact_data->name ?? ' '); // 計畫主持人
         $templateProcessor->setValue('project_contact_mobile', $project_contact_data->mobile ?? ' ');
         $templateProcessor->setValue('project_contact_phone', $project_contact_data->phone ?? ' ');
@@ -770,6 +795,69 @@ class SBIRController extends Controller
             $templateProcessor->setValue("sbir04_patent_desc#{$rowIndex}", $sbir04_patent->patent_desc ?? ' ');
         }
 
+        $sbir09_checkpoints = Sbir09CheckPoint::where('project_id', $project->id)->get();
+        $templateProcessor->cloneRow('sbir09_checkpoint_code', count($sbir09_checkpoints));
+        foreach ($sbir09_checkpoints as $key => $sbir09_check) {
+            $rowIndex = $key + 1;
+            $templateProcessor->setValue("sbir09_checkpoint_code#{$rowIndex}", $sbir09_check->checkpoint_code ?? ' ');
+            $templateProcessor->setValue("sbir09_checkpoint_due#{$rowIndex}", $sbir09_check->checkpoint_due ?? ' ');
+            $templateProcessor->setValue("sbir09_checkpoint_content#{$rowIndex}", $sbir09_check->checkpoint_content ?? ' ');
+        }
+
+        $sbir09_host_educations = Sbir09HostEducation::where('project_id', $project->id)->get();
+        $templateProcessor->cloneRow('sbir09_school', count($sbir09_host_educations));
+        foreach ($sbir09_host_educations as $key => $sbir09_host_education) {
+            $rowIndex = $key + 1;
+            $templateProcessor->setValue("sbir09_school#{$rowIndex}", $sbir09_host_education->school ?? ' ');
+            $templateProcessor->setValue("sbir09_period#{$rowIndex}", $sbir09_host_education->period ?? ' ');
+            $templateProcessor->setValue("sbir09_degree#{$rowIndex}", $sbir09_host_education->degree ?? ' ');
+            $templateProcessor->setValue("sbir09_department#{$rowIndex}", $sbir09_host_education->department ?? ' ');
+        }
+
+        $sbir09_host_experiences = Sbir09HostExperience::where('project_id', $project->id)->get();
+        $templateProcessor->cloneRow('sbir09_company', count($sbir09_host_experiences));
+        foreach ($sbir09_host_experiences as $key => $sbir09_host_experience) {
+            $rowIndex = $key + 1;
+            $templateProcessor->setValue("sbir09_company#{$rowIndex}", $sbir09_host_experience->company ?? ' ');
+            $templateProcessor->setValue("sbir09_work_period#{$rowIndex}", $sbir09_host_experience->work_period ?? ' ');
+            $templateProcessor->setValue("sbir09_work_department#{$rowIndex}", $sbir09_host_experience->department ?? ' ');
+            $templateProcessor->setValue("sbir09_position#{$rowIndex}", $sbir09_host_experience->position ?? ' ');
+        }
+
+        $sbir09_host_plans = Sbir09HostPlan::where('project_id', $project->id)->get();
+        $templateProcessor->cloneRow('sbir09_planed_name', count($sbir09_host_plans));
+        foreach ($sbir09_host_plans as $key => $sbir09_host_plan) {
+            $rowIndex = $key + 1;
+            $templateProcessor->setValue("sbir09_planed_name#{$rowIndex}", $sbir09_host_plan->plan_name ?? ' ');
+            $templateProcessor->setValue("sbir09_plan_period#{$rowIndex}", $sbir09_host_plan->plan_period ?? ' ');
+            $templateProcessor->setValue("sbir09_plan_company#{$rowIndex}", $sbir09_host_plan->plan_company ?? ' ');
+            $templateProcessor->setValue("sbir09_plan_duty#{$rowIndex}", $sbir09_host_plan->plan_duty ?? ' ');
+        }
+
+        $sbir_staffs = SBIRStaff::where('project_id', $project->id)->get();
+        $templateProcessor->cloneRow('sbir_staff_key', count($sbir_staffs));
+        foreach ($sbir_staffs as $key => $sbir_staff) {
+            $rowIndex = $key + 1;
+            $templateProcessor->setValue("sbir_staff_key#{$rowIndex}", $rowIndex ?? ' ');
+            $templateProcessor->setValue("sbir_staff_name#{$rowIndex}", $sbir_staff->staff_name ?? ' ');
+            $templateProcessor->setValue("sbir_staff_title#{$rowIndex}", $sbir_staff->staff_title ?? ' ');
+            $templateProcessor->setValue("sbir_account_category#{$rowIndex}", $sbir_staff->account_category ?? ' ');
+            $templateProcessor->setValue("sbir_is_rnd#{$rowIndex}", $sbir_staff->is_rnd ?? ' ');
+            $templateProcessor->setValue("sbir_education#{$rowIndex}", $sbir_staff->education ?? ' ');
+            $templateProcessor->setValue("sbir_experience#{$rowIndex}", $sbir_staff->experience ?? ' ');
+            $templateProcessor->setValue("sbir_achievement#{$rowIndex}", $sbir_staff->achievement ?? ' ');
+            $templateProcessor->setValue("sbir_seniority#{$rowIndex}", $sbir_staff->seniority ?? ' ');
+            $templateProcessor->setValue("sbir_task#{$rowIndex}", str_replace("\n\n", '</w:t><w:br/><w:t>', $sbir_staff->task ?? ' '));
+        }
+
+        $sbir09_person_count = Sbir09PersonCount::where('project_id', $project->id)->first();
+        $templateProcessor->setValue('count_phd', $sbir09_person_count->count_phd ?? ' ');
+        $templateProcessor->setValue('count_master', $sbir09_person_count->count_master ?? ' ');
+        $templateProcessor->setValue('count_bachelor', $sbir09_person_count->count_bachelor ?? ' ');
+        $templateProcessor->setValue('count_others', $sbir09_person_count->count_others ?? ' ');
+        $templateProcessor->setValue('count_male', $sbir09_person_count->count_male ?? ' ');
+        $templateProcessor->setValue('count_female', $sbir09_person_count->count_female ?? ' ');
+        $templateProcessor->setValue('count_pending', $sbir09_person_count->count_pending ?? ' ');
 
 
 
@@ -786,12 +874,24 @@ class SBIRController extends Controller
     //匯出研發動機
     public function export($id)
     {
-        $data = SBIR05::where('project_id', $id)->firstOrFail();
+        $sbir05 = SBIR05::where('project_id', $id)->firstOrFail();
+        $sbir06 = SBIR06::where('project_id', $id)->firstOrFail();
+        $sbir07 = SBIR07::where('project_id', $id)->firstOrFail();
 
         // 轉換 text1 ~ text3
-        $wordXml1 = $this->htmlToWordXml($data->text1);
-        $wordXml2 = $this->htmlToWordXml($data->text2);
-        $wordXml3 = $this->htmlToWordXml($data->text3);
+        $wordXml1 = $this->htmlToWordXml($sbir05->text1);
+        $wordXml2 = $this->htmlToWordXml($sbir05->text2);
+        $wordXml3 = $this->htmlToWordXml($sbir05->text3);
+        $wordXml4 = $this->htmlToWordXml($sbir06->text1);
+        $wordXml5 = $this->htmlToWordXml($sbir06->text2);
+        $wordXml6 = $this->htmlToWordXml($sbir06->text3);
+        $wordXml7 = $this->htmlToWordXml($sbir06->text4);
+        $wordXml8 = $this->htmlToWordXml($sbir06->text5);
+        $wordXml9 = $this->htmlToWordXml($sbir06->text6);
+        $wordXml10 = $this->htmlToWordXml($sbir07->text1);
+        $wordXml11 = $this->htmlToWordXml($sbir07->text2);
+        $wordXml12 = $this->htmlToWordXml($sbir07->text3);
+        $wordXml13 = $this->htmlToWordXml($sbir07->text4);
 
         // 解壓 Word 模板
         $templatePath = storage_path('app/templates/sbir05.docx');
@@ -810,6 +910,16 @@ class SBIRController extends Controller
         $documentXml = str_replace('<w:t>##HTML_PLACEHOLDER_text1##</w:t>', $wordXml1, $documentXml);
         $documentXml = str_replace('<w:t>##HTML_PLACEHOLDER_text2##</w:t>', $wordXml2, $documentXml);
         $documentXml = str_replace('<w:t>##HTML_PLACEHOLDER_text3##</w:t>', $wordXml3, $documentXml);
+        $documentXml = str_replace('<w:t>##HTML_PLACEHOLDER_text4##</w:t>', $wordXml4, $documentXml);
+        $documentXml = str_replace('<w:t>##HTML_PLACEHOLDER_text5##</w:t>', $wordXml5, $documentXml);
+        $documentXml = str_replace('<w:t>##HTML_PLACEHOLDER_text6##</w:t>', $wordXml6, $documentXml);
+        $documentXml = str_replace('<w:t>##HTML_PLACEHOLDER_text7##</w:t>', $wordXml7, $documentXml);
+        $documentXml = str_replace('<w:t>##HTML_PLACEHOLDER_text8##</w:t>', $wordXml8, $documentXml);
+        $documentXml = str_replace('<w:t>##HTML_PLACEHOLDER_text9##</w:t>', $wordXml9, $documentXml);
+        $documentXml = str_replace('<w:t>##HTML_PLACEHOLDER_text10##</w:t>', $wordXml10, $documentXml);
+        $documentXml = str_replace('<w:t>##HTML_PLACEHOLDER_text11##</w:t>', $wordXml11, $documentXml);
+        $documentXml = str_replace('<w:t>##HTML_PLACEHOLDER_text12##</w:t>', $wordXml12, $documentXml);
+        $documentXml = str_replace('<w:t>##HTML_PLACEHOLDER_text13##</w:t>', $wordXml13, $documentXml);
 
         File::put($docXmlPath, $documentXml);
 
