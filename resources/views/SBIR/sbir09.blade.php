@@ -230,10 +230,10 @@
                                                                 <td>
                                                                     <select name="gender" class="form-control">
                                                                         <option value="男"
-                                                                            @if ($project_host_data->gender == '男') selected @endif>
+                                                                            @if (isset($project_host_data) && $project_host_data->gender == '男') selected @endif>
                                                                             男</option>
                                                                         <option value="女"
-                                                                            @if ($project_host_data->gender == '女') selected @endif>
+                                                                            @if (isset($project_host_data) && $project_host_data->gender == '女') selected @endif>
                                                                             女</option>
                                                                     </select>
                                                                 </td>
