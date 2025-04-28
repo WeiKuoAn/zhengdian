@@ -105,66 +105,58 @@
                                         <!--選單-->
                                         <ul class="nav nav-tabs">
                                             <li class="nav-item">
-                                                <a href="{{ route("project.sbir01",$project->id) }}" class="nav-link ">
+                                                <a href="{{ route('project.sbir01', $project->id) }}" class="nav-link ">
                                                     壹、計畫書基本資料
                                                 </a>
                                             </li>
                                             <li class="nav-item">
-                                                <a href="{{ route("project.sbir02",$project->id) }}" class="nav-link ">
+                                                <a href="{{ route('project.sbir02', $project->id) }}" class="nav-link ">
                                                     貳、計畫申請表
                                                 </a>
                                             </li>
                                             <li class="nav-item">
-                                                <a href="{{ route("project.sbir03",$project->id) }}" 
-                                                    class="nav-link ">
+                                                <a href="{{ route('project.sbir03', $project->id) }}" class="nav-link ">
                                                     參、計畫摘要表
                                                 </a>
                                             </li>
                                             <li class="nav-item">
-                                                <a href="{{ route("project.sbir04",$project->id) }}" 
-                                                    class="nav-link ">
+                                                <a href="{{ route('project.sbir04', $project->id) }}" class="nav-link ">
                                                     肆、公司概況
                                                 </a>
                                             </li>
                                             <li class="nav-item">
-                                                <a href="{{ route("project.sbir05",$project->id) }}" 
-                                                    class="nav-link ">
+                                                <a href="{{ route('project.sbir05', $project->id) }}" class="nav-link ">
                                                     伍、研發動機
                                                 </a>
                                             </li>
                                             <li class="nav-item">
-                                                <a href="{{ route("project.sbir06",$project->id) }}" 
+                                                <a href="{{ route('project.sbir06', $project->id) }}"
                                                     class="nav-link active">
                                                     陸、計畫目標
                                                 </a>
                                             </li>
                                             <li class="nav-item">
-                                                <a href="{{ route("project.sbir07",$project->id) }}" 
-                                                    class="nav-link">
+                                                <a href="{{ route('project.sbir07', $project->id) }}" class="nav-link">
                                                     柒、實施方式
                                                 </a>
                                             </li>
                                             <li class="nav-item">
-                                                <a href="{{ route("project.sbir08",$project->id) }}" 
-                                                    class="nav-link">
+                                                <a href="{{ route('project.sbir08', $project->id) }}" class="nav-link">
                                                     捌、智財分析
                                                 </a>
                                             </li>
                                             <li class="nav-item">
-                                                <a href="{{ route("project.sbir09",$project->id) }}" 
-                                                    class="nav-link">
+                                                <a href="{{ route('project.sbir09', $project->id) }}" class="nav-link">
                                                     玖、計畫執行查核點說明
                                                 </a>
                                             </li>
                                             <li class="nav-item">
-                                                <a href="{{ route("project.sbir10",$project->id) }}" 
-                                                    class="nav-link">
+                                                <a href="{{ route('project.sbir10', $project->id) }}" class="nav-link">
                                                     拾、經費需求
                                                 </a>
                                             </li>
                                             <li class="nav-item">
-                                                <a href="{{ route("project.sbir07",$project->id) }}" 
-                                                    class="nav-link">
+                                                <a href="{{ route('project.sbir07', $project->id) }}" class="nav-link">
                                                     附件
                                                 </a>
                                             </li>
@@ -199,13 +191,13 @@
                                                     [
                                                         'title' => '(五)技術或服務應用範圍',
                                                         'field' => 'text5',
-                                                        'description' =>
-                                                            '(請儘量附圖表配合說明)',
+                                                        'description' => '(請儘量附圖表配合說明)',
                                                     ],
                                                     [
                                                         'title' => '(六)加值應用說明',
                                                         'field' => 'text6',
-                                                        'description' => '(申請SBIR Phase2+申請階段必填，並須敘明原Phase 2計畫名稱、研發成果及如何加值應用)',
+                                                        'description' =>
+                                                            '(申請SBIR Phase2+申請階段必填，並須敘明原Phase 2計畫名稱、研發成果及如何加值應用)',
                                                     ],
                                                 ];
                                             @endphp
@@ -285,102 +277,104 @@
     </script>
     <script>
         let editorInstance;
-      
-        document.addEventListener('DOMContentLoaded', function () {
-          tinymce.init({
-            selector: '#modalEditor',
-            height: 500,
-            menubar: true,
-            plugins: 'lists table image code link textcolor',
-            toolbar: 'undo redo | blocks | bold italic underline forecolor backcolor | alignleft aligncenter alignright | bullist numlist | image table link | code',
-            images_upload_url: '/upload-image',
-            automatic_uploads: true,
-            file_picker_types: 'image',
-            file_picker_callback: function (cb, value, meta) {
-              if (meta.filetype === 'image') {
-                const input = document.createElement('input');
-                input.setAttribute('type', 'file');
-                input.setAttribute('accept', 'image/*');
-      
-                input.onchange = function () {
-                  const file = this.files[0];
-                  const formData = new FormData();
-                  formData.append('file', file);
-      
-                  fetch('/upload-image', {
-                    method: 'POST',
-                    body: formData,
-                    headers: {
-                      'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+
+        document.addEventListener('DOMContentLoaded', function() {
+            tinymce.init({
+                selector: '#modalEditor',
+                height: 500,
+                menubar: true,
+                plugins: 'lists table image code link textcolor',
+                toolbar: 'undo redo | blocks | bold italic underline forecolor backcolor | alignleft aligncenter alignright | bullist numlist | image table link | code',
+                images_upload_url: '/upload-image',
+                automatic_uploads: true,
+                file_picker_types: 'image',
+                file_picker_callback: function(cb, value, meta) {
+                    if (meta.filetype === 'image') {
+                        const input = document.createElement('input');
+                        input.setAttribute('type', 'file');
+                        input.setAttribute('accept', 'image/*');
+
+                        input.onchange = function() {
+                            const file = this.files[0];
+                            const formData = new FormData();
+                            formData.append('file', file);
+
+                            fetch('/upload-image', {
+                                    method: 'POST',
+                                    body: formData,
+                                    headers: {
+                                        'X-CSRF-TOKEN': document.querySelector(
+                                            'meta[name="csrf-token"]').getAttribute(
+                                            'content')
+                                    }
+                                })
+                                .then(response => response.json())
+                                .then(result => {
+                                    cb(result.location);
+                                });
+                        };
+
+                        input.click();
                     }
-                  })
-                  .then(response => response.json())
-                  .then(result => {
-                    cb(result.location);
-                  });
-                };
-      
-                input.click();
-              }
-            },
-            setup: function (editor) {
-              editorInstance = editor;
-            }
-          });
-      
-          document.querySelectorAll('.open-editor').forEach(btn => {
-            btn.addEventListener('click', function () {
-              const field = this.getAttribute('data-field');
-      
-              // 改為呼叫正確的 GET 路由
-              fetch(`/project/${projectId}/sbir06/get-field?field=${field}`)
-                .then(res => res.json())
-                .then(data => {
-                  const content = data.value || '';
-                  document.getElementById('currentField').value = field;
-                  const wait = setInterval(() => {
-                    const editor = tinymce.get('modalEditor');
-                    if (editor) {
-                      editor.setContent(content);
-                      clearInterval(wait);
-                    }
-                  }, 100);
+                },
+                setup: function(editor) {
+                    editorInstance = editor;
+                }
+            });
+
+            document.querySelectorAll('.open-editor').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const field = this.getAttribute('data-field');
+
+                    // 改為呼叫正確的 GET 路由
+                    fetch(`/project/${projectId}/sbir06/get-field?field=${field}`)
+                        .then(res => res.json())
+                        .then(data => {
+                            const content = data.value || '';
+                            document.getElementById('currentField').value = field;
+                            const wait = setInterval(() => {
+                                const editor = tinymce.get('modalEditor');
+                                if (editor) {
+                                    editor.setContent(content);
+                                    clearInterval(wait);
+                                }
+                            }, 100);
+                        });
                 });
             });
-          });
         });
-      
+
         function saveEditorContent() {
-          const field = document.getElementById('currentField').value;
-          const content = tinymce.get('modalEditor').getContent();
-      
-          const preview = document.getElementById(`preview_${field}`);
-          if (preview) preview.innerHTML = content;
-      
-          fetch(`/project/${projectId}/sbir06/update-field`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-            },
-            body: JSON.stringify({
-              field: field,
-              value: content
-            })
-          })
-          .then(res => res.json())
-          .then(data => {
-            if (data.success) {
-              const modalInstance = bootstrap.Modal.getInstance(document.getElementById('editorModal'));
-              modalInstance.hide();
-              alert('儲存成功');
-            } else {
-              alert('儲存失敗');
-            }
-          })
-          .catch(err => {
-            alert('錯誤發生：' + err.message);
-          });
+            const field = document.getElementById('currentField').value;
+            const content = tinymce.get('modalEditor').getContent();
+
+            const preview = document.getElementById(`preview_${field}`);
+            if (preview) preview.innerHTML = content;
+
+            fetch(`/project/${projectId}/sbir06/update-field`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    },
+                    body: JSON.stringify({
+                        field: field,
+                        value: content
+                    })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        const modalInstance = bootstrap.Modal.getInstance(document.getElementById('editorModal'));
+                        modalInstance.hide();
+                        alert('儲存成功');
+                    } else {
+                        alert('儲存失敗');
+                    }
+                })
+                .catch(err => {
+                    alert('錯誤發生：' + err.message);
+                });
         }
-      </script>
+    </script>
 @endsection

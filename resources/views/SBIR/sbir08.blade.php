@@ -105,104 +105,102 @@
                                         <!--選單-->
                                         <ul class="nav nav-tabs">
                                             <li class="nav-item">
-                                                <a href="{{ route("project.sbir01",$project->id) }}" class="nav-link ">
+                                                <a href="{{ route('project.sbir01', $project->id) }}" class="nav-link ">
                                                     壹、計畫書基本資料
                                                 </a>
                                             </li>
                                             <li class="nav-item">
-                                                <a href="{{ route("project.sbir02",$project->id) }}" class="nav-link ">
+                                                <a href="{{ route('project.sbir02', $project->id) }}" class="nav-link ">
                                                     貳、計畫申請表
                                                 </a>
                                             </li>
                                             <li class="nav-item">
-                                                <a href="{{ route("project.sbir03",$project->id) }}" 
-                                                    class="nav-link ">
+                                                <a href="{{ route('project.sbir03', $project->id) }}" class="nav-link ">
                                                     參、計畫摘要表
                                                 </a>
                                             </li>
                                             <li class="nav-item">
-                                                <a href="{{ route("project.sbir04",$project->id) }}" 
-                                                    class="nav-link ">
+                                                <a href="{{ route('project.sbir04', $project->id) }}" class="nav-link ">
                                                     肆、公司概況
                                                 </a>
                                             </li>
                                             <li class="nav-item">
-                                                <a href="{{ route("project.sbir05",$project->id) }}" 
-                                                    class="nav-link ">
+                                                <a href="{{ route('project.sbir05', $project->id) }}" class="nav-link ">
                                                     伍、研發動機
                                                 </a>
                                             </li>
                                             <li class="nav-item">
-                                                <a href="{{ route("project.sbir06",$project->id) }}" 
-                                                    class="nav-link ">
+                                                <a href="{{ route('project.sbir06', $project->id) }}" class="nav-link ">
                                                     陸、計畫目標
                                                 </a>
                                             </li>
                                             <li class="nav-item">
-                                                <a href="{{ route("project.sbir07",$project->id) }}" 
-                                                    class="nav-link">
+                                                <a href="{{ route('project.sbir07', $project->id) }}" class="nav-link">
                                                     柒、實施方式
                                                 </a>
                                             </li>
                                             <li class="nav-item">
-                                                <a href="{{ route("project.sbir08",$project->id) }}" 
+                                                <a href="{{ route('project.sbir08', $project->id) }}"
                                                     class="nav-link active">
                                                     捌、智財分析
                                                 </a>
                                             </li>
                                             <li class="nav-item">
-                                                <a href="{{ route("project.sbir09",$project->id) }}" 
-                                                    class="nav-link">
+                                                <a href="{{ route('project.sbir09', $project->id) }}" class="nav-link">
                                                     玖、計畫執行查核點說明
                                                 </a>
                                             </li>
                                             <li class="nav-item">
-                                                <a href="{{ route("project.sbir10",$project->id) }}" 
-                                                    class="nav-link">
+                                                <a href="{{ route('project.sbir10', $project->id) }}" class="nav-link">
                                                     拾、經費需求
                                                 </a>
                                             </li>
                                             <li class="nav-item">
-                                                <a href="{{ route("project.sbir07",$project->id) }}" 
-                                                    class="nav-link">
+                                                <a href="{{ route('project.sbir07', $project->id) }}" class="nav-link">
                                                     附件
                                                 </a>
                                             </li>
                                         </ul>
 
                                         <div class="card-body">
-                                            @php
-                                                $sections = [
-                                                    [
-                                                        'title' => '智財分析',
-                                                        'field' => 'text1',
-                                                        'description' =>
-                                                            '本計畫是否涉及他人智慧財產權?若有，應如何解決?是否已掌握關鍵之智慧財產權?關鍵智財或技術是否委外或引進，且是否具承接能力。',
-                                                    ],
-                                                ];
-                                            @endphp
 
-                                            @foreach ($sections as $sec)
-                                                <div class="card mb-3">
-                                                    <div class="card-body">
-                                                        <h5 class="card-title">{{ $sec['title'] }}</h5>
-                                                        <p class="text-muted">{{ $sec['description'] }}</p>
-                                                        <div id="preview_{{ $sec['field'] }}"
-                                                            class="border p-3 bg-light mb-2">
-                                                            {!! $data[$sec['field']] ?? '' !!}
-                                                        </div>
-                                                        <button type="button" class="btn btn-sm btn-primary open-editor"
-                                                            data-bs-toggle="modal" data-bs-target="#editorModal"
-                                                            data-field="{{ $sec['field'] }}">
-                                                            編輯內容
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            @endforeach
 
+                                            <table class="table table-bordered" id="patentTable">
+                                                <thead>
+                                                    <tr>
+                                                        <th>輸入查詢字串</th>
+                                                        <th>檢索內容（專利之標題）</th>
+                                                        <th>與本計畫研究之異同分析</th>
+                                                        <th>操作</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr>
+                                                        <td><input type="text" name="query[]" class="form-control">
+                                                        </td>
+                                                        <td><input type="text" name="search_result[]"
+                                                                class="form-control"></td>
+                                                        <td>
+                                                            <textarea name="analysis[]" class="form-control" rows="2"></textarea>
+                                                        </td>
+                                                        <td><button type="button" class="btn btn-danger"
+                                                                onclick="removePatentRow(this)">刪除</button></td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+
+                                            <div class="mb-3">
+                                                <button type="button" class="btn btn-secondary"
+                                                    onclick="addPatentRow()">新增一列</button>
+                                            </div>
+                                            <hr>
+                                            <div class="d-flex justify-content-start gap-2">
+                                                <button type="submit" class="btn btn-teal btn-success">送出存檔</button>
+                                                <button type="button" class="btn btn-primary">回上一頁</button>
+                                            </div>
                                             <!-- 匯出 Word 按鈕 -->
                                             <div class="text-end mt-4">
-                                                <a href="{{ route('sbir.export', $project->id) }}"
+                                                <a href="{{ route('sbir08.export', $project->id) }}"
                                                     class="btn btn-success">
                                                     匯出計畫書 Word 檔
                                                 </a>
@@ -218,25 +216,7 @@
         </div>
 
     </div> <!-- container -->
-    <!-- 編輯 Modal -->
-    <div class="modal fade" id="editorModal" tabindex="-1" aria-labelledby="editorModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-xl modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="editorModalLabel">內容編輯器</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <textarea id="modalEditor"></textarea>
-                    <input type="hidden" id="currentField">
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
-                    <button type="button" class="btn btn-primary" onclick="saveEditorContent()">儲存</button>
-                </div>
-            </div>
-        </div>
-    </div>
+    
 @endsection
 @section('script')
     @if (session('success'))
@@ -256,103 +236,22 @@
         const projectId = {{ $project->id }};
     </script>
     <script>
-        let editorInstance;
-      
-        document.addEventListener('DOMContentLoaded', function () {
-          tinymce.init({
-            selector: '#modalEditor',
-            height: 500,
-            menubar: true,
-            plugins: 'lists table image code link textcolor',
-            toolbar: 'undo redo | blocks | bold italic underline forecolor backcolor | alignleft aligncenter alignright | bullist numlist | image table link | code',
-            images_upload_url: '/upload-image',
-            automatic_uploads: true,
-            file_picker_types: 'image',
-            file_picker_callback: function (cb, value, meta) {
-              if (meta.filetype === 'image') {
-                const input = document.createElement('input');
-                input.setAttribute('type', 'file');
-                input.setAttribute('accept', 'image/*');
-      
-                input.onchange = function () {
-                  const file = this.files[0];
-                  const formData = new FormData();
-                  formData.append('file', file);
-      
-                  fetch('/upload-image', {
-                    method: 'POST',
-                    body: formData,
-                    headers: {
-                      'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                    }
-                  })
-                  .then(response => response.json())
-                  .then(result => {
-                    cb(result.location);
-                  });
-                };
-      
-                input.click();
-              }
-            },
-            setup: function (editor) {
-              editorInstance = editor;
-            }
-          });
-      
-          document.querySelectorAll('.open-editor').forEach(btn => {
-            btn.addEventListener('click', function () {
-              const field = this.getAttribute('data-field');
-      
-              // 改為呼叫正確的 GET 路由
-              fetch(`/project/${projectId}/sbir08/get-field?field=${field}`)
-                .then(res => res.json())
-                .then(data => {
-                  const content = data.value || '';
-                  document.getElementById('currentField').value = field;
-                  const wait = setInterval(() => {
-                    const editor = tinymce.get('modalEditor');
-                    if (editor) {
-                      editor.setContent(content);
-                      clearInterval(wait);
-                    }
-                  }, 100);
-                });
-            });
-          });
-        });
-      
-        function saveEditorContent() {
-          const field = document.getElementById('currentField').value;
-          const content = tinymce.get('modalEditor').getContent();
-      
-          const preview = document.getElementById(`preview_${field}`);
-          if (preview) preview.innerHTML = content;
-      
-          fetch(`/project/${projectId}/sbir08/update-field`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-            },
-            body: JSON.stringify({
-              field: field,
-              value: content
-            })
-          })
-          .then(res => res.json())
-          .then(data => {
-            if (data.success) {
-              const modalInstance = bootstrap.Modal.getInstance(document.getElementById('editorModal'));
-              modalInstance.hide();
-              alert('儲存成功');
-            } else {
-              alert('儲存失敗');
-            }
-          })
-          .catch(err => {
-            alert('錯誤發生：' + err.message);
-          });
+        // 新增一列
+        function addPatentRow() {
+            const tableBody = document.querySelector('#patentTable tbody');
+            const newRow = document.createElement('tr');
+            newRow.innerHTML = `
+                <td><input type="text" name="query[]" class="form-control"></td>
+                <td><input type="text" name="search_result[]" class="form-control"></td>
+                <td><textarea name="analysis[]" class="form-control" rows="2"></textarea></td>
+                <td><button type="button" class="btn btn-danger" onclick="removePatentRow(this)">刪除</button></td>
+            `;
+            tableBody.appendChild(newRow);
         }
-      </script>
+
+        // 刪除一列
+        function removePatentRow(button) {
+            button.closest('tr').remove();
+        }
+    </script>
 @endsection

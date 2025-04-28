@@ -211,7 +211,7 @@
                                                 </div>
 
                                                 <hr>
-                                                <h5 class="text-uppercase bg-light p-2 mt-3 mb-3">公司主營三年資料</h5>
+                                                <h5 class="text-uppercase bg-light p-2 mt-3 mb-3">公司近三年主要經營之產品項目、銷售業績及市場占有率</h5>
                                                 <div class="mb-3">
                                                     <table class="table table-bordered" id="threeYearTable">
                                                         <thead>
@@ -363,7 +363,7 @@
                                                             @if (count($sbir04_awards) > 0)
                                                                 @foreach ($sbir04_awards as $award)
                                                                     <tr>
-                                                                        <td><input type="number" name="award_year[]"
+                                                                        <td><input type="text" name="award_year[]"
                                                                                 class="form-control"
                                                                                 value="{{ $award->award_year }}">
                                                                         </td>
@@ -660,7 +660,7 @@
         function addAwardRow() {
             document.querySelector('#awardTable tbody').insertAdjacentHTML('beforeend', `
             <tr>
-              <td><input type="number" name="award_year[]" class="form-control"></td>
+              <td><input type="text" name="award_year[]" class="form-control"></td>
               <td><input type="text" name="award_name[]" class="form-control"></td>
               <td><button class="btn btn-danger" onclick="this.closest('tr').remove()">刪除</button></td>
             </tr>`);

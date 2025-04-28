@@ -213,6 +213,7 @@ Route::get('project/sbir10/fund05/{id}', [SBIRFundController::class, 'fund05'])-
 Route::post('project/sbir10/fund05/{id}', [SBIRFundController::class, 'fund05_data'])->name('project.fund05.data');
 
 Route::get('project/sbir/{id}/export', [SBIRController::class, 'export'])->name('sbir.export');
+Route::get('project/sbir08/{id}/export', [SBIRController::class, 'sbir08_export'])->name('sbir08.export');
 
 Route::post('/upload-image', [UploadController::class, 'uploadImage']);
 

@@ -409,8 +409,8 @@ class CustomerController extends Controller
     {
         $user = User::where('id', $id)->first();
         $user->name = $request->name;
-        if (Auth::user()->group_id == 1) {
-            $user->status = $request->status;
+        if (Auth::user()->level != 2) {
+            $user->status = $request->status;//登入權限
         }
         $user->save();
 
@@ -423,8 +423,8 @@ class CustomerController extends Controller
         $cust_data->address = $request->address;
         $cust_data->registration_no = $request->registration_no;
         $cust_data->principal_name = $request->principal_name;
-        if (Auth::user()->group_id == 1) {
-            $cust_data->limit_status = $request->limit_status;
+        if (Auth::user()->level != 2) {
+            $cust_data->limit_status = $request->limit_status;//限制觀看權限
         }
         $cust_data->contract_status = $request->contract_status;
         $cust_data->save();

@@ -448,19 +448,24 @@ class SBIRController extends Controller
     // SBIRController.php
     public function sbir05_updateField(Request $request, $id)
     {
-        $project = CustProject::where('id', $id)->first();
-        $request->validate([
-            'field' => 'required|in:text1,text2,text3',
-            'value' => 'required|string',
+        $project = CustProject::find($id);
+        if (!$project) {
+            return response()->json(['success' => false, 'message' => '專案不存在'], 404);
+        }
+
+        $validated = $request->validate([
+            'field' => ['required', 'in:text1,text2,text3'],
+            'value' => ['required', 'string'],
         ]);
 
         $record = SBIR05::firstOrNew(['project_id' => $id]);
         $record->user_id = $project->user_id;
-        $record->{$request->field} = $request->value;
+        $record->{$validated['field']} = $validated['value'];
         $record->save();
 
         return response()->json(['success' => true]);
     }
+
 
 
     public function sbir06($id)
@@ -515,6 +520,54 @@ class SBIRController extends Controller
         $data = SBIR07::where('project_id', $id)->first();
         return view('SBIR.sbir08')->with('project', $project)->with('data', $data);
     }
+
+    public function sbir08_data(Request $request, $id)
+    {
+        $project = CustProject::findOrFail($id);
+
+        // 刪除舊資料
+        SBIR08::where('project_id', $project->id)->delete();
+
+        // 儲存新資料
+        if ($request->filled('query')) {
+            foreach ($request->input('query', []) as $index => $query) {
+                SBIR08::create([
+                    'project_id'    => $project->id,
+                    'user_id'       => $project->user_id,
+                    'query'         => $query,
+                    'search_result' => $request->input('search_result')[$index] ?? null,
+                    'analysis'      => $request->input('analysis')[$index] ?? null,
+                ]);
+            }
+        }
+
+        return redirect()->back()->with('success', '資料儲存成功');
+    }
+
+    public function sbir08_export($id)
+    {
+        // 加載 Word 模板
+        $templateProcessor =  new TemplateProcessor(storage_path('app/templates/sbir08.docx'));
+        // 獲取客戶資料
+        $project = CustProject::where('id', $id)->first();
+        $sbir08s = SBIR08::where('project_id', $id)->get();
+        $user_data = User::where('id', $project->user_id)->first();
+        $templateProcessor->cloneRow('query08', count($sbir08s));
+        foreach ($sbir08s as $key => $sbir08) {
+            $rowIndex = $key + 1;
+            $templateProcessor->setValue("query08#{$rowIndex}", $sbir08->query ?? ' ');
+            $templateProcessor->setValue("search_result#{$rowIndex}", $sbir08->search_result ?? ' ');
+            $templateProcessor->setValue("analysis#{$rowIndex}", $sbir08->analysis ?? ' ');
+        }
+        // 保存修改後的文件到臨時路徑
+        $fileName = $user_data->name . '-智財分析' . '.docx';
+        $tempFilePath = tempnam(sys_get_temp_dir(), 'phpword') . '.docx';
+        $templateProcessor->saveAs($tempFilePath);
+
+        // 將文件作為下載返回，並在傳送後刪除臨時文件
+        return response()->download($tempFilePath, $fileName)->deleteFileAfterSend(true);
+    }
+
 
     public function sbir08_updateField(Request $request, $id)
     {
@@ -581,7 +634,7 @@ class SBIRController extends Controller
             }
         }
         // 計畫主持人
-        $project_host_data = ProjectHost::firstOrNew(['project_id' => $project->id,'user_id' => $project->user_id]);
+        $project_host_data = ProjectHost::firstOrNew(['project_id' => $project->id, 'user_id' => $project->user_id]);
         $project_host_data->name = $request->name;
         $project_host_data->gender = $request->gender;
         $project_host_data->id_card = $request->id_card;
@@ -696,11 +749,13 @@ class SBIRController extends Controller
         // 加載 Word 模板
         $templateProcessor =  new TemplateProcessor(storage_path('app/templates/sbir_word.docx'));
         // 獲取客戶資料
-        $cust_data = CustData::where('user_id', $id)->first();
         $project = CustProject::where('id', $id)->first();
+        $cust_data = CustData::where('user_id', $project->user_id)->first();
         $sbir01 = SBIR01::where('project_id', $id)->first();
         $sbir02 = SBIR02::where('project_id', $id)->first();
         $sbir03 = SBIR03::where('project_id', $id)->first();
+
+
         $user_data = User::where('id', $project->user_id)->first();
         $project_host_data = ProjectHost::where('project_id', $project->id)->first();
         $project_contact_data = ProjectContact::where('project_id', $project->id)->first();
@@ -733,6 +788,7 @@ class SBIRController extends Controller
         $templateProcessor->setValue('project_accounting_phone', $project_accounting_data->phone ?? ' ');
         $templateProcessor->setValue('project_accounting_fax', $project_accounting_data->fax ?? ' ');
         $templateProcessor->setValue('project_accounting_email', $project_accounting_data->email ?? ' ');
+        $templateProcessor->setValue('sbir02_context', $sbir02->context ?? ' ');
 
         //申請公司基本資料表
         $templateProcessor->setValue('cust_create_date', $cust_data->create_date ?? ' ');  // 成立日期
@@ -745,7 +801,7 @@ class SBIRController extends Controller
         $templateProcessor->setValue('cust_capital', $cust_data->capital ?? ' ');
         $templateProcessor->setValue('cust_last_year_revenue', $cust_data->last_year_revenue ?? ' ');
         $templateProcessor->setValue('cust_insurance_total', $cust_data->insurance_total ?? ' ');
-        $templateProcessor->setValue('cust_profit_margin', $cust_data->profit_margin ?? ' ');
+        $templateProcessor->setValue('cust_profit_margin', $cust_data->profit_margin . '%' ?? ' ');
         $templateProcessor->setValue('cust_insurance_total', $cust_data->insurance_total ?? ' ');
 
         $templateProcessor->setValue('sbir02_serve', $sbir02->serve ?? ' ');
@@ -803,6 +859,51 @@ class SBIRController extends Controller
             $templateProcessor->setValue("sbir09_checkpoint_due#{$rowIndex}", $sbir09_check->checkpoint_due ?? ' ');
             $templateProcessor->setValue("sbir09_checkpoint_content#{$rowIndex}", $sbir09_check->checkpoint_content ?? ' ');
         }
+
+        $sbir04_sales_total_y1 = 0;
+        $sbir04_sales_total_y2 = 0;
+        $sbir04_sales_total_y3 = 0;
+
+        $sbir04_main_products = Sbir04MainProduct::where('project_id', $project->id)->get();
+        $templateProcessor->cloneRow('sbir04_product_name', count($sbir04_main_products));
+        foreach ($sbir04_main_products as $key => $sbir04_main_product) {
+            $rowIndex = $key + 1;
+            $templateProcessor->setValue("sbir04_product_name#{$rowIndex}", $sbir04_main_product->product_name ?? ' ');
+            $templateProcessor->setValue("sbir04_output_y1#{$rowIndex}", number_format($sbir04_main_product->output_y1) ?? ' ');
+            $templateProcessor->setValue("sbir04_sales_y1#{$rowIndex}", number_format($sbir04_main_product->sales_y1) ?? ' ');
+            $templateProcessor->setValue("sbir04_share_y1#{$rowIndex}", number_format($sbir04_main_product->share_y1) . '%' ?? ' ');
+            $templateProcessor->setValue("sbir04_output_y2#{$rowIndex}", number_format($sbir04_main_product->output_y2) ?? ' ');
+            $templateProcessor->setValue("sbir04_sales_y2#{$rowIndex}", number_format($sbir04_main_product->sales_y2) ?? ' ');
+            $templateProcessor->setValue("sbir04_share_y2#{$rowIndex}", number_format($sbir04_main_product->share_y2) . '%' ?? ' ');
+            $templateProcessor->setValue("sbir04_output_y3#{$rowIndex}", number_format($sbir04_main_product->output_y3) ?? ' ');
+            $templateProcessor->setValue("sbir04_sales_y3#{$rowIndex}", number_format($sbir04_main_product->sales_y3) ?? ' ');
+            $templateProcessor->setValue("sbir04_share_y3#{$rowIndex}", number_format($sbir04_main_product->share_y3) . '%' ?? ' ');
+            $sbir04_sales_total_y1 += $sbir04_main_product->sales_y1;
+            $sbir04_sales_total_y2 += $sbir04_main_product->sales_y2;
+            $sbir04_sales_total_y3 += $sbir04_main_product->sales_y3;
+        }
+
+        $templateProcessor->setValue("sbir04_sales_total_y1", number_format($sbir04_sales_total_y1) ?? ' ');
+        $templateProcessor->setValue("sbir04_sales_total_y2", number_format($sbir04_sales_total_y2) ?? ' ');
+        $templateProcessor->setValue("sbir04_sales_total_y3", number_format($sbir04_sales_total_y3) ?? ' ');
+
+
+        $sbir04_three_years = Sbir04Threeyear::where('project_id', $project->id)->get();
+        $templateProcessor->setValue("sbir04_output_y1", $sbir04_three_years[0]->year ?? ' ');
+        $templateProcessor->setValue("sbir04_revenue_y1", number_format($sbir04_three_years[0]->revenue) ?? ' ');
+        $templateProcessor->setValue("sbir04_rnd_cost_y1", number_format($sbir04_three_years[0]->rnd_cost) ?? ' ');
+        $templateProcessor->setValue("sbir04_ratio_y1", number_format($sbir04_three_years[0]->ratio) . '%' ?? ' ');
+        $templateProcessor->setValue("sbir04_note_y1", $sbir04_three_years[0]->note ?? ' ');
+        $templateProcessor->setValue("sbir04_output_y2", $sbir04_three_years[1]->year ?? ' ');
+        $templateProcessor->setValue("sbir04_revenue_y2", number_format($sbir04_three_years[1]->revenue) ?? ' ');
+        $templateProcessor->setValue("sbir04_rnd_cost_y2", number_format($sbir04_three_years[1]->rnd_cost) ?? ' ');
+        $templateProcessor->setValue("sbir04_ratio_y2", number_format($sbir04_three_years[1]->ratio) . '%' ?? ' ');
+        $templateProcessor->setValue("sbir04_note_y2", $sbir04_three_years[1]->note ?? ' ');
+        $templateProcessor->setValue("sbir04_output_y3", $sbir04_three_years[2]->year ?? ' ');
+        $templateProcessor->setValue("sbir04_revenue_y3", number_format($sbir04_three_years[2]->revenue) ?? ' ');
+        $templateProcessor->setValue("sbir04_rnd_cost_y3", number_format($sbir04_three_years[2]->rnd_cost) ?? ' ');
+        $templateProcessor->setValue("sbir04_ratio_y3", number_format($sbir04_three_years[2]->ratio) . '%' ?? ' ');
+        $templateProcessor->setValue("sbir04_note_y3", $sbir04_three_years[2]->note ?? ' ');
 
         $sbir09_host_educations = Sbir09HostEducation::where('project_id', $project->id)->get();
         $templateProcessor->cloneRow('sbir09_school', count($sbir09_host_educations));
@@ -863,7 +964,7 @@ class SBIRController extends Controller
 
 
         // 保存修改後的文件到臨時路徑
-        $fileName = $user_data->name . '-商業服務業計畫書' . '.docx';
+        $fileName = $user_data->name . '-SBIR' . '.docx';
         $tempFilePath = tempnam(sys_get_temp_dir(), 'phpword') . '.docx';
         $templateProcessor->saveAs($tempFilePath);
 
@@ -873,126 +974,163 @@ class SBIRController extends Controller
 
     //匯出研發動機
     public function export($id)
-{
-    $sbir05 = SBIR05::where('project_id', $id)->firstOrFail();
-    $sbir06 = SBIR06::where('project_id', $id)->firstOrFail();
-    $sbir07 = SBIR07::where('project_id', $id)->firstOrFail();
+    {
+        ini_set('memory_limit', '1024M');
+        ini_set('max_execution_time', '300');
 
-    // 將 TinyMCE HTML 轉成 Word XML
-    $wordXml1 = $this->htmlToWordXml($sbir05->text1);
-    $wordXml2 = $this->htmlToWordXml($sbir05->text2);
-    $wordXml3 = $this->htmlToWordXml($sbir05->text3);
-    $wordXml4 = $this->htmlToWordXml($sbir06->text1);
-    $wordXml5 = $this->htmlToWordXml($sbir06->text2);
-    $wordXml6 = $this->htmlToWordXml($sbir06->text3);
-    $wordXml7 = $this->htmlToWordXml($sbir06->text4);
-    $wordXml8 = $this->htmlToWordXml($sbir06->text5);
-    $wordXml9 = $this->htmlToWordXml($sbir06->text6);
-    $wordXml10 = $this->htmlToWordXml($sbir07->text1);
-    $wordXml11 = $this->htmlToWordXml($sbir07->text2);
-    $wordXml12 = $this->htmlToWordXml($sbir07->text3);
-    $wordXml13 = $this->htmlToWordXml($sbir07->text4);
+        // 先撈資料
+        $sbir05 = SBIR05::where('project_id', $id)->first();
+        $sbir06 = SBIR06::where('project_id', $id)->first();
+        $sbir07 = SBIR07::where('project_id', $id)->first();
 
-    // 解壓 Word模板
-    $templatePath = storage_path('app/templates/sbir05.docx');
-    $tempDir = storage_path('app/temp_word_' . time());
-    File::makeDirectory($tempDir);
-
-    $zip = new ZipArchive;
-    $zip->open($templatePath);
-    $zip->extractTo($tempDir);
-    $zip->close();
-
-    // 讀取 document.xml
-    $docXmlPath = $tempDir . '/word/document.xml';
-    $documentXml = File::get($docXmlPath);
-
-    // 批次替換
-    $search = [];
-    $replace = [];
-    foreach (range(1, 13) as $i) {
-        $search[] = '<w:t>##HTML_PLACEHOLDER_text' . $i . '##</w:t>';
-        $wordContentVar = 'wordXml' . $i;
-        $replace[] = $$wordContentVar;
-    }
-
-    $documentXml = str_replace($search, $replace, $documentXml);
-
-    File::put($docXmlPath, $documentXml);
-
-    // 壓回成 Word
-    $newDocxPath = storage_path('app/public/sbir05_export_' . now()->format('Ymd_His') . '.docx');
-    $zip = new ZipArchive;
-    $zip->open($newDocxPath, ZipArchive::CREATE);
-
-    $files = new RecursiveIteratorIterator(
-        new RecursiveDirectoryIterator($tempDir),
-        RecursiveIteratorIterator::LEAVES_ONLY
-    );
-
-    foreach ($files as $file) {
-        if (!$file->isDir()) {
-            $filePath = $file->getRealPath();
-            $relativePath = substr($filePath, strlen($tempDir) + 1);
-            $zip->addFile($filePath, $relativePath);
+        if (!$sbir05 || !$sbir06 || !$sbir07) {
+            abort(404, '找不到資料');
         }
-    }
 
-    $zip->close();
-    File::deleteDirectory($tempDir);
-
-    return response()->download($newDocxPath)->deleteFileAfterSend(true);
-}
-
-
-
-
-
-private function htmlToWordXml($html)
-{
-    $xml = '';
-    libxml_use_internal_errors(true);
-    $dom = new \DOMDocument();
-    $dom->loadHTML('<?xml encoding="utf-8" ?>' . $html);
-    libxml_clear_errors();
-
-    $body = $dom->getElementsByTagName('body')->item(0);
-    if (!$body) return '';
-
-    foreach ($body->childNodes as $node) {
-        if ($node->nodeName === 'p') {
-            $xml .= $this->convertParagraph($node);
-        } elseif ($node->nodeName === 'table') {
-            $xml .= $this->convertTableAdvanced($node);
+        // 轉成 Word XML
+        $wordXmls = [];
+        $texts = [
+            $sbir05->text1 ?? '',
+            $sbir05->text2 ?? '',
+            $sbir05->text3 ?? '',
+            $sbir06->text1 ?? '',
+            $sbir06->text2 ?? '',
+            $sbir06->text3 ?? '',
+            $sbir06->text4 ?? '',
+            $sbir06->text5 ?? '',
+            $sbir06->text6 ?? '',
+            $sbir07->text1 ?? '',
+            $sbir07->text2 ?? '',
+            $sbir07->text3 ?? '',
+            $sbir07->text4 ?? '',
+        ];
+        foreach ($texts as $text) {
+            $wordXmls[] = $this->htmlToWordXml($text);
         }
-    }
 
-    return trim($xml);
-}
+        // 解壓 Word 模板
+        $templatePath = storage_path('app/templates/sbir05.docx');
+        if (!File::exists($templatePath)) {
+            abort(500, 'Word範本檔案不存在');
+        }
 
+        $tempDir = storage_path('app/temp_word_' . time());
+        File::makeDirectory($tempDir, 0755, true);
 
-private function convertParagraph($node)
-{
-    $paragraphXml = '';
-    foreach ($node->childNodes as $child) {
-        if ($child->nodeName === 'br') {
-            $paragraphXml .= '<w:br/>';
-        } elseif ($child->nodeType === XML_TEXT_NODE || $child->nodeName === '#text') {
-            $text = trim($child->textContent);
-            if ($text !== '') {
-                $paragraphXml .= $this->buildRunXml($text);
+        $zip = new ZipArchive;
+        if ($zip->open($templatePath) !== true) {
+            abort(500, '無法開啟 Word範本檔');
+        }
+        $zip->extractTo($tempDir);
+        $zip->close();
+
+        // 替換 document.xml
+        $docXmlPath = $tempDir . '/word/document.xml';
+        if (!File::exists($docXmlPath)) {
+            abort(500, '範本中缺少 document.xml');
+        }
+        $documentXml = File::get($docXmlPath);
+
+        $search = [];
+        $replace = [];
+        foreach (range(1, 13) as $i) {
+            $search[] = '<w:t>##HTML_PLACEHOLDER_text' . $i . '##</w:t>';
+            $wordContent = $wordXmls[$i - 1] ?? '';
+
+            // 如果內容是空的，插入一個空白段落
+            if (trim($wordContent) === '') {
+                $wordContent = '<w:p><w:r><w:t xml:space="preserve"></w:t></w:r></w:p>';
             }
-        } else {
-            $text = trim($child->textContent);
-            if ($text !== '') {
-                $isBold = in_array($child->nodeName, ['b', 'strong']);
-                $isItalic = in_array($child->nodeName, ['i', 'em']);
-                $paragraphXml .= $this->buildRunXml($text, $isBold, $isItalic);
+
+            $replace[] = $wordContent;
+        }
+        $documentXml = str_replace($search, $replace, $documentXml);
+        File::put($docXmlPath, $documentXml);
+
+        // 壓回成新的 Word
+        $exportFilename = 'sbir05_export_' . now()->format('Ymd_His') . '.docx';
+        $exportPath = storage_path('app/public/' . $exportFilename);
+
+        if (!File::exists(dirname($exportPath))) {
+            File::makeDirectory(dirname($exportPath), 0755, true);
+        }
+
+        $zip = new ZipArchive;
+        if ($zip->open($exportPath, ZipArchive::CREATE) !== true) {
+            abort(500, '無法建立 Word 檔案');
+        }
+
+        $files = new RecursiveIteratorIterator(
+            new RecursiveDirectoryIterator($tempDir),
+            RecursiveIteratorIterator::LEAVES_ONLY
+        );
+        foreach ($files as $file) {
+            if (!$file->isDir()) {
+                $filePath = $file->getRealPath();
+                $relativePath = substr($filePath, strlen($tempDir) + 1);
+                $zip->addFile($filePath, $relativePath);
             }
         }
+        $zip->close();
+        File::deleteDirectory($tempDir);
+
+        if (!File::exists($exportPath)) {
+            abort(500, '生成 Word 檔案失敗');
+        }
+
+        return response()->download($exportPath)->deleteFileAfterSend(true);
     }
 
-    return <<<XML
+
+
+
+
+
+    private function htmlToWordXml($html)
+    {
+        $xml = '';
+        libxml_use_internal_errors(true);
+        $dom = new \DOMDocument();
+        $dom->loadHTML('<?xml encoding="utf-8" ?>' . $html);
+        libxml_clear_errors();
+
+        $body = $dom->getElementsByTagName('body')->item(0);
+        if (!$body) return '';
+
+        foreach ($body->childNodes as $node) {
+            if ($node->nodeName === 'p') {
+                $xml .= $this->convertParagraph($node);
+            } elseif ($node->nodeName === 'table') {
+                $xml .= $this->convertTableAdvanced($node);
+            }
+        }
+
+        return trim($xml);
+    }
+
+
+    private function convertParagraph($node)
+    {
+        $paragraphXml = '';
+        foreach ($node->childNodes as $child) {
+            if ($child->nodeName === 'br') {
+                $paragraphXml .= '<w:br/>';
+            } elseif ($child->nodeType === XML_TEXT_NODE || $child->nodeName === '#text') {
+                $text = trim($child->textContent);
+                if ($text !== '') {
+                    $paragraphXml .= $this->buildRunXml($text);
+                }
+            } else {
+                $text = trim($child->textContent);
+                if ($text !== '') {
+                    $isBold = in_array($child->nodeName, ['b', 'strong']);
+                    $isItalic = in_array($child->nodeName, ['i', 'em']);
+                    $paragraphXml .= $this->buildRunXml($text, $isBold, $isItalic);
+                }
+            }
+        }
+
+        return <<<XML
 <w:p>
   <w:pPr>
     <w:ind w:left="1100"/>
@@ -1008,11 +1146,11 @@ private function convertParagraph($node)
 </w:p>
 
 XML;
-}
-private function convertTableAdvanced($tableNode)
-{
-    $tblXml = '<w:tbl>';
-    $tblXml .= '
+    }
+    private function convertTableAdvanced($tableNode)
+    {
+        $tblXml = '<w:tbl>';
+        $tblXml .= '
         <w:tblPr>
             <w:tblW w:w="4000" w:type="pct"/> <!-- 整張表格縮小 -->
             <w:tblInd w:w="1100" w:type="dxa"/> <!-- 表格整體縮排 -->
@@ -1027,31 +1165,31 @@ private function convertTableAdvanced($tableNode)
         </w:tblPr>
     ';
 
-    $rowspanMap = [];
+        $rowspanMap = [];
 
-    foreach ($tableNode->getElementsByTagName('tr') as $rowIdx => $tr) {
-        $tblXml .= '<w:tr>';
-        $colIdx = 0;
+        foreach ($tableNode->getElementsByTagName('tr') as $rowIdx => $tr) {
+            $tblXml .= '<w:tr>';
+            $colIdx = 0;
 
-        foreach ($tr->childNodes as $td) {
-            if ($td->nodeName !== 'td' && $td->nodeName !== 'th') continue;
+            foreach ($tr->childNodes as $td) {
+                if ($td->nodeName !== 'td' && $td->nodeName !== 'th') continue;
 
-            while (isset($rowspanMap[$rowIdx][$colIdx])) {
-                $tblXml .= $rowspanMap[$rowIdx][$colIdx];
-                $colIdx++;
-            }
+                while (isset($rowspanMap[$rowIdx][$colIdx])) {
+                    $tblXml .= $rowspanMap[$rowIdx][$colIdx];
+                    $colIdx++;
+                }
 
-            $colspan = intval($td->getAttribute('colspan')) ?: 1;
-            $rowspan = intval($td->getAttribute('rowspan')) ?: 1;
+                $colspan = intval($td->getAttribute('colspan')) ?: 1;
+                $rowspan = intval($td->getAttribute('rowspan')) ?: 1;
 
-            $tcPr = '<w:tcPr><w:tcW w:w="1500" w:type="dxa"/>'; 
-            if ($colspan > 1) {
-                $tcPr .= '<w:gridSpan w:val="' . $colspan . '"/>';
-            }
-            if ($rowspan > 1) {
-                $tcPr .= '<w:vMerge w:val="restart"/>';
-                for ($i = 1; $i < $rowspan; $i++) {
-                    $rowspanMap[$rowIdx + $i][$colIdx] = '
+                $tcPr = '<w:tcPr><w:tcW w:w="1500" w:type="dxa"/>';
+                if ($colspan > 1) {
+                    $tcPr .= '<w:gridSpan w:val="' . $colspan . '"/>';
+                }
+                if ($rowspan > 1) {
+                    $tcPr .= '<w:vMerge w:val="restart"/>';
+                    for ($i = 1; $i < $rowspan; $i++) {
+                        $rowspanMap[$rowIdx + $i][$colIdx] = '
 <w:tc>
   <w:tcPr>
     <w:tcW w:w="1500" w:type="dxa"/>
@@ -1060,87 +1198,87 @@ private function convertTableAdvanced($tableNode)
   <w:p/>
 </w:tc>
 ';
+                    }
                 }
-            }
-            $tcPr .= '</w:tcPr>';
+                $tcPr .= '</w:tcPr>';
 
-            // 🔥 這邊改成新的表格內處理方式
-            $cellParagraphs = [];
+                // 🔥 這邊改成新的表格內處理方式
+                $cellParagraphs = [];
 
-            foreach ($td->childNodes as $child) {
-                if ($child->nodeName === 'p') {
-                    // <p> 直接變成新的段落
-                    $innerParagraph = '';
+                foreach ($td->childNodes as $child) {
+                    if ($child->nodeName === 'p') {
+                        // <p> 直接變成新的段落
+                        $innerParagraph = '';
 
-                    foreach ($child->childNodes as $innerChild) {
-                        if ($innerChild->nodeType === XML_TEXT_NODE || $innerChild->nodeName === '#text') {
-                            $text = trim($innerChild->textContent);
-                            if ($text !== '') {
-                                $innerParagraph .= $this->buildRunXml($text);
-                            }
-                        } else {
-                            $text = trim($innerChild->textContent);
-                            if ($text !== '') {
-                                $isBold = in_array($innerChild->nodeName, ['b', 'strong']);
-                                $isItalic = in_array($innerChild->nodeName, ['i', 'em']);
-                                $innerParagraph .= $this->buildRunXml($text, $isBold, $isItalic);
+                        foreach ($child->childNodes as $innerChild) {
+                            if ($innerChild->nodeType === XML_TEXT_NODE || $innerChild->nodeName === '#text') {
+                                $text = trim($innerChild->textContent);
+                                if ($text !== '') {
+                                    $innerParagraph .= $this->buildRunXml($text);
+                                }
+                            } else {
+                                $text = trim($innerChild->textContent);
+                                if ($text !== '') {
+                                    $isBold = in_array($innerChild->nodeName, ['b', 'strong']);
+                                    $isItalic = in_array($innerChild->nodeName, ['i', 'em']);
+                                    $innerParagraph .= $this->buildRunXml($text, $isBold, $isItalic);
+                                }
                             }
                         }
-                    }
 
-                    if ($innerParagraph !== '') {
-                        $cellParagraphs[] = '<w:p>' . $innerParagraph . '</w:p>';
-                    }
-                } elseif ($child->nodeName === 'br') {
-                    // <br> 小換行：在上一個段落插入 <w:br/>
-                    if (!empty($cellParagraphs)) {
-                        $last = array_pop($cellParagraphs);
-                        $last = str_replace('</w:p>', '<w:br/></w:p>', $last);
-                        $cellParagraphs[] = $last;
-                    }
-                } elseif ($child->nodeType === XML_TEXT_NODE || $child->nodeName === '#text') {
-                    // 純文字（沒有包 <p> 的文字）
-                    $text = trim($child->textContent);
-                    if ($text !== '') {
-                        $cellParagraphs[] = '<w:p>' . $this->buildRunXml($text) . '</w:p>';
-                    }
-                } else {
-                    // 其他標籤（像 <span>）內部有文字的
-                    $text = trim($child->textContent);
-                    if ($text !== '') {
-                        $isBold = in_array($child->nodeName, ['b', 'strong']);
-                        $isItalic = in_array($child->nodeName, ['i', 'em']);
-                        $cellParagraphs[] = '<w:p>' . $this->buildRunXml($text, $isBold, $isItalic) . '</w:p>';
+                        if ($innerParagraph !== '') {
+                            $cellParagraphs[] = '<w:p>' . $innerParagraph . '</w:p>';
+                        }
+                    } elseif ($child->nodeName === 'br') {
+                        // <br> 小換行：在上一個段落插入 <w:br/>
+                        if (!empty($cellParagraphs)) {
+                            $last = array_pop($cellParagraphs);
+                            $last = str_replace('</w:p>', '<w:br/></w:p>', $last);
+                            $cellParagraphs[] = $last;
+                        }
+                    } elseif ($child->nodeType === XML_TEXT_NODE || $child->nodeName === '#text') {
+                        // 純文字（沒有包 <p> 的文字）
+                        $text = trim($child->textContent);
+                        if ($text !== '') {
+                            $cellParagraphs[] = '<w:p>' . $this->buildRunXml($text) . '</w:p>';
+                        }
+                    } else {
+                        // 其他標籤（像 <span>）內部有文字的
+                        $text = trim($child->textContent);
+                        if ($text !== '') {
+                            $isBold = in_array($child->nodeName, ['b', 'strong']);
+                            $isItalic = in_array($child->nodeName, ['i', 'em']);
+                            $cellParagraphs[] = '<w:p>' . $this->buildRunXml($text, $isBold, $isItalic) . '</w:p>';
+                        }
                     }
                 }
-            }
 
-            $cellContentXml = implode('', $cellParagraphs);
+                $cellContentXml = implode('', $cellParagraphs);
 
-            $tblXml .= '
+                $tblXml .= '
 <w:tc>
   ' . $tcPr . '
   ' . $cellContentXml . '
 </w:tc>
 ';
 
-            $colIdx += $colspan;
+                $colIdx += $colspan;
+            }
+
+            $tblXml .= '</w:tr>';
         }
 
-        $tblXml .= '</w:tr>';
+        $tblXml .= '</w:tbl>';
+        return $tblXml;
     }
 
-    $tblXml .= '</w:tbl>';
-    return $tblXml;
-}
 
 
 
-
-private function convertTable($tableNode)
-{
-    $tblXml = '<w:tbl>';
-    $tblXml .= '
+    private function convertTable($tableNode)
+    {
+        $tblXml = '<w:tbl>';
+        $tblXml .= '
         <w:tblPr>
             <w:tblW w:w="5000" w:type="pct"/>
             <w:tblBorders>
@@ -1154,13 +1292,13 @@ private function convertTable($tableNode)
         </w:tblPr>
     ';
 
-    foreach ($tableNode->getElementsByTagName('tr') as $tr) {
-        $tblXml .= '<w:tr>';
-        foreach ($tr->childNodes as $td) {
-            if ($td->nodeName === 'td' || $td->nodeName === 'th') {
-                $text = trim($td->textContent);
+        foreach ($tableNode->getElementsByTagName('tr') as $tr) {
+            $tblXml .= '<w:tr>';
+            foreach ($tr->childNodes as $td) {
+                if ($td->nodeName === 'td' || $td->nodeName === 'th') {
+                    $text = trim($td->textContent);
 
-                $tblXml .= '
+                    $tblXml .= '
 <w:tc>
   <w:tcPr>
     <w:tcW w:w="2000" w:type="dxa"/>
@@ -1168,14 +1306,15 @@ private function convertTable($tableNode)
   <w:p><w:r><w:t xml:space="preserve">' . htmlspecialchars($text) . '</w:t></w:r></w:p>
 </w:tc>
 ';
+                }
             }
+            $tblXml .= '</w:tr>';
         }
-        $tblXml .= '</w:tr>';
+
+        $tblXml .= '</w:tbl>';
+        return $tblXml;
     }
 
-    $tblXml .= '</w:tbl>';
-    return $tblXml;
-}
 
 
 
@@ -1183,14 +1322,13 @@ private function convertTable($tableNode)
 
 
 
+    private function buildRunXml($text, $isBold = false, $isItalic = false)
+    {
+        $text = htmlspecialchars($text);
+        $bold = $isBold ? '<w:b/>' : '';
+        $italic = $isItalic ? '<w:i/>' : '';
 
-private function buildRunXml($text, $isBold = false, $isItalic = false)
-{
-    $text = htmlspecialchars($text);
-    $bold = $isBold ? '<w:b/>' : '';
-    $italic = $isItalic ? '<w:i/>' : '';
-
-    return <<<XML
+        return <<<XML
 <w:r>
   <w:rPr>
     <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="DFKai-SB"/>
@@ -1200,7 +1338,7 @@ private function buildRunXml($text, $isBold = false, $isItalic = false)
   <w:t xml:space="preserve">{$text}</w:t>
 </w:r>
 XML;
-}
+    }
 
 
 
