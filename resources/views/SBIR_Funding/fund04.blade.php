@@ -103,34 +103,25 @@
                                         <table class="table table-bordered" id="staffTable">
                                             <thead>
                                                 <tr>
-                                                    <th>編號</th>
-                                                    <th>姓名</th>
-                                                    <th>職稱</th>
-                                                    <th>平均月薪(A) (千元)</th>
-                                                    <th>人月數(B)</th>
-                                                    <th>人事費概算(A×B)</th>
+                                                    <th>項目</th>
+                                                    <th>單位</th>
+                                                    <th>預估需求數量</th>
+                                                    <th>預估單價(千元)</th>
+                                                    <th>全程費用概算(A×B)</th>
                                                     <th>操作</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
                                                 @foreach ($staffs as $key => $staff)
                                                     <tr>
-                                                        <td class="staff-number">{{ $key + 1 }}</td>
                                                         <td><input type="text" name="name[]" class="form-control"
                                                                 value="{{ $staff->staff_name }}"></td>
                                                         </td>
-                                                        <td>
-                                                            <select name="title[]" class="form-control">
-                                                                <option value="計畫主持人">計畫主持人</option>
-                                                                <option value="研究員級">研究員級</option>
-                                                                <option value="副研究員級">副研究員級</option>
-                                                                <option value="助理研究員級">助理研究員級</option>
-                                                                <option value="研究助理級">研究助理級</option>
-                                                            </select>
-                                                        </td>
-                                                        <td><input type="number" name="salary[]" class="form-control"></td>
-                                                        <td><input type="number" name="man_month[]" class="form-control">
-                                                        </td>
+                                                        <td><input type="text" name="unit[]" class="form-control"
+                                                            value="{{ $staff->staff_name }}"></td>
+                                                    </td>
+                                                        <td><input type="number" name="quantity[]" class="form-control"></td>
+                                                        <td><input type="number" name="price[]" class="form-control"></td>
                                                         <td class="budget">0</td>
                                                         <td><button type="button" class="btn btn-danger" onclick="removeStaffRow(this)">刪除</button></td>
                                                     </tr>

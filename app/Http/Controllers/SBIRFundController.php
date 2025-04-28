@@ -82,4 +82,5 @@ class SBIRFundController extends Controller
         $datas = SbirFund01::where('project_id', $id)->get();
         return view('SBIR_Funding.fund05')->with('project', $project)->with('staffs', $staffs)->with('datas', $datas);
     }
+    
 }

@@ -265,12 +265,9 @@
             tinymce.init({
                 selector: '#modalEditor',
                 height: 500,
-                menubar: true,
-                plugins: 'lists table image code link textcolor',
-                toolbar: 'undo redo | blocks | bold italic underline forecolor backcolor | alignleft aligncenter alignright | indent outdent | bullist numlist | image table link | code',
-                forced_root_block: false,
-                force_br_newlines: true,
-                force_p_newlines: false,
+                menubar: 'file edit view insert format tools table help',
+                plugins: 'lists table image code link  table',
+                toolbar: 'undo redo | blocks | bold italic underline forecolor backcolor | alignleft aligncenter alignright | indent outdent | bullist numlist | table image link | code',
                 images_upload_url: '/upload-image',
                 automatic_uploads: true,
                 file_picker_types: 'image',
@@ -279,12 +276,10 @@
                         const input = document.createElement('input');
                         input.setAttribute('type', 'file');
                         input.setAttribute('accept', 'image/*');
-
                         input.onchange = function() {
                             const file = this.files[0];
                             const formData = new FormData();
                             formData.append('file', file);
-
                             fetch('/upload-image', {
                                     method: 'POST',
                                     body: formData,
@@ -299,14 +294,16 @@
                                     cb(result.location);
                                 });
                         };
-
                         input.click();
                     }
                 },
                 setup: function(editor) {
                     editorInstance = editor;
-                }
+                },
+                table_toolbar: 'tableprops tabledelete | tableinsertrowbefore tableinsertrowafter tabledeleterow | tableinsertcolbefore tableinsertcolafter tabledeletecol',
             });
+            console.log(tinymce.majorVersion + '.' + tinymce.minorVersion);
+
 
             document.querySelectorAll('.open-editor').forEach(btn => {
                 btn.addEventListener('click', function() {

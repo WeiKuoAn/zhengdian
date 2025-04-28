@@ -188,8 +188,8 @@
                                                                         name="subsidy_1_1"></td>
                                                                 <td><input type="number" class="form-control"
                                                                         name="self_1_1"></td>
-                                                                <td class="text-center text-danger calc-sum"
-                                                                    data-category="1">0 @if(isset($data->total_1_1)) （{{ $data->total_1_1 }}） @endif</td>
+                                                                <td class="text-center text-danger "
+                                                                    data-category="1"><div class="calc-sum">0</div> @if(isset($data->total_1_1)) （{{ $data->total_1_1 }}） @endif</td>
                                                                 <td class="text-center calc-rate">0%</td>
                                                                 <td></td>
                                                             </tr>

@@ -873,117 +873,126 @@ class SBIRController extends Controller
 
     //匯出研發動機
     public function export($id)
-    {
-        $sbir05 = SBIR05::where('project_id', $id)->firstOrFail();
-        $sbir06 = SBIR06::where('project_id', $id)->firstOrFail();
-        $sbir07 = SBIR07::where('project_id', $id)->firstOrFail();
+{
+    $sbir05 = SBIR05::where('project_id', $id)->firstOrFail();
+    $sbir06 = SBIR06::where('project_id', $id)->firstOrFail();
+    $sbir07 = SBIR07::where('project_id', $id)->firstOrFail();
 
-        // 轉換 text1 ~ text3
-        $wordXml1 = $this->htmlToWordXml($sbir05->text1);
-        $wordXml2 = $this->htmlToWordXml($sbir05->text2);
-        $wordXml3 = $this->htmlToWordXml($sbir05->text3);
-        $wordXml4 = $this->htmlToWordXml($sbir06->text1);
-        $wordXml5 = $this->htmlToWordXml($sbir06->text2);
-        $wordXml6 = $this->htmlToWordXml($sbir06->text3);
-        $wordXml7 = $this->htmlToWordXml($sbir06->text4);
-        $wordXml8 = $this->htmlToWordXml($sbir06->text5);
-        $wordXml9 = $this->htmlToWordXml($sbir06->text6);
-        $wordXml10 = $this->htmlToWordXml($sbir07->text1);
-        $wordXml11 = $this->htmlToWordXml($sbir07->text2);
-        $wordXml12 = $this->htmlToWordXml($sbir07->text3);
-        $wordXml13 = $this->htmlToWordXml($sbir07->text4);
+    // 將 TinyMCE HTML 轉成 Word XML
+    $wordXml1 = $this->htmlToWordXml($sbir05->text1);
+    $wordXml2 = $this->htmlToWordXml($sbir05->text2);
+    $wordXml3 = $this->htmlToWordXml($sbir05->text3);
+    $wordXml4 = $this->htmlToWordXml($sbir06->text1);
+    $wordXml5 = $this->htmlToWordXml($sbir06->text2);
+    $wordXml6 = $this->htmlToWordXml($sbir06->text3);
+    $wordXml7 = $this->htmlToWordXml($sbir06->text4);
+    $wordXml8 = $this->htmlToWordXml($sbir06->text5);
+    $wordXml9 = $this->htmlToWordXml($sbir06->text6);
+    $wordXml10 = $this->htmlToWordXml($sbir07->text1);
+    $wordXml11 = $this->htmlToWordXml($sbir07->text2);
+    $wordXml12 = $this->htmlToWordXml($sbir07->text3);
+    $wordXml13 = $this->htmlToWordXml($sbir07->text4);
 
-        // 解壓 Word 模板
-        $templatePath = storage_path('app/templates/sbir05.docx');
-        $tempDir = storage_path('app/temp_word_' . time());
-        File::makeDirectory($tempDir);
+    // 解壓 Word模板
+    $templatePath = storage_path('app/templates/sbir05.docx');
+    $tempDir = storage_path('app/temp_word_' . time());
+    File::makeDirectory($tempDir);
 
-        $zip = new ZipArchive;
-        $zip->open($templatePath);
-        $zip->extractTo($tempDir);
-        $zip->close();
+    $zip = new ZipArchive;
+    $zip->open($templatePath);
+    $zip->extractTo($tempDir);
+    $zip->close();
 
-        // 替換 Word 內容
-        $docXmlPath = $tempDir . '/word/document.xml';
-        $documentXml = File::get($docXmlPath);
+    // 讀取 document.xml
+    $docXmlPath = $tempDir . '/word/document.xml';
+    $documentXml = File::get($docXmlPath);
 
-        $documentXml = str_replace('<w:t>##HTML_PLACEHOLDER_text1##</w:t>', $wordXml1, $documentXml);
-        $documentXml = str_replace('<w:t>##HTML_PLACEHOLDER_text2##</w:t>', $wordXml2, $documentXml);
-        $documentXml = str_replace('<w:t>##HTML_PLACEHOLDER_text3##</w:t>', $wordXml3, $documentXml);
-        $documentXml = str_replace('<w:t>##HTML_PLACEHOLDER_text4##</w:t>', $wordXml4, $documentXml);
-        $documentXml = str_replace('<w:t>##HTML_PLACEHOLDER_text5##</w:t>', $wordXml5, $documentXml);
-        $documentXml = str_replace('<w:t>##HTML_PLACEHOLDER_text6##</w:t>', $wordXml6, $documentXml);
-        $documentXml = str_replace('<w:t>##HTML_PLACEHOLDER_text7##</w:t>', $wordXml7, $documentXml);
-        $documentXml = str_replace('<w:t>##HTML_PLACEHOLDER_text8##</w:t>', $wordXml8, $documentXml);
-        $documentXml = str_replace('<w:t>##HTML_PLACEHOLDER_text9##</w:t>', $wordXml9, $documentXml);
-        $documentXml = str_replace('<w:t>##HTML_PLACEHOLDER_text10##</w:t>', $wordXml10, $documentXml);
-        $documentXml = str_replace('<w:t>##HTML_PLACEHOLDER_text11##</w:t>', $wordXml11, $documentXml);
-        $documentXml = str_replace('<w:t>##HTML_PLACEHOLDER_text12##</w:t>', $wordXml12, $documentXml);
-        $documentXml = str_replace('<w:t>##HTML_PLACEHOLDER_text13##</w:t>', $wordXml13, $documentXml);
-
-        File::put($docXmlPath, $documentXml);
-
-        // 壓回成 Word
-        $newDocxPath = storage_path('app/public/sbir05_export_' . now()->format('Ymd_His') . '.docx');
-        $zip = new ZipArchive;
-        $zip->open($newDocxPath, ZipArchive::CREATE);
-
-        $files = new RecursiveIteratorIterator(
-            new RecursiveDirectoryIterator($tempDir),
-            RecursiveIteratorIterator::LEAVES_ONLY
-        );
-
-        foreach ($files as $file) {
-            if (!$file->isDir()) {
-                $filePath = $file->getRealPath();
-                $relativePath = substr($filePath, strlen($tempDir) + 1);
-                $zip->addFile($filePath, $relativePath);
-            }
-        }
-
-        $zip->close();
-        File::deleteDirectory($tempDir);
-
-        return response()->download($newDocxPath)->deleteFileAfterSend(true);
+    // 批次替換
+    $search = [];
+    $replace = [];
+    foreach (range(1, 13) as $i) {
+        $search[] = '<w:t>##HTML_PLACEHOLDER_text' . $i . '##</w:t>';
+        $wordContentVar = 'wordXml' . $i;
+        $replace[] = $$wordContentVar;
     }
 
+    $documentXml = str_replace($search, $replace, $documentXml);
+
+    File::put($docXmlPath, $documentXml);
+
+    // 壓回成 Word
+    $newDocxPath = storage_path('app/public/sbir05_export_' . now()->format('Ymd_His') . '.docx');
+    $zip = new ZipArchive;
+    $zip->open($newDocxPath, ZipArchive::CREATE);
+
+    $files = new RecursiveIteratorIterator(
+        new RecursiveDirectoryIterator($tempDir),
+        RecursiveIteratorIterator::LEAVES_ONLY
+    );
+
+    foreach ($files as $file) {
+        if (!$file->isDir()) {
+            $filePath = $file->getRealPath();
+            $relativePath = substr($filePath, strlen($tempDir) + 1);
+            $zip->addFile($filePath, $relativePath);
+        }
+    }
+
+    $zip->close();
+    File::deleteDirectory($tempDir);
+
+    return response()->download($newDocxPath)->deleteFileAfterSend(true);
+}
 
 
 
-    private function htmlToWordXml($html)
-    {
-        $xml = '';
-        libxml_use_internal_errors(true);
-        $dom = new \DOMDocument();
-        $dom->loadHTML('<?xml encoding="utf-8" ?>' . $html);
-        libxml_clear_errors();
 
-        $body = $dom->getElementsByTagName('body')->item(0);
-        if (!$body) return '';
 
-        foreach ($body->childNodes as $node) {
-            if ($node->nodeName === 'p') {
-                $paragraphXml = '';
-                foreach ($node->childNodes as $child) {
-                    if ($child->nodeName === 'br') {
-                        $paragraphXml .= '<w:br/>';
-                    } elseif ($child->nodeType === XML_TEXT_NODE || $child->nodeName === '#text') {
-                        $text = trim($child->textContent);
-                        if ($text !== '') {
-                            $paragraphXml .= $this->buildRunXml($text);
-                        }
-                    } else {
-                        $text = trim($child->textContent);
-                        if ($text !== '') {
-                            $isBold = in_array($child->nodeName, ['b', 'strong']);
-                            $isItalic = in_array($child->nodeName, ['i', 'em']);
-                            $paragraphXml .= $this->buildRunXml($text, $isBold, $isItalic);
-                        }
-                    }
-                }
+private function htmlToWordXml($html)
+{
+    $xml = '';
+    libxml_use_internal_errors(true);
+    $dom = new \DOMDocument();
+    $dom->loadHTML('<?xml encoding="utf-8" ?>' . $html);
+    libxml_clear_errors();
 
-                // 段落本身（含縮排）
-                $xml .= <<<XML
+    $body = $dom->getElementsByTagName('body')->item(0);
+    if (!$body) return '';
+
+    foreach ($body->childNodes as $node) {
+        if ($node->nodeName === 'p') {
+            $xml .= $this->convertParagraph($node);
+        } elseif ($node->nodeName === 'table') {
+            $xml .= $this->convertTableAdvanced($node);
+        }
+    }
+
+    return trim($xml);
+}
+
+
+private function convertParagraph($node)
+{
+    $paragraphXml = '';
+    foreach ($node->childNodes as $child) {
+        if ($child->nodeName === 'br') {
+            $paragraphXml .= '<w:br/>';
+        } elseif ($child->nodeType === XML_TEXT_NODE || $child->nodeName === '#text') {
+            $text = trim($child->textContent);
+            if ($text !== '') {
+                $paragraphXml .= $this->buildRunXml($text);
+            }
+        } else {
+            $text = trim($child->textContent);
+            if ($text !== '') {
+                $isBold = in_array($child->nodeName, ['b', 'strong']);
+                $isItalic = in_array($child->nodeName, ['i', 'em']);
+                $paragraphXml .= $this->buildRunXml($text, $isBold, $isItalic);
+            }
+        }
+    }
+
+    return <<<XML
 <w:p>
   <w:pPr>
     <w:ind w:left="1100"/>
@@ -991,10 +1000,6 @@ class SBIRController extends Controller
   {$paragraphXml}
 </w:p>
 
-XML;
-
-                // 額外插入一個空白段落（空行）
-                $xml .= <<<XML
 <w:p>
   <w:pPr>
     <w:ind w:left="1100"/>
@@ -1003,25 +1008,189 @@ XML;
 </w:p>
 
 XML;
+}
+private function convertTableAdvanced($tableNode)
+{
+    $tblXml = '<w:tbl>';
+    $tblXml .= '
+        <w:tblPr>
+            <w:tblW w:w="4000" w:type="pct"/> <!-- 整張表格縮小 -->
+            <w:tblInd w:w="1100" w:type="dxa"/> <!-- 表格整體縮排 -->
+            <w:tblBorders>
+                <w:top w:val="single" w:sz="4" w:space="0" w:color="000000"/>
+                <w:left w:val="single" w:sz="4" w:space="0" w:color="000000"/>
+                <w:bottom w:val="single" w:sz="4" w:space="0" w:color="000000"/>
+                <w:right w:val="single" w:sz="4" w:space="0" w:color="000000"/>
+                <w:insideH w:val="single" w:sz="4" w:space="0" w:color="000000"/>
+                <w:insideV w:val="single" w:sz="4" w:space="0" w:color="000000"/>
+            </w:tblBorders>
+        </w:tblPr>
+    ';
+
+    $rowspanMap = [];
+
+    foreach ($tableNode->getElementsByTagName('tr') as $rowIdx => $tr) {
+        $tblXml .= '<w:tr>';
+        $colIdx = 0;
+
+        foreach ($tr->childNodes as $td) {
+            if ($td->nodeName !== 'td' && $td->nodeName !== 'th') continue;
+
+            while (isset($rowspanMap[$rowIdx][$colIdx])) {
+                $tblXml .= $rowspanMap[$rowIdx][$colIdx];
+                $colIdx++;
             }
+
+            $colspan = intval($td->getAttribute('colspan')) ?: 1;
+            $rowspan = intval($td->getAttribute('rowspan')) ?: 1;
+
+            $tcPr = '<w:tcPr><w:tcW w:w="1500" w:type="dxa"/>'; 
+            if ($colspan > 1) {
+                $tcPr .= '<w:gridSpan w:val="' . $colspan . '"/>';
+            }
+            if ($rowspan > 1) {
+                $tcPr .= '<w:vMerge w:val="restart"/>';
+                for ($i = 1; $i < $rowspan; $i++) {
+                    $rowspanMap[$rowIdx + $i][$colIdx] = '
+<w:tc>
+  <w:tcPr>
+    <w:tcW w:w="1500" w:type="dxa"/>
+    <w:vMerge/>
+  </w:tcPr>
+  <w:p/>
+</w:tc>
+';
+                }
+            }
+            $tcPr .= '</w:tcPr>';
+
+            // 🔥 這邊改成新的表格內處理方式
+            $cellParagraphs = [];
+
+            foreach ($td->childNodes as $child) {
+                if ($child->nodeName === 'p') {
+                    // <p> 直接變成新的段落
+                    $innerParagraph = '';
+
+                    foreach ($child->childNodes as $innerChild) {
+                        if ($innerChild->nodeType === XML_TEXT_NODE || $innerChild->nodeName === '#text') {
+                            $text = trim($innerChild->textContent);
+                            if ($text !== '') {
+                                $innerParagraph .= $this->buildRunXml($text);
+                            }
+                        } else {
+                            $text = trim($innerChild->textContent);
+                            if ($text !== '') {
+                                $isBold = in_array($innerChild->nodeName, ['b', 'strong']);
+                                $isItalic = in_array($innerChild->nodeName, ['i', 'em']);
+                                $innerParagraph .= $this->buildRunXml($text, $isBold, $isItalic);
+                            }
+                        }
+                    }
+
+                    if ($innerParagraph !== '') {
+                        $cellParagraphs[] = '<w:p>' . $innerParagraph . '</w:p>';
+                    }
+                } elseif ($child->nodeName === 'br') {
+                    // <br> 小換行：在上一個段落插入 <w:br/>
+                    if (!empty($cellParagraphs)) {
+                        $last = array_pop($cellParagraphs);
+                        $last = str_replace('</w:p>', '<w:br/></w:p>', $last);
+                        $cellParagraphs[] = $last;
+                    }
+                } elseif ($child->nodeType === XML_TEXT_NODE || $child->nodeName === '#text') {
+                    // 純文字（沒有包 <p> 的文字）
+                    $text = trim($child->textContent);
+                    if ($text !== '') {
+                        $cellParagraphs[] = '<w:p>' . $this->buildRunXml($text) . '</w:p>';
+                    }
+                } else {
+                    // 其他標籤（像 <span>）內部有文字的
+                    $text = trim($child->textContent);
+                    if ($text !== '') {
+                        $isBold = in_array($child->nodeName, ['b', 'strong']);
+                        $isItalic = in_array($child->nodeName, ['i', 'em']);
+                        $cellParagraphs[] = '<w:p>' . $this->buildRunXml($text, $isBold, $isItalic) . '</w:p>';
+                    }
+                }
+            }
+
+            $cellContentXml = implode('', $cellParagraphs);
+
+            $tblXml .= '
+<w:tc>
+  ' . $tcPr . '
+  ' . $cellContentXml . '
+</w:tc>
+';
+
+            $colIdx += $colspan;
         }
 
-        return trim($xml);
+        $tblXml .= '</w:tr>';
     }
 
+    $tblXml .= '</w:tbl>';
+    return $tblXml;
+}
+
+
+
+
+private function convertTable($tableNode)
+{
+    $tblXml = '<w:tbl>';
+    $tblXml .= '
+        <w:tblPr>
+            <w:tblW w:w="5000" w:type="pct"/>
+            <w:tblBorders>
+                <w:top w:val="single" w:sz="4" w:space="0" w:color="000000"/>
+                <w:left w:val="single" w:sz="4" w:space="0" w:color="000000"/>
+                <w:bottom w:val="single" w:sz="4" w:space="0" w:color="000000"/>
+                <w:right w:val="single" w:sz="4" w:space="0" w:color="000000"/>
+                <w:insideH w:val="single" w:sz="4" w:space="0" w:color="000000"/>
+                <w:insideV w:val="single" w:sz="4" w:space="0" w:color="000000"/>
+            </w:tblBorders>
+        </w:tblPr>
+    ';
+
+    foreach ($tableNode->getElementsByTagName('tr') as $tr) {
+        $tblXml .= '<w:tr>';
+        foreach ($tr->childNodes as $td) {
+            if ($td->nodeName === 'td' || $td->nodeName === 'th') {
+                $text = trim($td->textContent);
+
+                $tblXml .= '
+<w:tc>
+  <w:tcPr>
+    <w:tcW w:w="2000" w:type="dxa"/>
+  </w:tcPr>
+  <w:p><w:r><w:t xml:space="preserve">' . htmlspecialchars($text) . '</w:t></w:r></w:p>
+</w:tc>
+';
+            }
+        }
+        $tblXml .= '</w:tr>';
+    }
+
+    $tblXml .= '</w:tbl>';
+    return $tblXml;
+}
 
 
 
 
 
 
-    private function buildRunXml($text, $isBold = false, $isItalic = false)
-    {
-        $text = htmlspecialchars($text);
-        $bold = $isBold ? '<w:b/>' : '';
-        $italic = $isItalic ? '<w:i/>' : '';
 
-        return <<<XML
+
+private function buildRunXml($text, $isBold = false, $isItalic = false)
+{
+    $text = htmlspecialchars($text);
+    $bold = $isBold ? '<w:b/>' : '';
+    $italic = $isItalic ? '<w:i/>' : '';
+
+    return <<<XML
 <w:r>
   <w:rPr>
     <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="DFKai-SB"/>
@@ -1031,7 +1200,8 @@ XML;
   <w:t xml:space="preserve">{$text}</w:t>
 </w:r>
 XML;
-    }
+}
+
 
 
     private function escapeXml($text)
