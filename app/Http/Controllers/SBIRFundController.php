@@ -82,5 +82,69 @@ class SBIRFundController extends Controller
         $datas = SbirFund01::where('project_id', $id)->get();
         return view('SBIR_Funding.fund05')->with('project', $project)->with('staffs', $staffs)->with('datas', $datas);
     }
-    
+
+    function fund06($id)
+    {
+        $project = CustProject::where('id', $id)->first();
+        $staffs = SBIRStaff::where('project_id', $id)->get();
+        $datas = SbirFund01::where('project_id', $id)->get();
+        return view('SBIR_Funding.fund06')->with('project', $project)->with('staffs', $staffs)->with('datas', $datas);
+    }
+
+    function fund07($id)
+    {
+        $project = CustProject::where('id', $id)->first();
+        $staffs = SBIRStaff::where('project_id', $id)->get();
+        $datas = SbirFund01::where('project_id', $id)->get();
+        return view('SBIR_Funding.fund07')->with('project', $project)->with('staffs', $staffs)->with('datas', $datas);
+    }
+
+    function fund08($id)
+    {
+        $project = CustProject::where('id', $id)->first();
+        $staffs = SBIRStaff::where('project_id', $id)->get();
+        $datas = SbirFund01::where('project_id', $id)->get();
+        return view('SBIR_Funding.fund08')->with('project', $project)->with('staffs', $staffs)->with('datas', $datas);
+    }
+
+    function fund09($id)
+    {
+        $project = CustProject::where('id', $id)->first();
+        $staffs = SBIRStaff::where('project_id', $id)->get();
+        $datas = SbirFund01::where('project_id', $id)->get();
+        return view('SBIR_Funding.fund09')->with('project', $project)->with('staffs', $staffs)->with('datas', $datas);
+    }
+
+    function fund10($id)
+    {
+        $project = CustProject::where('id', $id)->first();
+        $staffs = SBIRStaff::where('project_id', $id)->get();
+        $datas = SbirFund01::where('project_id', $id)->get();
+        return view('SBIR_Funding.fund10')->with('project', $project)->with('staffs', $staffs)->with('datas', $datas);
+    }
+
+    function fund11($id)
+    {
+        $project = CustProject::where('id', $id)->first();
+        $staffs = SBIRStaff::where('project_id', $id)->get();
+        $datas = SbirFund01::where('project_id', $id)->get();
+        return view('SBIR_Funding.fund11')->with('project', $project)->with('staffs', $staffs)->with('datas', $datas);
+    }
+
+    function fund12($id)
+    {
+        $project = CustProject::where('id', $id)->first();
+        $staffs = SBIRStaff::where('project_id', $id)->get();
+        $datas = SbirFund01::where('project_id', $id)->get();
+        return view('SBIR_Funding.fund12')->with('project', $project)->with('staffs', $staffs)->with('datas', $datas);
+    }
+
+    function fund13($id)
+    {
+        $project = CustProject::where('id', $id)->first();
+        $staffs = SBIRStaff::where('project_id', $id)->get();
+        $datas = SbirFund01::where('project_id', $id)->get();
+        return view('SBIR_Funding.fund13')->with('project', $project)->with('staffs', $staffs)->with('datas', $datas);
+    }
+
 }

@@ -211,6 +211,22 @@ Route::get('project/sbir10/fund04/{id}', [SBIRFundController::class, 'fund04'])-
 Route::post('project/sbir10/fund04/{id}', [SBIRFundController::class, 'fund04_data'])->name('project.fund04.data');
 Route::get('project/sbir10/fund05/{id}', [SBIRFundController::class, 'fund05'])->name('project.fund05');
 Route::post('project/sbir10/fund05/{id}', [SBIRFundController::class, 'fund05_data'])->name('project.fund05.data');
+Route::get('project/sbir10/fund06/{id}', [SBIRFundController::class, 'fund06'])->name('project.fund06');
+Route::post('project/sbir10/fund06/{id}', [SBIRFundController::class, 'fund06_data'])->name('project.fund06.data');
+Route::get('project/sbir10/fund07/{id}', [SBIRFundController::class, 'fund07'])->name('project.fund07');
+Route::post('project/sbir10/fund07/{id}', [SBIRFundController::class, 'fund07_data'])->name('project.fund07.data');
+Route::get('project/sbir10/fund08/{id}', [SBIRFundController::class, 'fund08'])->name('project.fund08');
+Route::post('project/sbir10/fund08/{id}', [SBIRFundController::class, 'fund08_data'])->name('project.fund08.data');
+Route::get('project/sbir10/fund09/{id}', [SBIRFundController::class, 'fund09'])->name('project.fund09');
+Route::post('project/sbir10/fund09/{id}', [SBIRFundController::class, 'fund09_data'])->name('project.fund09.data');
+Route::get('project/sbir10/fund10/{id}', [SBIRFundController::class, 'fund10'])->name('project.fund10');
+Route::post('project/sbir10/fund10/{id}', [SBIRFundController::class, 'fund10_data'])->name('project.fund10.data');
+Route::get('project/sbir10/fund11/{id}', [SBIRFundController::class, 'fund11'])->name('project.fund11');
+Route::post('project/sbir10/fund11/{id}', [SBIRFundController::class, 'fund11_data'])->name('project.fund11.data');
+Route::get('project/sbir10/fund12/{id}', [SBIRFundController::class, 'fund12'])->name('project.fund12');
+Route::post('project/sbir10/fund12/{id}', [SBIRFundController::class, 'fund12_data'])->name('project.fund12.data');
+Route::get('project/sbir10/fund13/{id}', [SBIRFundController::class, 'fund13'])->name('project.fund13');
+Route::post('project/sbir10/fund13/{id}', [SBIRFundController::class, 'fund13_data'])->name('project.fund13.data');
 
 Route::get('project/sbir/{id}/export', [SBIRController::class, 'export'])->name('sbir.export');
 Route::get('project/sbir08/{id}/export', [SBIRController::class, 'sbir08_export'])->name('sbir08.export');

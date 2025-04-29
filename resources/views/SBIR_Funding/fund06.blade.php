@@ -92,7 +92,7 @@
         <!-- end row -->
 
         <div class="row">
-            <form action="{{ route('project.fund05.data', $project->id) }}" method="POST">
+            <form action="{{ route('project.fund06.data', $project->id) }}" method="POST">
                 @csrf
                 <div class="row">
                     <div class="col-lg-12">
@@ -105,43 +105,33 @@
                                                 <tr>
                                                     <th>設備名稱</th>
                                                     <th>財產編號</th>
-                                                    <th>單套購置金額</th>
-                                                    <th>購入日期(年/月)</th>
-                                                    <th>單套帳面價值 A (千元)</th>
+                                                    <th>單套購置金額 A</th>
                                                     <th>套數 B</th>
-                                                    <th>剩餘使用年限</th>
-                                                    <th>月使用費 (A×B/(剩餘使用年限×12))</th>
+                                                    <th>耐用年限</th>
+                                                    <th>月使用費 A×B/(耐用年數×12)</th>
                                                     <th>投入月數</th>
                                                     <th>使用費用概算</th>
                                                     <th>操作</th>
                                                 </tr>
                                             </thead>
-                                            <tbody>
-                                                @foreach ($datas as $key => $equipment)
-                                                <tr>
-                                                    <td><input type="text" name="equipment_name[]" class="form-control" value="{{ $equipment->equipment_name }}"></td>
-                                                    <td><input type="text" name="asset_number[]" class="form-control" value="{{ $equipment->asset_number }}"></td>
-                                                    <td><input type="number" name="purchase_amount[]" class="form-control" value="{{ $equipment->purchase_amount }}"></td>
-                                                    <td><input type="text" name="purchase_date[]" class="form-control" value="{{ $equipment->purchase_date }}"></td>
-                                                    <td><input type="number" name="book_value[]" class="form-control" value="{{ $equipment->book_value }}"></td>
-                                                    <td><input type="number" name="set_count[]" class="form-control" value="{{ $equipment->set_count }}"></td>
-                                                    <td><input type="number" name="remaining_years[]" class="form-control" value="{{ $equipment->remaining_years }}"></td>
-                                                    <td class="monthly_fee">0</td>
-                                                    <td><input type="number" name="investment_months[]" class="form-control" value="{{ $equipment->investment_months }}"></td>
-                                                    <td class="usage_estimate">0</td>
-                                                    <td><button type="button" class="btn btn-danger" onclick="removeEquipmentRow(this)">刪除</button></td>
-                                                </tr>
-                                                @endforeach
+                                            <tbody id="equipmentTableBody">
+                                                <!-- 動態列插入於此 -->
                                             </tbody>
+                                            <tfoot>
+                                                <tr>
+                                                    <td colspan="7" class="text-end text-danger">合計</td>
+                                                    <td id="totalUsageEstimate" class="text-danger">0</td>
+                                                    <td></td>
+                                                </tr>
+                                            </tfoot>
                                         </table>
-                                        
-                                        <div class="mb-3">
-                                            <button type="button" class="btn btn-primary" onclick="addEquipmentRow()">新增一列</button>
-                                        </div>
+                                        <button class="btn btn-secondary" type="button" onclick="addEquipmentRow()">新增一列</button>
+
                                         <!-- 按鈕 -->
                                         <div class="d-flex justify-content-start gap-2 mt-4">
                                             <button type="submit" class="btn btn-teal btn-success">送出存檔</button>
-                                            <a href="{{ route('project.sbir10',$project->id) }}"><button type="button" class="btn btn-primary">回上一頁</button></a>
+                                            <a href="{{ route('project.sbir10', $project->id) }}"><button type="button"
+                                                    class="btn btn-primary">回上一頁</button></a>
                                         </div>
                                     </div>
 
@@ -165,57 +155,58 @@
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
-        // 新增一列
-        function addEquipmentRow() {
-            const tableBody = document.querySelector('#equipmentTable tbody');
-            const newRow = document.createElement('tr');
-            newRow.innerHTML = `
-                <td><input type="text" name="equipment_name[]" class="form-control"></td>
-                <td><input type="text" name="asset_number[]" class="form-control"></td>
-                <td><input type="number" name="purchase_amount[]" class="form-control"></td>
-                <td><input type="text" name="purchase_date[]" class="form-control"></td>
-                <td><input type="number" name="book_value[]" class="form-control" oninput="calculateMonthlyFee(this)"></td>
-                <td><input type="number" name="set_count[]" class="form-control" oninput="calculateMonthlyFee(this)"></td>
-                <td><input type="number" name="remaining_years[]" class="form-control" oninput="calculateMonthlyFee(this)"></td>
-                <td class="monthly_fee">0</td>
-                <td><input type="number" name="investment_months[]" class="form-control" oninput="calculateUsageEstimate(this)"></td>
-                <td class="usage_estimate">0</td>
-                <td><button type="button" class="btn btn-danger" onclick="removeEquipmentRow(this)">刪除</button></td>
-            `;
-            tableBody.appendChild(newRow);
-        }
-        
-        // 刪除一列
-        function removeEquipmentRow(button) {
-            button.closest('tr').remove();
-        }
-        
-        // 計算月使用費
-        function calculateMonthlyFee(input) {
-            const row = input.closest('tr');
-            const bookValue = parseFloat(row.querySelector('input[name="book_value[]"]').value) || 0;
-            const setCount = parseFloat(row.querySelector('input[name="set_count[]"]').value) || 0;
-            const remainingYears = parseFloat(row.querySelector('input[name="remaining_years[]"]').value) || 0;
-        
-            let monthlyFee = 0;
-            if (remainingYears > 0) {
-                monthlyFee = (bookValue * setCount) / (remainingYears * 12);
+        function calculateRow(row) {
+            const price = parseFloat(row.querySelector('[name="price[]"]').value) || 0;
+            const count = parseFloat(row.querySelector('[name="count[]"]').value) || 0;
+            const years = parseFloat(row.querySelector('[name="life[]"]').value) || 0;
+            const months = parseFloat(row.querySelector('[name="investment_months[]"]').value) || 0;
+
+            let monthly = 0;
+            if (years > 0) {
+                monthly = (price * count) / (years * 12);
             }
-        
-            row.querySelector('.monthly_fee').textContent = monthlyFee.toFixed(3);
-        
-            // 重新計算使用費用概算
-            calculateUsageEstimate(row.querySelector('input[name="investment_months[]"]'));
+            const estimate = monthly * months;
+
+            row.querySelector('.monthlyFee').innerText = monthly.toFixed(2);
+            row.querySelector('.usageEstimate').innerText = estimate.toFixed(2);
+
+            return estimate;
         }
-        
-        // 計算使用費用概算
-        function calculateUsageEstimate(input) {
-            const row = input.closest('tr');
-            const monthlyFee = parseFloat(row.querySelector('.monthly_fee').textContent) || 0;
-            const investmentMonths = parseFloat(row.querySelector('input[name="investment_months[]"]').value) || 0;
-        
-            const usageEstimate = monthlyFee * investmentMonths;
-            row.querySelector('.usage_estimate').textContent = usageEstimate.toFixed(3);
+
+        function calculateTotal() {
+            let total = 0;
+            document.querySelectorAll('#equipmentTableBody tr').forEach(row => {
+                total += calculateRow(row);
+            });
+            document.getElementById('totalUsageEstimate').innerText = total.toFixed(2);
         }
-        </script>
+
+        function addEquipmentRow() {
+            const tbody = document.getElementById('equipmentTableBody');
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td><input type="text" name="name[]" class="form-control"></td>
+                <td><input type="text" name="code[]" class="form-control"></td>
+                <td><input type="number" name="price[]" class="form-control" step="0.01"></td>
+                <td><input type="number" name="count[]" class="form-control" step="0.01"></td>
+                <td><input type="number" name="life[]" class="form-control" step="0.01"></td>
+                <td class="monthlyFee">0.00</td>
+                <td><input type="number" name="investment_months[]" class="form-control" step="0.01"></td>
+                <td class="usageEstimate">0.00</td>
+                                <td>
+                    <button class="btn btn-sm btn-danger" onclick="removeRow(this)">刪除</button>
+                </td>
+            `;
+            tbody.appendChild(row);
+
+            row.querySelectorAll('input').forEach(input => {
+                input.addEventListener('input', () => calculateTotal());
+            });
+        }
+
+        function removeRow(btn) {
+            btn.closest('tr').remove();
+            calculateTotal();
+        }
+    </script>
 @endsection

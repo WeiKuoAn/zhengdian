@@ -276,7 +276,7 @@
                                                                 <td></td>
                                                             </tr>
                                                             <tr data-category="3">
-                                                                <td>(2) 計畫新增設備 <a href="{{ route('project.fund01',$project->id) }}" class="ms-2"><i
+                                                                <td>(2) 計畫新增設備 <a href="{{ route('project.fund06',$project->id) }}" class="ms-2"><i
                                                                             class="bi bi-pencil"></i></a></td>
                                                                 <td><input type="number" class="form-control"
                                                                         name="subsidy_3_2"></td>
@@ -304,7 +304,7 @@
                                                                 </td>
                                                             </tr>
                                                             <tr data-category="4">
-                                                                <td>(1) 研發設備維護費 <a href="{{ route('project.fund01',$project->id) }}" class="ms-2"><i
+                                                                <td>(1) 研發設備維護費 <a href="{{ route('project.fund07',$project->id) }}" class="ms-2"><i
                                                                             class="bi bi-pencil"></i></a></td>
                                                                 <td><input type="number" class="form-control"
                                                                         name="subsidy_4_1"></td>
@@ -332,7 +332,7 @@
                                                                 </td>
                                                             </tr>
                                                             <tr data-category="5">
-                                                                <td>(1) 技術或智慧財產權購買費 <a href="{{ route('project.fund01',$project->id) }}" class="ms-2"><i
+                                                                <td>(1) 技術或智慧財產權購買費 <a href="{{ route('project.fund08',$project->id) }}" class="ms-2"><i
                                                                             class="bi bi-pencil"></i></a><br><span
                                                                         class="text-danger small">(自籌款+補助款)需等於合計，自籌款不得小於補助款，且金額不得為0。</span>
                                                                 </td>
@@ -346,7 +346,7 @@
                                                                 <td></td>
                                                             </tr>
                                                             <tr data-category="5">
-                                                                <td>(2) 委託研究費 <a href="{{ route('project.fund01',$project->id) }}" class="ms-2"><i
+                                                                <td>(2) 委託研究費 <a href="{{ route('project.fund09',$project->id) }}" class="ms-2"><i
                                                                             class="bi bi-pencil"></i></a></td>
                                                                 <td><input type="number" class="form-control"
                                                                         name="subsidy_5_2" value="0"></td>
@@ -358,7 +358,7 @@
                                                                 <td></td>
                                                             </tr>
                                                             <tr data-category="5">
-                                                                <td>(3) 委託勞務費 <a href="{{ route('project.fund01',$project->id) }}" class="ms-2"><i
+                                                                <td>(3) 委託勞務費 <a href="{{ route('project.fund10',$project->id) }}" class="ms-2"><i
                                                                             class="bi bi-pencil"></i></a></td>
                                                                 <td><input type="number" class="form-control"
                                                                         name="subsidy_5_3" value="0"></td>
@@ -370,7 +370,7 @@
                                                                 <td></td>
                                                             </tr>
                                                             <tr data-category="5">
-                                                                <td>(4) 委託設計費 <a href="{{ route('project.fund01',$project->id) }}" class="ms-2"><i
+                                                                <td>(4) 委託設計費 <a href="{{ route('project.fund11',$project->id) }}" class="ms-2"><i
                                                                             class="bi bi-pencil"></i></a></td>
                                                                 <td><input type="number" class="form-control"
                                                                         name="subsidy_5_4" value="0"></td>
@@ -382,7 +382,7 @@
                                                                 <td></td>
                                                             </tr>
                                                             <tr data-category="5">
-                                                                <td>(5) 委託諮詢費 <a href="{{ route('project.fund01',$project->id) }}" class="ms-2"><i
+                                                                <td>(5) 委託諮詢費 <a href="{{ route('project.fund12',$project->id) }}" class="ms-2"><i
                                                                             class="bi bi-pencil"></i></a><br><span
                                                                         class="small">以占計畫總經費之5%為上限，且以首次申請SBIR計畫，每家企業以申請1次為限</span>
                                                                 </td>
@@ -412,7 +412,7 @@
                                                                 </td>
                                                             </tr>
                                                             <tr data-category="6">
-                                                                <td>(1) 國內差旅費 <a href="{{ route('project.fund01',$project->id) }}" class="ms-2"><i
+                                                                <td>(1) 國內差旅費 <a href="{{ route('project.fund13',$project->id) }}" class="ms-2"><i
                                                                             class="bi bi-pencil"></i></a></td>
                                                                 <td><input type="number" class="form-control"
                                                                         name="subsidy_6_1" value="0"></td>

@@ -97,10 +97,14 @@
                                     <label class="form-label">NAS連結<span class="text-danger">*</span></label>
                                     <input type="text" class="form-control" name="nas_link" value="{{ $data->cust_data->nas_link }}" required>
                                 </div>
-                                {{-- <div class="mb-3">
+                                <div class="mb-3">
+                                    <label class="form-label">計畫登入帳號<span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" name="account" value="">
+                                </div>
+                                <div class="mb-3">
                                     <label class="form-label">計畫登入密碼<span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control" name="password" value="" required>
-                                </div> --}}
+                                    <input type="text" class="form-control" name="password" value="">
+                                </div>
                                 <div class="mb-3">
                                     <label class="form-label">專案執行階段：<span class="text-danger">*</span></label>
                                     <select class="form-control" data-toggle="select2" data-width="100%"

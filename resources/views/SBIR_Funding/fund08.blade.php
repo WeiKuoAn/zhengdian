@@ -100,48 +100,34 @@
                             <div class="col-12 mb-4">
                                 <div class="card">
                                     <div class="card-body">
-                                        <table class="table table-bordered" id="equipmentTable">
+                                        <table class="table table-bordered" id="cooperationTable">
                                             <thead>
                                                 <tr>
-                                                    <th>設備名稱</th>
-                                                    <th>財產編號</th>
-                                                    <th>單套購置金額</th>
-                                                    <th>購入日期(年/月)</th>
-                                                    <th>單套帳面價值 A (千元)</th>
-                                                    <th>套數 B</th>
-                                                    <th>剩餘使用年限</th>
-                                                    <th>月使用費 (A×B/(剩餘使用年限×12))</th>
-                                                    <th>投入月數</th>
-                                                    <th>使用費用概算</th>
-                                                    <th>操作</th>
+                                                    <th>合作單位統編</th>
+                                                    <th>合作單位</th>
+                                                    <th>內容</th>
+                                                    <th>合作金額</th>
+                                                    <th>管理</th>
                                                 </tr>
                                             </thead>
-                                            <tbody>
-                                                @foreach ($datas as $key => $equipment)
-                                                <tr>
-                                                    <td><input type="text" name="equipment_name[]" class="form-control" value="{{ $equipment->equipment_name }}"></td>
-                                                    <td><input type="text" name="asset_number[]" class="form-control" value="{{ $equipment->asset_number }}"></td>
-                                                    <td><input type="number" name="purchase_amount[]" class="form-control" value="{{ $equipment->purchase_amount }}"></td>
-                                                    <td><input type="text" name="purchase_date[]" class="form-control" value="{{ $equipment->purchase_date }}"></td>
-                                                    <td><input type="number" name="book_value[]" class="form-control" value="{{ $equipment->book_value }}"></td>
-                                                    <td><input type="number" name="set_count[]" class="form-control" value="{{ $equipment->set_count }}"></td>
-                                                    <td><input type="number" name="remaining_years[]" class="form-control" value="{{ $equipment->remaining_years }}"></td>
-                                                    <td class="monthly_fee">0</td>
-                                                    <td><input type="number" name="investment_months[]" class="form-control" value="{{ $equipment->investment_months }}"></td>
-                                                    <td class="usage_estimate">0</td>
-                                                    <td><button type="button" class="btn btn-danger" onclick="removeEquipmentRow(this)">刪除</button></td>
-                                                </tr>
-                                                @endforeach
+                                            <tbody id="cooperationTableBody">
+                                                <!-- 動態新增列 -->
                                             </tbody>
+                                            <tfoot>
+                                                <tr>
+                                                    <td colspan="3" class="text-end text-danger">合計</td>
+                                                    <td id="cooperationTotal" class="text-danger">0</td>
+                                                    <td></td>
+                                                </tr>
+                                            </tfoot>
                                         </table>
+                                        <button class="btn btn-secondary"  type="button" onclick="addCooperationRow()">新增一列</button>
                                         
-                                        <div class="mb-3">
-                                            <button type="button" class="btn btn-primary" onclick="addEquipmentRow()">新增一列</button>
-                                        </div>
                                         <!-- 按鈕 -->
                                         <div class="d-flex justify-content-start gap-2 mt-4">
                                             <button type="submit" class="btn btn-teal btn-success">送出存檔</button>
-                                            <a href="{{ route('project.sbir10',$project->id) }}"><button type="button" class="btn btn-primary">回上一頁</button></a>
+                                            <a href="{{ route('project.sbir10', $project->id) }}"><button type="button"
+                                                    class="btn btn-primary">回上一頁</button></a>
                                         </div>
                                     </div>
 
@@ -165,57 +151,31 @@
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
-        // 新增一列
-        function addEquipmentRow() {
-            const tableBody = document.querySelector('#equipmentTable tbody');
-            const newRow = document.createElement('tr');
-            newRow.innerHTML = `
-                <td><input type="text" name="equipment_name[]" class="form-control"></td>
-                <td><input type="text" name="asset_number[]" class="form-control"></td>
-                <td><input type="number" name="purchase_amount[]" class="form-control"></td>
-                <td><input type="text" name="purchase_date[]" class="form-control"></td>
-                <td><input type="number" name="book_value[]" class="form-control" oninput="calculateMonthlyFee(this)"></td>
-                <td><input type="number" name="set_count[]" class="form-control" oninput="calculateMonthlyFee(this)"></td>
-                <td><input type="number" name="remaining_years[]" class="form-control" oninput="calculateMonthlyFee(this)"></td>
-                <td class="monthly_fee">0</td>
-                <td><input type="number" name="investment_months[]" class="form-control" oninput="calculateUsageEstimate(this)"></td>
-                <td class="usage_estimate">0</td>
-                <td><button type="button" class="btn btn-danger" onclick="removeEquipmentRow(this)">刪除</button></td>
+        function addCooperationRow() {
+            const tbody = document.getElementById('cooperationTableBody');
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td><input type="text" name="tax_ids[]" class="form-control"></td>
+                <td><input type="text" name="units[]" class="form-control"></td>
+                <td><input type="text" name="content[]" class="form-control"></td>
+                <td><input type="number" name="amounts[]" class="form-control" step="0.01" onchange="updateCooperationTotal()"></td>
+                <td><button type="button" class="btn btn-danger btn-sm" onclick="removeCooperationRow(this)">刪除</button></td>
             `;
-            tableBody.appendChild(newRow);
+            tbody.appendChild(row);
+            updateCooperationTotal();
         }
         
-        // 刪除一列
-        function removeEquipmentRow(button) {
-            button.closest('tr').remove();
+        function removeCooperationRow(btn) {
+            btn.closest('tr').remove();
+            updateCooperationTotal();
         }
         
-        // 計算月使用費
-        function calculateMonthlyFee(input) {
-            const row = input.closest('tr');
-            const bookValue = parseFloat(row.querySelector('input[name="book_value[]"]').value) || 0;
-            const setCount = parseFloat(row.querySelector('input[name="set_count[]"]').value) || 0;
-            const remainingYears = parseFloat(row.querySelector('input[name="remaining_years[]"]').value) || 0;
-        
-            let monthlyFee = 0;
-            if (remainingYears > 0) {
-                monthlyFee = (bookValue * setCount) / (remainingYears * 12);
-            }
-        
-            row.querySelector('.monthly_fee').textContent = monthlyFee.toFixed(3);
-        
-            // 重新計算使用費用概算
-            calculateUsageEstimate(row.querySelector('input[name="investment_months[]"]'));
-        }
-        
-        // 計算使用費用概算
-        function calculateUsageEstimate(input) {
-            const row = input.closest('tr');
-            const monthlyFee = parseFloat(row.querySelector('.monthly_fee').textContent) || 0;
-            const investmentMonths = parseFloat(row.querySelector('input[name="investment_months[]"]').value) || 0;
-        
-            const usageEstimate = monthlyFee * investmentMonths;
-            row.querySelector('.usage_estimate').textContent = usageEstimate.toFixed(3);
+        function updateCooperationTotal() {
+            let total = 0;
+            document.querySelectorAll('[name="amounts[]"]').forEach(input => {
+                total += parseFloat(input.value) || 0;
+            });
+            document.getElementById('cooperationTotal').textContent = total.toFixed(2);
         }
         </script>
 @endsection
