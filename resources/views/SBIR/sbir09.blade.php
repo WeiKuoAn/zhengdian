@@ -185,9 +185,7 @@
                                                                                 value="{{ $checkpoint->checkpoint_code }}">
                                                                         </td>
                                                                         <td>
-                                                                            <input type="month" name="checkpoint_dues[]"
-                                                                                class="form-control"
-                                                                                value="{{ $checkpoint->checkpoint_due }}">
+                                                                            <input type="text" name="checkpoint_dues[]" class="date form-control change_cal_date" value="{{ $checkpoint->checkpoint_due }}">
                                                                         </td>
                                                                         <td>
                                                                             <input type="text"
@@ -225,7 +223,7 @@
                                                                 <td>
                                                                     <input type="text" name="name"
                                                                         class="form-control"
-                                                                        @if (isset($project_host_data))  value="{{ $project_host_data->name }}" @endif>
+                                                                        @if (isset($project_host_data)) value="{{ $project_host_data->name }}" @endif>
                                                                 </td>
                                                                 <td>
                                                                     <select name="gender" class="form-control">
@@ -762,7 +760,12 @@
         </script>
     @endif
 
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+     <!-- jQuery 先引入 -->
+     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+     <!-- 再引入 jQuery UI -->
+     <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
+     <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
     <script>
         function addCheckpointRow() {
             const table = document.getElementById('checkpointsTable').querySelector('tbody');
@@ -770,7 +773,7 @@
 
             row.innerHTML = `
       <td><input type="text" name="checkpoint_codes[]" class="form-control" placeholder="如 A1, B1"></td>
-      <td><input type="month" name="checkpoint_dues[]" class="form-control"></td>
+      <td><input type="text" name="checkpoint_dues[]" class="date form-control change_cal_date"></td>
       <td><input type="text" name="checkpoint_contents[]" class="form-control"></td>
       <td><button class="btn btn-danger btn-sm" onclick="this.closest('tr').remove()">刪除</button></td>
     `;
@@ -897,5 +900,47 @@
         }
 
         document.addEventListener('DOMContentLoaded', updateWaitStaffNumbers);
+
+        $('input.date').datepicker({
+            dateFormat: 'yy/mm/dd' // Set the date format
+        });
+
+        $('#start_date').change(function() {
+            var startDate = new Date($(this).val());
+            startDate.setFullYear(startDate.getFullYear() + 1);
+            startDate.setDate(startDate.getDate() - 1);
+
+            var endYear = startDate.getFullYear();
+            var endMonth = ("0" + (startDate.getMonth() + 1)).slice(-2); // JavaScript months are 0-indexed
+            var endDate = ("0" + startDate.getDate()).slice(-2);
+
+            var endDateString = `${endYear}-${endMonth}-${endDate}`;
+            let endDateStringformattedDate = convertToROC(endDateString);
+            $('#end_date').val(endDateStringformattedDate);
+        });
+
+        $(".change_cal_date").on("change keyup", function() {
+            let inputValue = $(this).val(); // Get the input date value
+            let formattedDate = convertToROC(inputValue); // Convert the date format
+            $(this).val(formattedDate); // Update the input field value
+        });
+
+        function convertToROC(dateString) {
+            dateString = dateString.replace(/[^0-9]/g, ''); // Remove non-numeric characters
+            if (dateString.length === 8) {
+                // Format is YYYYMMDD
+                let year = parseInt(dateString.substr(0, 4)) - 1911;
+                let month = dateString.substr(4, 2);
+                let day = dateString.substr(6, 2);
+                return `${year}/${month}/${day}`;
+            } else if (dateString.length === 7) {
+                // Format is YYYMMDD assuming it's already ROC year
+                let year = parseInt(dateString.substr(0, 3));
+                let month = dateString.substr(3, 2);
+                let day = dateString.substr(5, 2);
+                return `${year}/${month}/${day}`;
+            }
+            return dateString; // Return original string if it does not match expected lengths
+        }
     </script>
 @endsection

@@ -189,13 +189,13 @@
                                                     <div class="col-md-6">
                                                         <label class="form-label">核准設立日期<span
                                                                 class="text-danger">*</span></label>
-                                                        <input type="date" class="form-control" name="create_date"
+                                                        <input type="text" class="date form-control change_cal_date" name="create_date"
                                                             name="create_date"
                                                             @if (isset($cust_data->create_date)) value="{{ $cust_data->create_date }}" @endif>
                                                     </div>
                                                     <div class="col-md-6">
                                                         <label class="form-label">最後核准變更日期</label>
-                                                        <input type="date" class="form-control"
+                                                        <input type="text" class="date form-control change_cal_date"
                                                             @if (isset($cust_data->update_date)) value="{{ $cust_data->update_date }}" @endif
                                                             name="update_date">
                                                     </div>
@@ -227,7 +227,7 @@
                                                     <div class="col-md-6">
                                                         <label class="form-label">出生年月日<span
                                                                 class="text-danger">*</span></label>
-                                                        <input type="date" class="form-control" name="birthday"
+                                                        <input type="text" class="date form-control change_cal_date" name="birthday"
                                                             @if (isset($cust_data)) value="{{ $cust_data->birthday }}" @endif>
                                                     </div>
                                                     <div class="col-md-6">
@@ -690,5 +690,33 @@
                 })
                 .catch(error => console.error("❌ 無法載入 JSON:", error));
         });
+
+        $('input.date').datepicker({
+            dateFormat: 'yy/mm/dd' // Set the date format
+        });
+
+        $(".change_cal_date").on("change keyup", function() {
+            let inputValue = $(this).val(); // Get the input date value
+            let formattedDate = convertToROC(inputValue); // Convert the date format
+            $(this).val(formattedDate); // Update the input field value
+        });
+
+        function convertToROC(dateString) {
+            dateString = dateString.replace(/[^0-9]/g, ''); // Remove non-numeric characters
+            if (dateString.length === 8) {
+                // Format is YYYYMMDD
+                let year = parseInt(dateString.substr(0, 4)) - 1911;
+                let month = dateString.substr(4, 2);
+                let day = dateString.substr(6, 2);
+                return `${year}/${month}/${day}`;
+            } else if (dateString.length === 7) {
+                // Format is YYYMMDD assuming it's already ROC year
+                let year = parseInt(dateString.substr(0, 3));
+                let month = dateString.substr(3, 2);
+                let day = dateString.substr(5, 2);
+                return `${year}/${month}/${day}`;
+            }
+            return dateString; // Return original string if it does not match expected lengths
+        }
     </script>
 @endsection

@@ -69,15 +69,9 @@ class SBIRController extends Controller
             'domain'       => 'required|string',
             'feature'      => 'required|string',
             'target'       => 'required|string',
-            'start_year'   => 'required|numeric',
-            'start_month'  => 'required|numeric',
-            'end_year'     => 'required|numeric',
-            'end_month'    => 'required|numeric',
+            'start_date'   => 'required|string',
+            'end_date'  => 'required|string',
         ]);
-
-        // 將年月組合為日期
-        $start_date = $validated['start_year'] . '-' . $validated['start_month'];
-        $end_date = $validated['end_year'] . '-' . $validated['end_month'];
 
         // 查詢資料是否存在
         $data = SBIR01::where('project_id', $id)->first();
@@ -91,8 +85,8 @@ class SBIRController extends Controller
             'domain'     => $validated['domain'],
             'feature'    => $validated['feature'],
             'target'     => $validated['target'],
-            'start_date' => $start_date,
-            'end_date'   => $end_date,
+            'start_date' => $validated['start_date'],
+            'end_date'   => $validated['end_date'],
         ];
 
         if ($data) {
@@ -200,6 +194,7 @@ class SBIRController extends Controller
         $project_host->name = $request->host_name;
         $project_host->mobile = $request->host_mobile;
         $project_host->phone = $request->host_phone;
+        $project_host->fax = $request->host_fax;
         $project_host->email = $request->host_email;
         $project_host->save();
 
@@ -209,6 +204,7 @@ class SBIRController extends Controller
         $project_contact->name = $request->contact_name;
         $project_contact->mobile = $request->contact_mobile;
         $project_contact->phone = $request->contact_phone;
+        $project_contact->fax = $request->contact_fax;
         $project_contact->email = $request->contact_email;
         $project_contact->save();
 
@@ -218,6 +214,7 @@ class SBIRController extends Controller
         $project_accounting->name = $request->accounting_name;
         $project_accounting->mobile = $request->accounting_mobile;
         $project_accounting->phone = $request->accounting_phone;
+        $project_accounting->fax = $request->accounting_fax;
         $project_accounting->email = $request->accounting_email;
         $project_accounting->save();
 
@@ -951,14 +948,19 @@ class SBIRController extends Controller
             $templateProcessor->setValue("sbir_task#{$rowIndex}", str_replace("\n\n", '</w:t><w:br/><w:t>', $sbir_staff->task ?? ' '));
         }
 
+        function safeWordValue($value)
+        {
+            return (is_null($value) || $value === 0 || $value === '0' || $value === '') ? "'0'" : $value;
+        }
+
         $sbir09_person_count = Sbir09PersonCount::where('project_id', $project->id)->first();
-        $templateProcessor->setValue('count_phd', $sbir09_person_count->count_phd ?? ' ');
-        $templateProcessor->setValue('count_master', $sbir09_person_count->count_master ?? ' ');
-        $templateProcessor->setValue('count_bachelor', $sbir09_person_count->count_bachelor ?? ' ');
-        $templateProcessor->setValue('count_others', $sbir09_person_count->count_others ?? ' ');
-        $templateProcessor->setValue('count_male', $sbir09_person_count->count_male ?? ' ');
-        $templateProcessor->setValue('count_female', $sbir09_person_count->count_female ?? ' ');
-        $templateProcessor->setValue('count_pending', $sbir09_person_count->count_pending ?? ' ');
+        $templateProcessor->setValue('count_phd', safeWordValue($sbir09_person_count->count_phd));
+        $templateProcessor->setValue('count_master', safeWordValue($sbir09_person_count->count_master));
+        $templateProcessor->setValue('count_bachelor', safeWordValue($sbir09_person_count->count_bachelor));
+        $templateProcessor->setValue('count_others', safeWordValue($sbir09_person_count->count_others));
+        $templateProcessor->setValue('count_male', safeWordValue($sbir09_person_count->count_male));
+        $templateProcessor->setValue('count_female', safeWordValue($sbir09_person_count->count_female));
+        $templateProcessor->setValue('count_pending', safeWordValue($sbir09_person_count->count_pending));
 
 
 
@@ -972,98 +974,67 @@ class SBIRController extends Controller
         return response()->download($tempFilePath, $fileName)->deleteFileAfterSend(true);
     }
 
+
     //匯出研發動機
     public function export($id)
     {
-        ini_set('memory_limit', '1024M');
-        ini_set('max_execution_time', '300');
-
-        // 先撈資料
+        // 資料存在就抓，不存在就為 null
         $sbir05 = SBIR05::where('project_id', $id)->first();
         $sbir06 = SBIR06::where('project_id', $id)->first();
         $sbir07 = SBIR07::where('project_id', $id)->first();
 
-        if (!$sbir05 || !$sbir06 || !$sbir07) {
-            abort(404, '找不到資料');
-        }
+        // TinyMCE HTML 轉成 Word XML（如果不存在，填空字串）
+        $wordXml1 = $this->htmlToWordXml(optional($sbir05)->text1 ?? '');
+        $wordXml2 = $this->htmlToWordXml(optional($sbir05)->text2 ?? '');
+        $wordXml3 = $this->htmlToWordXml(optional($sbir05)->text3 ?? '');
+        $wordXml4 = $this->htmlToWordXml(optional($sbir06)->text1 ?? '');
+        $wordXml5 = $this->htmlToWordXml(optional($sbir06)->text2 ?? '');
+        $wordXml6 = $this->htmlToWordXml(optional($sbir06)->text3 ?? '');
+        $wordXml7 = $this->htmlToWordXml(optional($sbir06)->text4 ?? '');
+        $wordXml8 = $this->htmlToWordXml(optional($sbir06)->text5 ?? '');
+        $wordXml9 = $this->htmlToWordXml(optional($sbir06)->text6 ?? '');
+        $wordXml10 = $this->htmlToWordXml(optional($sbir07)->text1 ?? '');
+        $wordXml11 = $this->htmlToWordXml(optional($sbir07)->text2 ?? '');
+        $wordXml12 = $this->htmlToWordXml(optional($sbir07)->text3 ?? '');
+        $wordXml13 = $this->htmlToWordXml(optional($sbir07)->text4 ?? '');
 
-        // 轉成 Word XML
-        $wordXmls = [];
-        $texts = [
-            $sbir05->text1 ?? '',
-            $sbir05->text2 ?? '',
-            $sbir05->text3 ?? '',
-            $sbir06->text1 ?? '',
-            $sbir06->text2 ?? '',
-            $sbir06->text3 ?? '',
-            $sbir06->text4 ?? '',
-            $sbir06->text5 ?? '',
-            $sbir06->text6 ?? '',
-            $sbir07->text1 ?? '',
-            $sbir07->text2 ?? '',
-            $sbir07->text3 ?? '',
-            $sbir07->text4 ?? '',
-        ];
-        foreach ($texts as $text) {
-            $wordXmls[] = $this->htmlToWordXml($text);
-        }
-
-        // 解壓 Word 模板
+        // 解壓 Word模板
         $templatePath = storage_path('app/templates/sbir05.docx');
-        if (!File::exists($templatePath)) {
-            abort(500, 'Word範本檔案不存在');
-        }
-
         $tempDir = storage_path('app/temp_word_' . time());
-        File::makeDirectory($tempDir, 0755, true);
+        File::makeDirectory($tempDir);
 
         $zip = new ZipArchive;
-        if ($zip->open($templatePath) !== true) {
-            abort(500, '無法開啟 Word範本檔');
-        }
+        $zip->open($templatePath);
         $zip->extractTo($tempDir);
         $zip->close();
 
-        // 替換 document.xml
+        // 讀取 document.xml
         $docXmlPath = $tempDir . '/word/document.xml';
-        if (!File::exists($docXmlPath)) {
-            abort(500, '範本中缺少 document.xml');
-        }
         $documentXml = File::get($docXmlPath);
 
+        // 批次替換
         $search = [];
         $replace = [];
         foreach (range(1, 13) as $i) {
             $search[] = '<w:t>##HTML_PLACEHOLDER_text' . $i . '##</w:t>';
-            $wordContent = $wordXmls[$i - 1] ?? '';
-
-            // 如果內容是空的，插入一個空白段落
-            if (trim($wordContent) === '') {
-                $wordContent = '<w:p><w:r><w:t xml:space="preserve"></w:t></w:r></w:p>';
-            }
-
-            $replace[] = $wordContent;
+            $wordContentVar = 'wordXml' . $i;
+            $replace[] = $$wordContentVar;
         }
+
         $documentXml = str_replace($search, $replace, $documentXml);
+
         File::put($docXmlPath, $documentXml);
 
-        // 壓回成新的 Word
-        $exportFilename = 'sbir05_export_' . now()->format('Ymd_His') . '.docx';
-        $exportPath = storage_path('app/public/' . $exportFilename);
-
-        if (!File::exists(dirname($exportPath))) {
-            File::makeDirectory(dirname($exportPath), 0755, true);
-        }
-
+        // 壓回成 Word
+        $newDocxPath = storage_path('app/public/sbir05_export_' . now()->format('Ymd_His') . '.docx');
         $zip = new ZipArchive;
-        if ($zip->open($exportPath, ZipArchive::CREATE) !== true) {
-            abort(500, '無法建立 Word 檔案');
-        }
+        $zip->open($newDocxPath, ZipArchive::CREATE);
 
         $files = new RecursiveIteratorIterator(
             new RecursiveDirectoryIterator($tempDir),
             RecursiveIteratorIterator::LEAVES_ONLY
         );
+
         foreach ($files as $file) {
             if (!$file->isDir()) {
                 $filePath = $file->getRealPath();
@@ -1071,16 +1042,12 @@ class SBIRController extends Controller
                 $zip->addFile($filePath, $relativePath);
             }
         }
+
         $zip->close();
         File::deleteDirectory($tempDir);
 
-        if (!File::exists($exportPath)) {
-            abort(500, '生成 Word 檔案失敗');
-        }
-
-        return response()->download($exportPath)->deleteFileAfterSend(true);
+        return response()->download($newDocxPath)->deleteFileAfterSend(true);
     }
-
 
 
 

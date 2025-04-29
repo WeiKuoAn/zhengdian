@@ -244,25 +244,8 @@
                                                             class="text-muted">開始月份之1日</small></b><span
                                                         class="text-danger">*</span></label>
                                                 <div class="row g-2">
-                                                    <div class="col-md-6">
-                                                        <select class="form-select" name="start_year" required>
-                                                            <option selected disabled>請選擇年</option>
-                                                            @foreach ($years as $year)
-                                                                <option value="{{ $year }}"
-                                                                    {{ old('start_year', isset($data) ? \Carbon\Carbon::parse($data->start_date)->year : '') == $year ? 'selected' : '' }}>
-                                                                    {{ $year }}</option>
-                                                            @endforeach
-                                                        </select>
-                                                    </div>
-                                                    <div class="col-md-6">
-                                                        <select class="form-select" name="start_month" required>
-                                                            <option selected disabled>請選擇月</option>
-                                                            @foreach ($months as $month)
-                                                                <option value="{{ $month }}"
-                                                                    {{ old('start_month', isset($data) ? \Carbon\Carbon::parse($data->start_date)->month : '') == $month ? 'selected' : '' }}>
-                                                                    {{ $month }}月</option>
-                                                            @endforeach
-                                                        </select>
+                                                    <div class="col-md-12">
+                                                        <input type="text" name="start_date" class="date form-control change_cal_date" value="{{ $data->start_date }}">
                                                     </div>
                                                 </div>
                                             </div>
@@ -273,25 +256,8 @@
                                                             class="text-muted">結束月份之最後一天</small></b><span
                                                         class="text-danger">*</span></label>
                                                 <div class="row g-2">
-                                                    <div class="col-md-6">
-                                                        <select class="form-select" name="end_year" required>
-                                                            <option selected disabled>請選擇年</option>
-                                                            @foreach ($years as $year)
-                                                                <option value="{{ $year }}"
-                                                                    {{ old('end_year', isset($data) ? \Carbon\Carbon::parse($data->end_date)->year : '') == $year ? 'selected' : '' }}>
-                                                                    {{ $year }}</option>
-                                                            @endforeach
-                                                        </select>
-                                                    </div>
-                                                    <div class="col-md-6">
-                                                        <select class="form-select" name="end_month" required>
-                                                            <option selected disabled>請選擇月</option>
-                                                            @foreach ($months as $month)
-                                                                <option value="{{ $month }}"
-                                                                    {{ old('end_month', isset($data) ? \Carbon\Carbon::parse($data->end_date)->month : '') == $month ? 'selected' : '' }}>
-                                                                    {{ $month }}月</option>
-                                                            @endforeach
-                                                        </select>
+                                                    <div class="col-md-12">
+                                                        <input type="text" name="end_date" class="date form-control change_cal_date" value="{{ $data->end_date }}">
                                                     </div>
                                                 </div>
                                             </div>
@@ -328,7 +294,13 @@
         </script>
     @endif
 
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+     <!-- jQuery 先引入 -->
+     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+     <!-- 再引入 jQuery UI -->
+     <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
+     <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
+
     <script>
         const attributeSelect = document.getElementById('attribute');
         const stageSelect = document.getElementById('stage');
@@ -413,6 +385,34 @@
             attributeSelect.value = oldAttribute;
             initStageOptions(oldAttribute, oldStage);
             initDomainOptions(oldStage, oldAttribute, oldDomain);
+        }
+
+        $('input.date').datepicker({
+            dateFormat: 'yy/mm/dd' // Set the date format
+        });
+
+        $(".change_cal_date").on("change keyup", function() {
+            let inputValue = $(this).val(); // Get the input date value
+            let formattedDate = convertToROC(inputValue); // Convert the date format
+            $(this).val(formattedDate); // Update the input field value
+        });
+
+        function convertToROC(dateString) {
+            dateString = dateString.replace(/[^0-9]/g, ''); // Remove non-numeric characters
+            if (dateString.length === 8) {
+                // Format is YYYYMMDD
+                let year = parseInt(dateString.substr(0, 4)) - 1911;
+                let month = dateString.substr(4, 2);
+                let day = dateString.substr(6, 2);
+                return `${year}/${month}/${day}`;
+            } else if (dateString.length === 7) {
+                // Format is YYYMMDD assuming it's already ROC year
+                let year = parseInt(dateString.substr(0, 3));
+                let month = dateString.substr(3, 2);
+                let day = dateString.substr(5, 2);
+                return `${year}/${month}/${day}`;
+            }
+            return dateString; // Return original string if it does not match expected lengths
         }
     </script>
 @endsection
