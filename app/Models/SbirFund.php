@@ -68,5 +68,38 @@ class SbirFund extends Model
         'total_subsidy',
         'total_self',
         'total_all',
+
+        'percentage_1',
+        'percentage_2',
+        'percentage_3',
+        'percentage_4',
+        'percentage_5',
+        'percentage_6',
+        'percentage_7',
+        'percentage_8',
+        'percentage_9',
+        'percentage_10',
+        'percentage_11',
+        'percentage_12',
+        'percentage_13',
+
+
+        'subtotal_1_1',
+        'subtotal_1_2',
+        'subtotal_1_3',
+        'subtotal_2_1',
+        'subtotal_3_1',
+        'subtotal_3_2',
+        'subtotal_3_3',
+        'subtotal_4_1',
+        'subtotal_4_2',
+        'subtotal_4_3',
+        'subtotal_5_1',
+        'subtotal_5_2',
+        'subtotal_5_3',
+        'subtotal_6_1',
+        'subtotal_6_2',
+        'subtotal_6_3',
+
     ];
 }

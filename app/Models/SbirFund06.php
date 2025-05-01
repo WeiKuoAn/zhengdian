@@ -13,6 +13,7 @@ class SbirFund06 extends Model
 
     protected $fillable = [
         'project_id',
+        'user_id',
         'name',
         'code',
         'price',
@@ -21,5 +22,7 @@ class SbirFund06 extends Model
         'monthly',
         'investment_months',
         'total',
+        'usage_estimate',
+        'monthly_fee',
     ];
 }

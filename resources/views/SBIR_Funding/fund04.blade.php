@@ -92,7 +92,7 @@
         <!-- end row -->
 
         <div class="row">
-            <form action="{{ route('project.fund01.data', $project->id) }}" method="POST">
+            <form action="{{ route('project.fund04.data', $project->id) }}" method="POST">
                 @csrf
                 <div class="row">
                     <div class="col-lg-12">
@@ -111,27 +111,40 @@
                                                     <th>操作</th>
                                                 </tr>
                                             </thead>
-                                            <tbody>
-                                                @foreach ($staffs as $key => $staff)
+                                            <tbody id="staffTableBody">
+                                                {{-- @foreach ($staffs as $key => $staff)
                                                     <tr>
                                                         <td><input type="text" name="name[]" class="form-control"
                                                                 value="{{ $staff->staff_name }}"></td>
-                                                        </td>
                                                         <td><input type="text" name="unit[]" class="form-control"
-                                                            value="{{ $staff->staff_name }}"></td>
-                                                    </td>
-                                                        <td><input type="number" name="quantity[]" class="form-control"></td>
-                                                        <td><input type="number" name="price[]" class="form-control"></td>
+                                                                value="{{ $staff->staff_name }}"></td>
+                                                        <td><input type="number" name="quantity[]" class="form-control"
+                                                                step="0.01"></td>
+                                                        <td><input type="number" name="price[]" class="form-control"
+                                                                step="0.01"></td>
                                                         <td class="budget">0</td>
-                                                        <td><button type="button" class="btn btn-danger" onclick="removeStaffRow(this)">刪除</button></td>
+                                                        <td><button type="button" class="btn btn-danger"
+                                                                onclick="removeStaffRow(this)">刪除</button></td>
                                                     </tr>
-                                                @endforeach
+                                                @endforeach --}}
                                             </tbody>
+                                            <tfoot>
+                                                <tr>
+                                                    <td colspan="4" class="text-end text-danger">總計</td>
+                                                    <td id="totalBudget" class="text-danger">0</td>
+                                                    <td></td>
+                                                </tr>
+                                            </tfoot>
                                         </table>
+                                        <div class="mb-3">
+                                            <button type="button" class="btn btn-secondary"
+                                                onclick="addStaffRow()">新增一列</button>
+                                        </div>
                                         <!-- 按鈕 -->
                                         <div class="d-flex justify-content-start gap-2">
                                             <button type="submit" class="btn btn-teal btn-success">送出存檔</button>
-                                            <button type="button" class="btn btn-primary">回上一頁</button>
+                                            <a href="{{ route('project.sbir10', $project->id) }}"><button type="button"
+                                                class="btn btn-primary">回上一頁</button></a>
                                         </div>
                                     </div>
 
@@ -155,53 +168,57 @@
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
-        function updateStaffNumbers() {
-            document.querySelectorAll('#staffTable .staff-number').forEach((cell, index) => {
-                cell.textContent = index + 1;
-            });
-        }
-
-        function updateBudget() {
-            document.querySelectorAll('#staffTable tbody tr').forEach(row => {
-                const salary = parseFloat(row.querySelector('[name="salary[]"]').value) || 0;
-                const month = parseFloat(row.querySelector('[name="man_month[]"]').value) || 0;
-                row.querySelector('.budget').textContent = salary * month;
-            });
-        }
-
-        function addStaffRow() {
-            const tbody = document.querySelector('#staffTable tbody');
+        function addStaffRow(name = '', unit = '', quantity = '', price = '') {
+            const tbody = document.getElementById('staffTableBody');
             const row = document.createElement('tr');
             row.innerHTML = `
-            <td class="staff-number"></td>
-            <td><input type="text" name="staff_name[]" class="form-control"></td>
-            <td>
-              <select name="staff_title[]" class="form-control">
-                <option value="計畫主持人">計畫主持人</option>
-                <option value="計畫聯絡人">計畫聯絡人</option>
-                <option value="計畫參與人員">計畫參與人員</option>
-              </select>
-            </td>
-            <td><input type="number" name="salary[]" class="form-control" onchange="updateBudget()"></td>
-            <td><input type="number" name="man_month[]" class="form-control" onchange="updateBudget()"></td>
+            <td><input type="text" name="name[]" class="form-control" value="${name}"></td>
+            <td><input type="text" name="unit[]" class="form-control" value="${unit}"></td>
+            <td><input type="number" name="quantity[]" class="form-control" value="${quantity}" step="1"></td>
+            <td><input type="number" name="price[]" class="form-control" value="${price}" step="1"></td>
             <td class="budget">0</td>
             <td><button type="button" class="btn btn-danger" onclick="removeStaffRow(this)">刪除</button></td>
           `;
             tbody.appendChild(row);
-            updateStaffNumbers();
+            attachBudgetCalc(row);
+            calculateTotalBudget();
         }
 
-        function removeStaffRow(button) {
-            button.closest('tr').remove();
-            updateStaffNumbers();
-            updateBudget();
+        function removeStaffRow(btn) {
+            const row = btn.closest('tr');
+            row.remove();
+            calculateTotalBudget();
+        }
+
+        function attachBudgetCalc(row) {
+            const quantityInput = row.querySelector('[name="quantity[]"]');
+            const priceInput = row.querySelector('[name="price[]"]');
+            const budgetCell = row.querySelector('.budget');
+            const calc = () => {
+                const quantity = parseFloat(quantityInput.value) || 0;
+                const price = parseFloat(priceInput.value) || 0;
+                const budget = quantity * price;
+                budgetCell.textContent = budget.toFixed(0);
+                calculateTotalBudget();
+            };
+            quantityInput.addEventListener('input', calc);
+            priceInput.addEventListener('input', calc);
+            calc();
+        }
+
+        function calculateTotalBudget() {
+            let total = 0;
+            document.querySelectorAll('#staffTableBody .budget').forEach(cell => {
+                total += parseFloat(cell.textContent) || 0;
+            });
+            document.getElementById('totalBudget').textContent = total.toFixed(0);
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            updateStaffNumbers();
-            document.querySelectorAll('[name="salary[]"], [name="man_month[]"]').forEach(el => {
-                el.addEventListener('change', updateBudget);
+            document.querySelectorAll('#staffTableBody tr').forEach(row => {
+                attachBudgetCalc(row);
             });
+            calculateTotalBudget();
         });
     </script>
 @endsection

@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
-class SbirFund05 extends Model
+class SbirFund04 extends Model
 {
     use HasFactory;
     protected $table = 'sbir_fund04';

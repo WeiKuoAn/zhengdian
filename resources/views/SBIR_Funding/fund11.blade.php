@@ -92,7 +92,7 @@
         <!-- end row -->
 
         <div class="row">
-            <form action="{{ route('project.fund05.data', $project->id) }}" method="POST">
+            <form action="{{ route('project.fund11.data', $project->id) }}" method="POST">
                 @csrf
                 <div class="row">
                     <div class="col-lg-12">
@@ -155,10 +155,10 @@
             const tbody = document.getElementById('cooperationTableBody');
             const row = document.createElement('tr');
             row.innerHTML = `
-                <td><input type="text" name="tax_ids[]" class="form-control"></td>
-                <td><input type="text" name="units[]" class="form-control"></td>
+                <td><input type="text" name="tax_id[]" class="form-control"></td>
+                <td><input type="text" name="company_name[]" class="form-control"></td>
                 <td><input type="text" name="content[]" class="form-control"></td>
-                <td><input type="number" name="amounts[]" class="form-control" step="0.01" onchange="updateCooperationTotal()"></td>
+                <td><input type="number" name="total[]" class="form-control" step="0.01" onchange="updateCooperationTotal()"></td>
                 <td><button type="button" class="btn btn-danger btn-sm" onclick="removeCooperationRow(this)">刪除</button></td>
             `;
             tbody.appendChild(row);

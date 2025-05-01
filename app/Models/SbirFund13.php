@@ -11,6 +11,7 @@ class SbirFund13 extends Model
     protected $table = 'sbir_fund13';
     protected $fillable = [
         'project_id',
+        'user_id',
         'purpose',
         'location',
         'days',

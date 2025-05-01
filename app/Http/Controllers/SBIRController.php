@@ -733,11 +733,84 @@ class SBIRController extends Controller
         return view('SBIR.sbir10')->with('project', $project)->with('data', $data);
     }
 
-    public function sbir10_data($id)
+    public function sbir10_da(Request $request, $id)
     {
         $project = CustProject::where('id', $id)->first();
-        $data = SBIR07::where('project_id', $id)->first();
-        return view('SBIR.sbir10')->with('project', $project)->with('data', $data);
+        $data = SbirFund::firstOrNew(['project_id' => $project->id, 'user_id' => $project->user_id]);
+        $data->subsidy_1_1 = $request->subsidy_1_1;
+        $data->self_1_1 = $request->self_1_1;
+        $data->subsidy_1_2 = $request->subsidy_1_2;
+        $data->self_1_2 = $request->self_1_2;
+        $data->subsidy_1_3 = $request->subsidy_1_3;
+        $data->self_1_3 = $request->self_1_3;
+        $data->subsidy_2_1 = $request->subsidy_2_1;
+        $data->self_2_1 = $request->self_2_1;
+        $data->subsidy_3_1 = $request->subsidy_3_1;
+        $data->self_3_1 = $request->self_3_1;
+
+        $data->subsidy_3_2 = $request->subsidy_3_2;
+        $data->self_3_2 = $request->self_3_2;
+
+        $data->subsidy_4_1 = $request->subsidy_4_1;
+        $data->self_4_1 = $request->self_4_1;
+
+        $data->subsidy_5_1 = $request->subsidy_5_1;
+        $data->self_5_1 = $request->self_5_1;
+
+        $data->subsidy_5_2  = $request->subsidy_5_2;
+        $data->self_5_2 = $request->self_5_2;
+
+        $data->subsidy_5_3  = $request->subsidy_5_3;
+        $data->self_5_3 = $request->self_5_3;
+
+        $data->subsidy_5_4  = $request->subsidy_5_4;
+        $data->self_5_4     = $request->self_5_4;
+
+        $data->subsidy_5_5  = $request->subsidy_5_5;
+        $data->self_5_5 = $request->self_5_5;
+
+        $data->subsidy_6_1  = $request->subsidy_6_1;
+        $data->self_6_1 = $request->self_6_1;
+
+        $data->total_subsidy    = $request->total_subsidy;
+        $data->total_self = $request->total_self;
+        $data->total_all = $request->total_all;
+
+        $data->percentage_1 = $request->percentage_1;
+        $data->percentage_2 = $request->percentage_2;
+        $data->percentage_3 = $request->percentage_3;
+        $data->percentage_4 = $request->percentage_4;
+        $data->percentage_5 = $request->percentage_5;
+        $data->percentage_6 = $request->percentage_6;
+        $data->percentage_7 = $request->percentage_7;
+        $data->percentage_8 = $request->percentage_8;
+        $data->percentage_9 = $request->percentage_9;
+        $data->percentage_10 = $request->percentage_10;
+        $data->percentage_11 = $request->percentage_11;
+        $data->percentage_12 = $request->percentage_12;
+        $data->percentage_13 = $request->percentage_13;
+
+
+        $data->subtotal_1_1 = $request->subtotal_1_1;
+        $data->subtotal_1_2 = $request->subtotal_1_2;
+        $data->subtotal_1_3 = $request->subtotal_1_3;
+        $data->subtotal_2_1 = $request->subtotal_2_1;
+        $data->subtotal_2_2 = $request->subtotal_2_2;
+        $data->subtotal_2_3 = $request->subtotal_2_3;
+        $data->subtotal_3_1 = $request->subtotal_3_1;
+        $data->subtotal_3_2 = $request->subtotal_3_2;
+        $data->subtotal_3_3 = $request->subtotal_3_3;
+        $data->subtotal_4_1 = $request->subtotal_4_1;
+        $data->subtotal_4_2 = $request->subtotal_4_2;
+        $data->subtotal_4_3 = $request->subtotal_4_3;
+        $data->subtotal_5_1 = $request->subtotal_5_1;
+        $data->subtotal_5_2 = $request->subtotal_5_2;
+        $data->subtotal_5_3 = $request->subtotal_5_3;
+        $data->subtotal_6_1 = $request->subtotal_6_1;
+        $data->subtotal_6_2 = $request->subtotal_6_2;
+        $data->subtotal_6_3 = $request->subtotal_6_3;
+        $data->save();
+        return redirect()->back()->with('success', '資料儲存成功');
     }
 
     //匯出初版計畫書

@@ -92,7 +92,7 @@
         <!-- end row -->
 
         <div class="row">
-            <form action="{{ route('project.fund05.data', $project->id) }}" method="POST">
+            <form action="{{ route('project.fund07.data', $project->id) }}" method="POST">
                 @csrf
                 <div class="row">
                     <div class="col-lg-12">
@@ -178,7 +178,7 @@
             document.querySelectorAll('[name="maintenance_total[]"]').forEach(input => {
                 total += parseFloat(input.value) || 0;
             });
-            document.getElementById('maintenanceTotal').textContent = total.toFixed(2);
+            document.getElementById('maintenanceTotal').textContent = total.toFixed(0);
         }
     </script>
 @endsection

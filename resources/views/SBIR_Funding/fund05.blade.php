@@ -215,7 +215,7 @@
             const investmentMonths = parseFloat(row.querySelector('input[name="investment_months[]"]').value) || 0;
         
             const usageEstimate = monthlyFee * investmentMonths;
-            row.querySelector('.usage_estimate').textContent = usageEstimate.toFixed(3);
+            row.querySelector('.usage_estimate').textContent = usageEstimate.toFixed(0);
         }
         </script>
 @endsection

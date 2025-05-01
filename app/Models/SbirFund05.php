@@ -16,9 +16,11 @@ class SbirFund05 extends Model
         'asset_number',
         'purchase_amount',
         'purchase_date',
+        'monthly_fee',
         'book_value',
         'set_count',
         'remaining_years',
         'investment_months',
+        'total'
     ];
 }

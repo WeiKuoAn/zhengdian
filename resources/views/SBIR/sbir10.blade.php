@@ -92,7 +92,7 @@
         <!-- end row -->
 
         <div class="row">
-            <form action="{{ route('project.sbir04.data', $project->id) }}" method="POST">
+            <form action="{{ route('project.sbir10.data', $project->id) }}" method="POST">
                 @csrf
                 <div class="row">
                     <div class="col-lg-12">
@@ -182,49 +182,90 @@
                                                                 </td>
                                                             </tr>
                                                             <tr data-category="1">
-                                                                <td>(1) 研發人員 <a href="{{ route('project.fund01',$project->id) }}" class="ms-2"><i
-                                                                            class="bi bi-pencil"></i></a></td>
-                                                                <td><input type="number" class="form-control"
-                                                                        name="subsidy_1_1"></td>
-                                                                <td><input type="number" class="form-control"
-                                                                        name="self_1_1"></td>
-                                                                <td class="text-center text-danger "
-                                                                    data-category="1"><div class="calc-sum">0</div> @if(isset($data->total_1_1)) （{{ $data->total_1_1 }}） @endif</td>
-                                                                <td class="text-center calc-rate">0%</td>
+                                                                <td>(1) 研發人員 <a
+                                                                        href="{{ route('project.fund01', $project->id) }}"
+                                                                        class="ms-2"><i class="bi bi-pencil"></i></a>
+                                                                </td>
+                                                                <td><input type="number" class="form-control text-center"
+                                                                        name="subsidy_1_1"
+                                                                        @if (isset($data->subsidy_1_1)) value="{{ $data->subsidy_1_1 }}" @endif>
+                                                                </td>
+                                                                <td><input type="number" class="form-control text-center"
+                                                                        name="self_1_1"
+                                                                        @if (isset($data->self_1_1)) value="{{ $data->self_1_1 }}" @endif>
+                                                                </td>
+                                                                <td class="text-center text-danger">
+                                                                    <div class="calc-sum">0</div>
+                                                                    @if (isset($data->total_1_2))
+                                                                        （{{ number_format($data->total_1_1) }}）
+                                                                    @endif
+                                                                </td>
+                                                                <td class="text-center">
+                                                                    <input type="text" readonly style="border: none"
+                                                                        class="text-center form-control-plaintext"
+                                                                        name="percentage_1" @if (isset($data->percentage_1)) value="{{ $data->percentage_1 }}" @endif>
+                                                                </td>
+
                                                                 <td></td>
                                                             </tr>
                                                             <tr data-category="1">
-                                                                <td>(2) 國際研發人員 <a href="{{ route('project.fund02',$project->id) }}" class="ms-2"><i
-                                                                            class="bi bi-pencil"></i></a></td>
-                                                                <td><input type="number" class="form-control"
-                                                                        name="subsidy_1_2"></td>
-                                                                <td><input type="number" class="form-control"
-                                                                        name="self_1_2"></td>
-                                                                <td class="text-center text-danger calc-sum"
-                                                                    data-category="1">0</td>
-                                                                <td class="text-center calc-rate">0%</td>
+                                                                <td>(2) 國際研發人員 <a
+                                                                        href="{{ route('project.fund02', $project->id) }}"
+                                                                        class="ms-2"><i class="bi bi-pencil"></i></a>
+                                                                </td>
+                                                                <td><input type="number" class="form-control text-center"
+                                                                        name="subsidy_1_2" @if (isset($data->subsidy_1_2)) value="{{ $data->subsidy_1_2 }}" @endif></td>
+                                                                <td><input type="number" class="form-control text-center"
+                                                                        name="self_1_2" @if (isset($data->self_1_2)) value="{{ $data->self_1_2 }}" @endif></td>
+                                                                <td class="text-center text-danger" data-category="1">
+                                                                    <div class="calc-sum">0</div>
+                                                                    @if (isset($data->total_1_2))
+                                                                        （{{ number_format($data->total_1_2) }}）
+                                                                    @endif
+                                                                </td>
+                                                                <td class="text-center">
+                                                                    <input type="text" readonly style="border: none"
+                                                                        class="text-center form-control-plaintext"
+                                                                        name="percentage_2" @if (isset($data->percentage_2)) value="{{ $data->percentage_2 }}" @endif>
+                                                                </td>
                                                                 <td></td>
                                                             </tr>
                                                             <tr data-category="1">
-                                                                <td>(3) 顧問 <a href="{{ route('project.fund03',$project->id) }}" class="ms-2"><i
-                                                                            class="bi bi-pencil"></i></a></td>
-                                                                <td><input type="number" class="form-control"
-                                                                        name="subsidy_1_3"></td>
-                                                                <td><input type="number" class="form-control"
-                                                                        name="self_1_3"></td>
-                                                                <td class="text-center text-danger calc-sum"
-                                                                    data-category="1">0</td>
-                                                                <td class="text-center calc-rate">0%</td>
+                                                                <td>(3) 顧問 <a
+                                                                        href="{{ route('project.fund03', $project->id) }}"
+                                                                        class="ms-2"><i class="bi bi-pencil"></i></a>
+                                                                </td>
+                                                                <td><input type="number" class="form-control text-center"
+                                                                        name="subsidy_1_3" @if (isset($data->subsidy_1_3)) value="{{ $data->subsidy_1_3 }}" @endif></td>
+                                                                <td><input type="number" class="form-control text-center"
+                                                                        name="self_1_3" @if (isset($data->self_1_3)) value="{{ $data->self_1_3 }}" @endif></td>
+                                                                <td class="text-center text-danger" data-category="1">
+                                                                    <div class="calc-sum">0</div>
+                                                                    @if (isset($data->total_1_3))
+                                                                        （{{ number_format($data->total_1_3) }}）
+                                                                    @endif
+                                                                </td>
+                                                                <td class="text-center">
+                                                                    <input type="text" readonly style="border: none"
+                                                                        class="text-center form-control-plaintext"
+                                                                        name="percentage_3" @if (isset($data->percentage_3)) value="{{ $data->percentage_3 }}" @endif>
+                                                                </td>
                                                                 <td></td>
                                                             </tr>
                                                             <tr>
                                                                 <td><strong>人事費 小計</strong></td>
-                                                                <td class="text-center text-danger calc-subtotal"
-                                                                    data-category="1">0</td>
-                                                                <td class="text-center text-danger calc-subtotal"
-                                                                    data-category="1">0</td>
-                                                                <td class="text-center text-danger calc-subtotal"
-                                                                    data-category="1">0</td>
+                                                                <td><input type="number" readonly style="border: none"
+                                                                        name="subtotal_1_1"
+                                                                        class="form-control-plaintext text-danger text-center" @if (isset($data->subtotal_1_1)) value="{{ $data->subtotal_1_1 }}" @endif>
+                                                                </td>
+                                                                <td><input type="number" readonly style="border: none"
+                                                                        name="subtotal_1_2"
+                                                                        class="form-control-plaintext text-danger text-center" @if (isset($data->subtotal_1_2)) value="{{ $data->subtotal_1_2 }}" @endif>
+                                                                </td>
+                                                                <td><input type="number" readonly style="border: none"
+                                                                        name="subtotal_1_3"
+                                                                        class="form-control-plaintext text-danger text-center" @if (isset($data->subtotal_1_3)) value="{{ $data->subtotal_1_3 }}" @endif>
+                                                                </td>
                                                                 <td colspan="2"></td>
                                                             </tr>
 
@@ -234,27 +275,43 @@
                                                                 </td>
                                                             </tr>
                                                             <tr data-category="2">
-                                                                <td>(1) 消耗性器材及原材料費 <a href="{{ route('project.fund04',$project->id) }}" class="ms-2"><i
-                                                                            class="bi bi-pencil"></i></a></td>
-                                                                <td><input type="number" class="form-control"
-                                                                        name="subsidy_2_1"></td>
-                                                                <td><input type="number" class="form-control"
-                                                                        name="self_2_1"></td>
-                                                                <td class="text-center text-danger calc-sum"
-                                                                    data-category="2">0</td>
-                                                                <td class="text-center calc-rate">0%</td>
+                                                                <td>(1) 消耗性器材及原材料費 <a
+                                                                        href="{{ route('project.fund04', $project->id) }}"
+                                                                        class="ms-2"><i class="bi bi-pencil"></i></a>
+                                                                </td>
+                                                                <td><input type="number" class="form-control text-center"
+                                                                        name="subsidy_2_1" @if (isset($data->subsidy_2_1)) value="{{ $data->subsidy_2_1 }}" @endif></td>
+                                                                <td><input type="number" class="form-control text-center"
+                                                                        name="self_2_1" @if (isset($data->self_2_1)) value="{{ $data->self_2_1 }}" @endif></td>
+                                                                <td class="text-center text-danger" data-category="2">
+                                                                    <div class="calc-sum">0</div>
+                                                                    @if (isset($data->total_2_1))
+                                                                        （{{ number_format($data->total_2_1) }}）
+                                                                    @endif
+                                                                </td>
+                                                                <td class="text-center">
+                                                                    <input type="text" readonly style="border: none"
+                                                                        class="text-center form-control-plaintext"
+                                                                        name="percentage_4" @if (isset($data->percentage_4)) value="{{ $data->percentage_4 }}" @endif>
+                                                                </td>
                                                                 <td>
                                                                     <textarea class="form-control"></textarea>
                                                                 </td>
                                                             </tr>
                                                             <tr>
                                                                 <td><strong>消耗性器材及原材料費 小計</strong></td>
-                                                                <td class="text-center text-danger calc-subtotal"
-                                                                    data-category="2">0</td>
-                                                                <td class="text-center text-danger calc-subtotal"
-                                                                    data-category="2">0</td>
-                                                                <td class="text-center text-danger calc-subtotal"
-                                                                    data-category="2">0</td>
+                                                                <td><input type="number" readonly style="border: none"
+                                                                        name="subtotal_2_1"
+                                                                        class="form-control-plaintext text-danger text-center" @if (isset($data->subtotal_2_1)) value="{{ $data->subtotal_2_1 }}" @endif>
+                                                                </td>
+                                                                <td><input type="number" readonly style="border: none"
+                                                                        name="subtotal_2_2"
+                                                                        class="form-control-plaintext text-danger text-center" @if (isset($data->subtotal_2_2)) value="{{ $data->subtotal_2_2 }}" @endif>
+                                                                </td>
+                                                                <td><input type="number" readonly style="border: none"
+                                                                        name="subtotal_2_3"
+                                                                        class="form-control-plaintext text-danger text-center" @if (isset($data->subtotal_2_3)) value="{{ $data->subtotal_2_3 }}" @endif>
+                                                                </td>
                                                                 <td colspan="2"></td>
                                                             </tr>
 
@@ -264,37 +321,63 @@
                                                                 </td>
                                                             </tr>
                                                             <tr data-category="3">
-                                                                <td>(1) 已有設備 <a href="{{ route('project.fund05',$project->id) }}" class="ms-2"><i
-                                                                            class="bi bi-pencil"></i></a></td>
-                                                                <td><input type="number" class="form-control"
-                                                                        name="subsidy_3_1"></td>
-                                                                <td><input type="number" class="form-control"
-                                                                        name="self_3_1"></td>
-                                                                <td class="text-center text-danger calc-sum"
-                                                                    data-category="3">0</td>
-                                                                <td class="text-center calc-rate">0%</td>
+                                                                <td>(1) 已有設備 <a
+                                                                        href="{{ route('project.fund05', $project->id) }}"
+                                                                        class="ms-2"><i class="bi bi-pencil"></i></a>
+                                                                </td>
+                                                                <td><input type="number" class="form-control text-center"
+                                                                        name="subsidy_3_1" @if (isset($data->subsidy_3_1)) value="{{ $data->subsidy_3_1 }}" @endif></td>
+                                                                <td><input type="number" class="form-control text-center"
+                                                                        name="self_3_1" @if (isset($data->self_3_1)) value="{{ $data->self_3_1 }}" @endif></td>
+                                                                <td class="text-center text-danger" data-category="3">
+                                                                    <div class="calc-sum">0</div>
+                                                                    @if (isset($data->total_3_1))
+                                                                        （{{ number_format($data->total_3_1) }}）
+                                                                    @endif
+                                                                </td>
+                                                                <td class="text-center">
+                                                                    <input type="text" readonly style="border: none"
+                                                                        class="text-center form-control-plaintext"
+                                                                        name="percentage_5" @if (isset($data->percentage_5)) value="{{ $data->percentage_5 }}" @endif>
+                                                                </td>
                                                                 <td></td>
                                                             </tr>
                                                             <tr data-category="3">
-                                                                <td>(2) 計畫新增設備 <a href="{{ route('project.fund06',$project->id) }}" class="ms-2"><i
-                                                                            class="bi bi-pencil"></i></a></td>
-                                                                <td><input type="number" class="form-control"
-                                                                        name="subsidy_3_2"></td>
-                                                                <td><input type="number" class="form-control"
-                                                                        name="self_3_2"></td>
-                                                                <td class="text-center text-danger calc-sum"
-                                                                    data-category="3">0</td>
-                                                                <td class="text-center calc-rate">0%</td>
+                                                                <td>(2) 計畫新增設備 <a
+                                                                        href="{{ route('project.fund06', $project->id) }}"
+                                                                        class="ms-2"><i class="bi bi-pencil"></i></a>
+                                                                </td>
+                                                                <td><input type="number" class="form-control text-center text-center"
+                                                                        name="subsidy_3_2" @if (isset($data->subsidy_3_2)) value="{{ $data->subsidy_3_2 }}" @endif></td>
+                                                                <td><input type="number" class="form-control text-center"
+                                                                        name="self_3_2 @if (isset($data->self_3_2)) value="{{ $data->self_3_2 }}" @endif"></td>
+                                                                <td class="text-center text-danger" data-category="3">
+                                                                    <div class="calc-sum">0</div>
+                                                                    @if (isset($data->total_3_2))
+                                                                        （{{ number_format($data->total_3_2) }}）
+                                                                    @endif
+                                                                </td>
+                                                                <td class="text-center">
+                                                                    <input type="text" readonly style="border: none"
+                                                                        class="text-center form-control-plaintext"
+                                                                        name="percentage_6" @if (isset($data->percentage_6)) value="{{ $data->percentage_6 }}" @endif>
+                                                                </td>
                                                                 <td></td>
                                                             </tr>
                                                             <tr>
                                                                 <td><strong>研發設備使用費 小計</strong></td>
-                                                                <td class="text-center text-danger calc-subtotal"
-                                                                    data-category="3">0</td>
-                                                                <td class="text-center text-danger calc-subtotal"
-                                                                    data-category="3">0</td>
-                                                                <td class="text-center text-danger calc-subtotal"
-                                                                    data-category="3">0</td>
+                                                                <td><input type="number" readonly style="border: none"
+                                                                        name="subtotal_3_1"
+                                                                        class="form-control-plaintext text-danger text-center" @if (isset($data->subtotal_3_1)) value="{{ $data->subtotal_3_1 }}" @endif>
+                                                                </td>
+                                                                <td><input type="number" readonly style="border: none"
+                                                                        name="subtotal_3_2"
+                                                                        class="form-control-plaintext text-danger text-center" @if (isset($data->subtotal_3_2)) value="{{ $data->subtotal_3_2 }}" @endif>
+                                                                </td>
+                                                                <td><input type="number" readonly style="border: none"
+                                                                        name="subtotal_3_3"
+                                                                        class="form-control-plaintext text-danger text-center" @if (isset($data->subtotal_3_3)) value="{{ $data->subtotal_3_3 }}" @endif>
+                                                                </td>
                                                                 <td colspan="2"></td>
                                                             </tr>
 
@@ -304,105 +387,177 @@
                                                                 </td>
                                                             </tr>
                                                             <tr data-category="4">
-                                                                <td>(1) 研發設備維護費 <a href="{{ route('project.fund07',$project->id) }}" class="ms-2"><i
-                                                                            class="bi bi-pencil"></i></a></td>
-                                                                <td><input type="number" class="form-control"
-                                                                        name="subsidy_4_1"></td>
-                                                                <td><input type="number" class="form-control"
-                                                                        name="self_4_1"></td>
-                                                                <td class="text-center text-danger calc-sum"
-                                                                    data-category="4">0</td>
-                                                                <td class="text-center calc-rate">0%</td>
+                                                                <td>(1) 研發設備維護費 <a
+                                                                        href="{{ route('project.fund07', $project->id) }}"
+                                                                        class="ms-2"><i class="bi bi-pencil"></i></a>
+                                                                </td>
+                                                                <td><input type="number" class="form-control text-center"
+                                                                        name="subsidy_4_1" @if (isset($data->subsidy_4_1)) value="{{ $data->subsidy_4_1 }}" @endif></td>
+                                                                <td><input type="number" class="form-control text-center"
+                                                                        name="self_4_1" @if (isset($data->self_4_1)) value="{{ $data->self_4_1 }}" @endif></td>
+                                                                <td class="text-center text-danger" data-category="4">
+                                                                    <div class="calc-sum">0</div>
+                                                                    @if (isset($data->total_4_1))
+                                                                        （{{ number_format($data->total_4_1) }}）
+                                                                    @endif
+                                                                </td>
+                                                                <td class="text-center">
+                                                                    <input type="text" readonly style="border: none"
+                                                                        class="text-center form-control-plaintext"
+                                                                        name="percentage_7" @if (isset($data->percentage_7)) value="{{ $data->percentage_7 }}" @endif>
+                                                                </td>
                                                                 <td></td>
                                                             </tr>
                                                             <tr>
                                                                 <td><strong>研發設備維護費 小計</strong></td>
-                                                                <td class="text-center text-danger calc-subtotal"
-                                                                    data-category="4">0</td>
-                                                                <td class="text-center text-danger calc-subtotal"
-                                                                    data-category="4">0</td>
-                                                                <td class="text-center text-danger calc-subtotal"
-                                                                    data-category="4">0</td>
+                                                                <td><input type="number" readonly style="border: none"
+                                                                        name="subtotal_4_1"
+                                                                        class="form-control-plaintext text-danger text-center" @if (isset($data->subtotal_4_1)) value="{{ $data->subtotal_4_1 }}" @endif>
+                                                                </td>
+                                                                <td><input type="number" readonly style="border: none"
+                                                                        name="subtotal_4_2"
+                                                                        class="form-control-plaintext text-danger text-center" @if (isset($data->subtotal_4_2)) value="{{ $data->subtotal_4_2 }}" @endif>
+                                                                </td>
+                                                                <td><input type="number" readonly style="border: none"
+                                                                        name="subtotal_4_3"
+                                                                        class="form-control-plaintext text-danger text-center" @if (isset($data->subtotal_4_3)) value="{{ $data->subtotal_4_3 }}" @endif>
+                                                                </td>
                                                                 <td colspan="2"></td>
                                                             </tr>
 
                                                             <tr class="table-primary">
                                                                 <td colspan="6">
-                                                                    5.技術移轉費 
+                                                                    5.技術移轉費
                                                                 </td>
                                                             </tr>
                                                             <tr data-category="5">
-                                                                <td>(1) 技術或智慧財產權購買費 <a href="{{ route('project.fund08',$project->id) }}" class="ms-2"><i
+                                                                <td>(1) 技術或智慧財產權購買費 <a
+                                                                        href="{{ route('project.fund08', $project->id) }}"
+                                                                        class="ms-2"><i
                                                                             class="bi bi-pencil"></i></a><br><span
                                                                         class="text-danger small">(自籌款+補助款)需等於合計，自籌款不得小於補助款，且金額不得為0。</span>
                                                                 </td>
-                                                                <td><input type="number" class="form-control"
-                                                                        name="subsidy_5_1" value="0"></td>
-                                                                <td><input type="number" class="form-control"
-                                                                        name="self_5_1" value="0"></td>
-                                                                <td class="text-center text-danger calc-sum"
-                                                                    data-category="5">0</td>
-                                                                <td class="text-center calc-rate">0%</td>
+                                                                <td><input type="number" class="form-control text-center"
+                                                                        name="subsidy_5_1" @if (isset($data->subsidy_5_1)) value="{{ $data->subsidy_5_1 }}" @endif></td>
+                                                                <td><input type="number" class="form-control text-center"
+                                                                        name="self_5_1" @if (isset($data->self_5_1)) value="{{ $data->self_5_1 }}" @endif></td>
+                                                                <td class="text-center text-danger" data-category="5">
+                                                                    <div class="calc-sum">0</div>
+                                                                    @if (isset($data->total_5_1))
+                                                                        （{{ number_format($data->total_5_1) }}）
+                                                                    @endif
+                                                                </td>
+                                                                <td class="text-center">
+                                                                    <input type="text" readonly style="border: none"
+                                                                        class="text-center form-control-plaintext"
+                                                                        name="percentage_8" @if (isset($data->percentage_8)) value="{{ $data->percentage_8 }}" @endif>
+                                                                </td>
                                                                 <td></td>
                                                             </tr>
                                                             <tr data-category="5">
-                                                                <td>(2) 委託研究費 <a href="{{ route('project.fund09',$project->id) }}" class="ms-2"><i
-                                                                            class="bi bi-pencil"></i></a></td>
-                                                                <td><input type="number" class="form-control"
-                                                                        name="subsidy_5_2" value="0"></td>
-                                                                <td><input type="number" class="form-control"
-                                                                        name="self_5_2" value="0"></td>
-                                                                <td class="text-center text-danger calc-sum"
-                                                                    data-category="5">0</td>
-                                                                <td class="text-center calc-rate">0%</td>
+                                                                <td>(2) 委託研究費 <a
+                                                                        href="{{ route('project.fund09', $project->id) }}"
+                                                                        class="ms-2"><i class="bi bi-pencil"></i></a>
+                                                                </td>
+                                                                <td><input type="number" class="form-control text-center"
+                                                                        name="subsidy_5_2" @if (isset($data->subsidy_5_2)) value="{{ $data->subsidy_5_2 }}" @endif></td>
+                                                                <td><input type="number" class="form-control text-center"
+                                                                        name="self_5_2" @if (isset($data->self_5_2)) value="{{ $data->self_5_2 }}" @endif></td>
+                                                                <td class="text-center text-danger" data-category="5">
+                                                                    <div class="calc-sum">0</div>
+                                                                    @if (isset($data->total_5_2))
+                                                                        （{{ number_format($data->total_5_2) }}）
+                                                                    @endif
+                                                                </td>
+                                                                <td class="text-center">
+                                                                    <input type="text" readonly style="border: none"
+                                                                        class="text-center form-control-plaintext"
+                                                                        name="percentage_9" @if (isset($data->percentage_9)) value="{{ $data->percentage_9 }}" @endif>
+                                                                </td>
                                                                 <td></td>
                                                             </tr>
                                                             <tr data-category="5">
-                                                                <td>(3) 委託勞務費 <a href="{{ route('project.fund10',$project->id) }}" class="ms-2"><i
-                                                                            class="bi bi-pencil"></i></a></td>
-                                                                <td><input type="number" class="form-control"
-                                                                        name="subsidy_5_3" value="0"></td>
-                                                                <td><input type="number" class="form-control"
-                                                                        name="self_5_3" value="0"></td>
-                                                                <td class="text-center text-danger calc-sum"
-                                                                    data-category="5">0</td>
-                                                                <td class="text-center calc-rate">0%</td>
+                                                                <td>(3) 委託勞務費 <a
+                                                                        href="{{ route('project.fund10', $project->id) }}"
+                                                                        class="ms-2"><i class="bi bi-pencil"></i></a>
+                                                                </td>
+                                                                <td><input type="number" class="form-control text-center"
+                                                                        name="subsidy_5_3" @if (isset($data->subsidy_5_3)) value="{{ $data->subsidy_5_3 }}" @endif></td>
+                                                                <td><input type="number" class="form-control text-center"
+                                                                        name="self_5_3" @if (isset($data->self_5_3)) value="{{ $data->self_5_3 }}" @endif></td>
+                                                                <td class="text-center text-danger" data-category="5">
+                                                                    <div class="calc-sum">0</div>
+                                                                    @if (isset($data->total_5_3))
+                                                                        （{{ number_format($data->total_5_3) }}）
+                                                                    @endif
+                                                                </td>
+                                                                <td class="text-center">
+                                                                    <input type="text" readonly style="border: none"
+                                                                        class="text-center form-control-plaintext"
+                                                                        name="percentage_10" @if (isset($data->percentage_10)) value="{{ $data->percentage_10 }}" @endif>
+                                                                </td>
                                                                 <td></td>
                                                             </tr>
                                                             <tr data-category="5">
-                                                                <td>(4) 委託設計費 <a href="{{ route('project.fund11',$project->id) }}" class="ms-2"><i
-                                                                            class="bi bi-pencil"></i></a></td>
-                                                                <td><input type="number" class="form-control"
-                                                                        name="subsidy_5_4" value="0"></td>
-                                                                <td><input type="number" class="form-control"
-                                                                        name="self_5_4" value="0"></td>
-                                                                <td class="text-center text-danger calc-sum"
-                                                                    data-category="5">0</td>
-                                                                <td class="text-center calc-rate">0%</td>
+                                                                <td>(4) 委託設計費 <a
+                                                                        href="{{ route('project.fund11', $project->id) }}"
+                                                                        class="ms-2"><i class="bi bi-pencil"></i></a>
+                                                                </td>
+                                                                <td><input type="number" class="form-control text-center"
+                                                                        name="subsidy_5_4" @if (isset($data->subsidy_5_4)) value="{{ $data->subsidy_5_4 }}" @endif></td>
+                                                                <td><input type="number" class="form-control text-center"
+                                                                        name="self_5_4" @if (isset($data->self_5_4)) value="{{ $data->self_5_4 }}" @endif></td>
+                                                                <td class="text-center text-danger" data-category="5">
+                                                                    <div class="calc-sum">0</div>
+                                                                    @if (isset($data->total_5_4))
+                                                                        （{{ number_format($data->total_5_4) }}）
+                                                                    @endif
+                                                                </td>
+                                                                <td class="text-center">
+                                                                    <input type="text" readonly style="border: none"
+                                                                        class="text-center form-control-plaintext"
+                                                                        name="percentage_11" @if (isset($data->percentage_11)) value="{{ $data->percentage_11 }}" @endif>
+                                                                </td>
                                                                 <td></td>
                                                             </tr>
                                                             <tr data-category="5">
-                                                                <td>(5) 委託諮詢費 <a href="{{ route('project.fund12',$project->id) }}" class="ms-2"><i
+                                                                <td>(5) 委託諮詢費 <a
+                                                                        href="{{ route('project.fund12', $project->id) }}"
+                                                                        class="ms-2"><i
                                                                             class="bi bi-pencil"></i></a><br><span
                                                                         class="small">以占計畫總經費之5%為上限，且以首次申請SBIR計畫，每家企業以申請1次為限</span>
                                                                 </td>
-                                                                <td><input type="number" class="form-control"
-                                                                        name="subsidy_5_5" value="0"></td>
-                                                                <td><input type="number" class="form-control"
-                                                                        name="self_5_5" value="0"></td>
-                                                                <td class="text-center text-danger calc-sum"
-                                                                    data-category="5">0</td>
-                                                                <td class="text-center calc-rate">0%</td>
+                                                                <td><input type="number" class="form-control text-center"
+                                                                        name="subsidy_5_5" @if (isset($data->subsidy_5_5)) value="{{ $data->subsidy_5_5 }}" @endif></td>
+                                                                <td><input type="number" class="form-control text-center"
+                                                                        name="self_5_5" @if (isset($data->self_5_5)) value="{{ $data->self_5_5 }}" @endif></td>
+                                                                <td class="text-center text-danger" data-category="5">
+                                                                    <div class="calc-sum">0</div>
+                                                                    @if (isset($data->total_5_5))
+                                                                        （{{ number_format($data->total_5_5) }}）
+                                                                    @endif
+                                                                </td>
+                                                                <td class="text-center">
+                                                                    <input type="text" readonly style="border: none"
+                                                                        class="text-center form-control-plaintext"
+                                                                        name="percentage_12" @if (isset($data->percentage_12)) value="{{ $data->percentage_12 }}" @endif>
+                                                                </td>
                                                                 <td></td>
                                                             </tr>
                                                             <tr>
                                                                 <td><strong>技術移轉費 小計</strong></td>
-                                                                <td class="text-center text-danger calc-subtotal"
-                                                                    data-category="5">0</td>
-                                                                <td class="text-center text-danger calc-subtotal"
-                                                                    data-category="5">0</td>
-                                                                <td class="text-center text-danger calc-subtotal"
-                                                                    data-category="5">0</td>
+                                                                <td><input type="number" readonly style="border: none"
+                                                                        name="subtotal_5_1"
+                                                                        class="form-control-plaintext text-danger text-center" @if (isset($data->subtotal_5_1)) value="{{ $data->subtotal_5_1 }}" @endif>
+                                                                </td>
+                                                                <td><input type="number" readonly style="border: none"
+                                                                        name="subtotal_5_2"
+                                                                        class="form-control-plaintext text-danger text-center" @if (isset($data->subtotal_5_2)) value="{{ $data->subtotal_5_2 }}" @endif>
+                                                                </td>
+                                                                <td><input type="number" readonly style="border: none"
+                                                                        name="subtotal_5_3"
+                                                                        class="form-control-plaintext text-danger text-center" @if (isset($data->subtotal_5_3)) value="{{ $data->subtotal_5_3 }}" @endif>
+                                                                </td>
                                                                 <td colspan="2"></td>
                                                             </tr>
 
@@ -412,25 +567,41 @@
                                                                 </td>
                                                             </tr>
                                                             <tr data-category="6">
-                                                                <td>(1) 國內差旅費 <a href="{{ route('project.fund13',$project->id) }}" class="ms-2"><i
-                                                                            class="bi bi-pencil"></i></a></td>
-                                                                <td><input type="number" class="form-control"
-                                                                        name="subsidy_6_1" value="0"></td>
-                                                                <td><input type="number" class="form-control"
-                                                                        name="self_6_1" value="0"></td>
-                                                                <td class="text-center text-danger calc-sum"
-                                                                    data-category="6">0</td>
-                                                                <td class="text-center calc-rate">0%</td>
+                                                                <td>(1) 國內差旅費 <a
+                                                                        href="{{ route('project.fund13', $project->id) }}"
+                                                                        class="ms-2"><i class="bi bi-pencil"></i></a>
+                                                                </td>
+                                                                <td><input type="number" class="form-control text-center"
+                                                                        name="subsidy_6_1" @if (isset($data->subsidy_6_1)) value="{{ $data->subsidy_6_1 }}" @endif></td>
+                                                                <td><input type="number" class="form-control text-center"
+                                                                        name="self_6_1" @if (isset($data->self_6_1)) value="{{ $data->self_6_1 }}" @endif></td>
+                                                                <td class="text-center text-danger" data-category="6">
+                                                                    <div class="calc-sum">0</div>
+                                                                    @if (isset($data->total_6_1))
+                                                                        （{{ number_format($data->total_6_1) }}）
+                                                                    @endif
+                                                                </td>
+                                                                <td class="text-center">
+                                                                    <input type="text" readonly style="border: none"
+                                                                        class="text-center form-control-plaintext"
+                                                                        name="percentage_13" @if (isset($data->percentage_13)) value="{{ $data->percentage_13 }}" @endif>
+                                                                </td>
                                                                 <td></td>
                                                             </tr>
                                                             <tr>
                                                                 <td><strong>國內差旅費 小計</strong></td>
-                                                                <td class="text-center text-danger calc-subtotal"
-                                                                    data-category="6">0</td>
-                                                                <td class="text-center text-danger calc-subtotal"
-                                                                    data-category="6">0</td>
-                                                                <td class="text-center text-danger calc-subtotal"
-                                                                    data-category="6">0</td>
+                                                                <td><input type="number" readonly style="border: none"
+                                                                        name="subtotal_6_1"
+                                                                        class="form-control-plaintext text-danger text-center">
+                                                                </td>
+                                                                <td><input type="number" readonly style="border: none"
+                                                                        name="subtotal_6_2"
+                                                                        class="form-control-plaintext text-danger text-center">
+                                                                </td>
+                                                                <td><input type="number" readonly style="border: none"
+                                                                        name="subtotal_6_3"
+                                                                        class="form-control-plaintext text-danger text-center">
+                                                                </td>
                                                                 <td colspan="2"></td>
                                                             </tr>
 
@@ -438,10 +609,18 @@
                                                         <tfoot class="table-secondary">
                                                             <tr>
                                                                 <td class="text-end"><strong>合計</strong></td>
-                                                                <td id="total-subsidy" class="text-center text-danger">0
-                                                                </td>
-                                                                <td id="total-self" class="text-center text-danger">0</td>
-                                                                <td id="total-all" class="text-center text-danger">0</td>
+                                                                <td><input type="number" readonly style="border: none"
+                                                                        id="total-subsidy"
+                                                                        class="form-control-plaintext text-danger text-center"
+                                                                        name="total_subsidy"></td>
+                                                                <td><input type="number" readonly style="border: none"
+                                                                        id="total-self"
+                                                                        class="form-control-plaintext text-danger text-center"
+                                                                        name="total_self"></td>
+                                                                <td><input type="number" readonly style="border: none"
+                                                                        id="total-all"
+                                                                        class="form-control-plaintext text-danger text-center"
+                                                                        name="total_all"></td>
                                                                 <td colspan="2"></td>
                                                             </tr>
                                                         </tfoot>
@@ -478,62 +657,73 @@
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
-        function updateSums() {
-            let totalSubsidy = 0;
-            let totalSelf = 0;
-            const subtotals = {};
+        function updateBudgetTable() {
+            const rows = document.querySelectorAll("#budgetTable tbody tr[data-category]");
+            const categoryTotals = {};
+            let grandSubsidy = 0,
+                grandSelf = 0,
+                grandTotal = 0;
 
-            document.querySelectorAll('tbody tr[data-category]').forEach(row => {
+            rows.forEach((row, index) => {
                 const category = row.dataset.category;
-                const inputs = row.querySelectorAll('input[type="number"]');
-                if (inputs.length >= 2) {
-                    const sub = parseInt(inputs[0].value) || 0;
-                    const self = parseInt(inputs[1].value) || 0;
-                    const sum = sub + self;
+                const subInput = row.querySelector("input[name^='subsidy']");
+                const selfInput = row.querySelector("input[name^='self']");
+                const sumField = row.querySelector(".calc-sum");
+                const percentInput = row.querySelector("input[name^='percentage']");
 
-                    if (!subtotals[category]) subtotals[category] = {
-                        sub: 0,
-                        self: 0
+                const sub = parseFloat(subInput?.value) || 0;
+                const self = parseFloat(selfInput?.value) || 0;
+                const total = sub + self;
+
+                sumField.textContent = total.toLocaleString();
+
+                if (!categoryTotals[category]) {
+                    categoryTotals[category] = {
+                        subsidy: 0,
+                        self: 0,
+                        total: 0
                     };
-                    subtotals[category].sub += sub;
-                    subtotals[category].self += self;
-
-                    row.querySelector('.calc-sum').innerText = sum.toLocaleString();
-
-                    totalSubsidy += sub;
-                    totalSelf += self;
                 }
+                categoryTotals[category].subsidy += sub;
+                categoryTotals[category].self += self;
+                categoryTotals[category].total += total;
+
+                grandSubsidy += sub;
+                grandSelf += self;
+                grandTotal += total;
             });
 
-            const totalAll = totalSubsidy + totalSelf;
-            document.getElementById('total-subsidy').innerText = totalSubsidy.toLocaleString();
-            document.getElementById('total-self').innerText = totalSelf.toLocaleString();
-            document.getElementById('total-all').innerText = totalAll.toLocaleString();
-
-            document.querySelectorAll('tbody tr[data-category]').forEach(row => {
-                const sumCell = row.querySelector('.calc-sum');
-                const rateCell = row.querySelector('.calc-rate');
-                if (sumCell && rateCell) {
-                    const rowSum = parseInt(sumCell.innerText.replace(/,/g, '')) || 0;
-                    const percent = totalAll ? (rowSum / totalAll * 100).toFixed(1) : 0;
-                    rateCell.innerText = percent + '%';
-                }
+            Object.entries(categoryTotals).forEach(([cat, values]) => {
+                const subtotal1 = document.querySelector(`input[name="subtotal_${cat}_1"]`);
+                const subtotal2 = document.querySelector(`input[name="subtotal_${cat}_2"]`);
+                const subtotal3 = document.querySelector(`input[name="subtotal_${cat}_3"]`);
+                if (subtotal1) subtotal1.value = values.subsidy;
+                if (subtotal2) subtotal2.value = values.self;
+                if (subtotal3) subtotal3.value = values.total;
             });
 
-            Object.keys(subtotals).forEach(cat => {
-                const sub = document.querySelector(`.calc-subtotal[data-category="${cat}"]`);
-                if (sub) sub.innerText = subtotals[cat].sub.toLocaleString();
-                const self = sub?.nextElementSibling;
-                if (self) self.innerText = subtotals[cat].self.toLocaleString();
-                const total = self?.nextElementSibling;
-                if (total) total.innerText = (subtotals[cat].sub + subtotals[cat].self).toLocaleString();
+            const totalSubsidyField = document.getElementById("total-subsidy");
+            const totalSelfField = document.getElementById("total-self");
+            const totalAllField = document.getElementById("total-all");
+            if (totalSubsidyField) totalSubsidyField.value = grandSubsidy;
+            if (totalSelfField) totalSelfField.value = grandSelf;
+            if (totalAllField) totalAllField.value = grandTotal;
+
+            rows.forEach((row, i) => {
+                const sumCell = row.querySelector(".calc-sum");
+                const percentInput = row.querySelector("input[name^='percentage']");
+                const sum = parseInt(sumCell.textContent.replace(/,/g, '')) || 0;
+                const percent = grandTotal > 0 ? (sum / grandTotal * 100).toFixed(1) : '0.0';
+                if (percentInput) percentInput.value = percent + "%";
+
             });
         }
 
-        setTimeout(() => {
-            document.querySelectorAll('input[type="number"]').forEach(input => {
-                input.addEventListener('input', updateSums);
+        document.addEventListener("DOMContentLoaded", function() {
+            document.querySelectorAll("#budgetTable input[type='number']").forEach(input => {
+                input.addEventListener('input', updateBudgetTable);
             });
-        }, 100);
+            updateBudgetTable();
+        });
     </script>
 @endsection

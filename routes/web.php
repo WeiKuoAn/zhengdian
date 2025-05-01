@@ -200,6 +200,8 @@ Route::get('project/sbir09/{id}', [SBIRController::class, 'sbir09'])->name('proj
 Route::post('project/sbir09/{id}', [SBIRController::class, 'sbir09_data'])->name('project.sbir09.data');
 
 Route::get('project/sbir10/{id}', [SBIRController::class, 'sbir10'])->name('project.sbir10');
+Route::post('project/sbir10/{id}', [SBIRController::class, 'sbir10_da'])->name('project.sbir10.data');
+
 
 Route::get('project/sbir10/fund01/{id}', [SBIRFundController::class, 'fund01'])->name('project.fund01');
 Route::post('project/sbir10/fund01/{id}', [SBIRFundController::class, 'fund01_data'])->name('project.fund01.data');

@@ -167,8 +167,8 @@
             }
             const estimate = monthly * months;
 
-            row.querySelector('.monthlyFee').innerText = monthly.toFixed(2);
-            row.querySelector('.usageEstimate').innerText = estimate.toFixed(2);
+            row.querySelector('.monthlyFee').innerText = monthly.toFixed(3);
+            row.querySelector('.usageEstimate').innerText = estimate.toFixed(0);
 
             return estimate;
         }
@@ -187,11 +187,11 @@
             row.innerHTML = `
                 <td><input type="text" name="name[]" class="form-control"></td>
                 <td><input type="text" name="code[]" class="form-control"></td>
-                <td><input type="number" name="price[]" class="form-control" step="0.01"></td>
-                <td><input type="number" name="count[]" class="form-control" step="0.01"></td>
-                <td><input type="number" name="life[]" class="form-control" step="0.01"></td>
+                <td><input type="number" name="price[]" class="form-control" step="1"></td>
+                <td><input type="number" name="count[]" class="form-control" step="1"></td>
+                <td><input type="number" name="life[]" class="form-control" step="1"></td>
                 <td class="monthlyFee">0.00</td>
-                <td><input type="number" name="investment_months[]" class="form-control" step="0.01"></td>
+                <td><input type="number" name="investment_months[]" class="form-control" step="1"></td>
                 <td class="usageEstimate">0.00</td>
                                 <td>
                     <button class="btn btn-sm btn-danger" onclick="removeRow(this)">刪除</button>

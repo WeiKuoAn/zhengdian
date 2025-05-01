@@ -14,14 +14,15 @@ return new class extends Migration
         Schema::create('sbir_fund06', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('project_id');
-            $table->texr('name');             // 設備名稱
-            $table->texr('code')->nullable(); // 財產編號
-            $table->text('price');    // 單套購置金額 A
-            $table->text('count');     // 套數 B
-            $table->text('life');      // 耐用年限
-            $table->text('monthly');  // 月使用費 (自動計算)
-            $table->text('investment_months'); // 投入月數
-            $table->text('total'); // 使用費用概算 (自動計算)
+            $table->unsignedBigInteger('user_id');
+            $table->text('name');             // 設備名稱
+            $table->text('code')->nullable(); // 財產編號
+            $table->text('price')->nullable();    // 單套購置金額 A
+            $table->text('count')->nullable();     // 套數 B
+            $table->text('life')->nullable();      // 耐用年限
+            $table->text('monthly')->nullable();  // 月使用費 (自動計算)
+            $table->text('investment_months')->nullable(); // 投入月數
+            $table->text('total')->nullable(); 
             $table->timestamps();
         });
     }

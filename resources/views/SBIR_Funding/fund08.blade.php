@@ -92,7 +92,7 @@
         <!-- end row -->
 
         <div class="row">
-            <form action="{{ route('project.fund05.data', $project->id) }}" method="POST">
+            <form action="{{ route('project.fund08.data', $project->id) }}" method="POST">
                 @csrf
                 <div class="row">
                     <div class="col-lg-12">
@@ -121,8 +121,9 @@
                                                 </tr>
                                             </tfoot>
                                         </table>
-                                        <button class="btn btn-secondary"  type="button" onclick="addCooperationRow()">新增一列</button>
-                                        
+                                        <button class="btn btn-secondary" type="button"
+                                            onclick="addCooperationRow()">新增一列</button>
+
                                         <!-- 按鈕 -->
                                         <div class="d-flex justify-content-start gap-2 mt-4">
                                             <button type="submit" class="btn btn-teal btn-success">送出存檔</button>
@@ -155,27 +156,27 @@
             const tbody = document.getElementById('cooperationTableBody');
             const row = document.createElement('tr');
             row.innerHTML = `
-                <td><input type="text" name="tax_ids[]" class="form-control"></td>
-                <td><input type="text" name="units[]" class="form-control"></td>
+                <td><input type="text" name="tax_id[]" class="form-control"></td>
+                <td><input type="text" name="company_name[]" class="form-control"></td>
                 <td><input type="text" name="content[]" class="form-control"></td>
-                <td><input type="number" name="amounts[]" class="form-control" step="0.01" onchange="updateCooperationTotal()"></td>
+                <td><input type="number" name="total[]" class="form-control" step="0.01" onchange="updateCooperationTotal()"></td>
                 <td><button type="button" class="btn btn-danger btn-sm" onclick="removeCooperationRow(this)">刪除</button></td>
             `;
             tbody.appendChild(row);
             updateCooperationTotal();
         }
-        
+
         function removeCooperationRow(btn) {
             btn.closest('tr').remove();
             updateCooperationTotal();
         }
-        
+
         function updateCooperationTotal() {
             let total = 0;
-            document.querySelectorAll('[name="amounts[]"]').forEach(input => {
+            document.querySelectorAll('[name="total[]"]').forEach(input => {
                 total += parseFloat(input.value) || 0;
             });
             document.getElementById('cooperationTotal').textContent = total.toFixed(2);
         }
-        </script>
+    </script>
 @endsection
