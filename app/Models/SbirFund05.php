@@ -21,6 +21,7 @@ class SbirFund05 extends Model
         'set_count',
         'remaining_years',
         'investment_months',
+        'usage_estimate',
         'total'
     ];
 }

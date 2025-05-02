@@ -117,31 +117,56 @@
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                @foreach ($datas as $key => $equipment)
-                                                <tr>
-                                                    <td><input type="text" name="equipment_name[]" class="form-control" value="{{ $equipment->equipment_name }}"></td>
-                                                    <td><input type="text" name="asset_number[]" class="form-control" value="{{ $equipment->asset_number }}"></td>
-                                                    <td><input type="number" name="purchase_amount[]" class="form-control" value="{{ $equipment->purchase_amount }}"></td>
-                                                    <td><input type="text" name="purchase_date[]" class="form-control" value="{{ $equipment->purchase_date }}"></td>
-                                                    <td><input type="number" name="book_value[]" class="form-control" value="{{ $equipment->book_value }}"></td>
-                                                    <td><input type="number" name="set_count[]" class="form-control" value="{{ $equipment->set_count }}"></td>
-                                                    <td><input type="number" name="remaining_years[]" class="form-control" value="{{ $equipment->remaining_years }}"></td>
-                                                    <td class="monthly_fee">0</td>
-                                                    <td><input type="number" name="investment_months[]" class="form-control" value="{{ $equipment->investment_months }}"></td>
-                                                    <td class="usage_estimate">0</td>
-                                                    <td><button type="button" class="btn btn-danger" onclick="removeEquipmentRow(this)">刪除</button></td>
-                                                </tr>
-                                                @endforeach
+                                                @if (isset($datas) && count($datas) > 0)
+                                                    @foreach ($datas as $key => $equipment)
+                                                        <tr>
+                                                            <td><input type="text" name="equipment_name[]"
+                                                                    class="form-control"
+                                                                    value="{{ $equipment->equipment_name }}"></td>
+                                                            <td><input type="text" name="asset_number[]"
+                                                                    class="form-control"
+                                                                    value="{{ $equipment->asset_number }}"></td>
+                                                            <td><input type="number" name="purchase_amount[]"
+                                                                    class="form-control"
+                                                                    value="{{ $equipment->purchase_amount }}"></td>
+                                                            <td><input type="text" name="purchase_date[]"
+                                                                    class="form-control"
+                                                                    value="{{ $equipment->purchase_date }}"></td>
+                                                            <td><input type="number" name="book_value[]"
+                                                                    class="form-control" oninput="calculateMonthlyFee(this)"
+                                                                    value="{{ $equipment->book_value }}"></td>
+                                                            <td><input type="number" name="set_count[]"
+                                                                    class="form-control" oninput="calculateMonthlyFee(this)"
+                                                                    value="{{ $equipment->set_count }}"></td>
+                                                            <td><input type="number" name="remaining_years[]"
+                                                                    class="form-control" oninput="calculateMonthlyFee(this)"
+                                                                    value="{{ $equipment->remaining_years }}">
+                                                            </td>
+                                                            <td class="monthly_fee">{{ $equipment->monthly_fee }}</td>
+                                                            <td><input type="number" name="investment_months[]"
+                                                                    class="form-control"
+                                                                    oninput="calculateUsageEstimate(this)"
+                                                                    value="{{ $equipment->investment_months }}">
+                                                            </td>
+                                                            <td class="usage_estimate">{{ $equipment->usage_estimate }}
+                                                            </td>
+                                                            <td><button type="button" class="btn btn-danger"
+                                                                    onclick="removeEquipmentRow(this)">刪除</button></td>
+                                                        </tr>
+                                                    @endforeach
+                                                @endif
                                             </tbody>
                                         </table>
-                                        
+
                                         <div class="mb-3">
-                                            <button type="button" class="btn btn-primary" onclick="addEquipmentRow()">新增一列</button>
+                                            <button type="button" class="btn btn-primary"
+                                                onclick="addEquipmentRow()">新增一列</button>
                                         </div>
                                         <!-- 按鈕 -->
                                         <div class="d-flex justify-content-start gap-2 mt-4">
                                             <button type="submit" class="btn btn-teal btn-success">送出存檔</button>
-                                            <a href="{{ route('project.sbir10',$project->id) }}"><button type="button" class="btn btn-primary">回上一頁</button></a>
+                                            <a href="{{ route('project.sbir10', $project->id) }}"><button type="button"
+                                                    class="btn btn-primary">回上一頁</button></a>
                                         </div>
                                     </div>
 
@@ -184,38 +209,38 @@
             `;
             tableBody.appendChild(newRow);
         }
-        
+
         // 刪除一列
         function removeEquipmentRow(button) {
             button.closest('tr').remove();
         }
-        
+
         // 計算月使用費
         function calculateMonthlyFee(input) {
             const row = input.closest('tr');
             const bookValue = parseFloat(row.querySelector('input[name="book_value[]"]').value) || 0;
             const setCount = parseFloat(row.querySelector('input[name="set_count[]"]').value) || 0;
             const remainingYears = parseFloat(row.querySelector('input[name="remaining_years[]"]').value) || 0;
-        
+
             let monthlyFee = 0;
             if (remainingYears > 0) {
                 monthlyFee = (bookValue * setCount) / (remainingYears * 12);
             }
-        
+
             row.querySelector('.monthly_fee').textContent = monthlyFee.toFixed(3);
-        
+
             // 重新計算使用費用概算
             calculateUsageEstimate(row.querySelector('input[name="investment_months[]"]'));
         }
-        
+
         // 計算使用費用概算
         function calculateUsageEstimate(input) {
             const row = input.closest('tr');
             const monthlyFee = parseFloat(row.querySelector('.monthly_fee').textContent) || 0;
             const investmentMonths = parseFloat(row.querySelector('input[name="investment_months[]"]').value) || 0;
-        
+
             const usageEstimate = monthlyFee * investmentMonths;
             row.querySelector('.usage_estimate').textContent = usageEstimate.toFixed(0);
         }
-        </script>
+    </script>
 @endsection

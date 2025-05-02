@@ -112,7 +112,18 @@
                                                 </tr>
                                             </thead>
                                             <tbody id="maintenanceTableBody">
-                                                <!-- 動態新增列 -->
+                                                @if (isset($datas) && count($datas) > 0)
+                                                    @foreach ($datas as $data)
+                                                    <tr>
+                                                        <td><input type="text" name="maintenance_name[]" class="form-control" value="{{ $data->name }}"></td>
+                                                        <td><input type="text" name="maintenance_code[]" class="form-control" value="{{ $data->code }}"></td>
+                                                        <td><input type="number" name="maintenance_price[]" class="form-control" step="1" value="{{ $data->unit_price }}"></td>
+                                                        <td><input type="number" name="maintenance_count[]" class="form-control" step="1" value="{{ $data->count }}"></td>
+                                                        <td><input type="number" name="maintenance_total[]" class="form-control" step="1" value="{{ $data->total }}"></td>
+                                                        <td><button type="button" class="btn btn-danger btn-sm" onclick="removeMaintenanceRow(this)">刪除</button></td>
+                                                    </tr>
+                                                    @endforeach
+                                                @endif
                                             </tbody>
                                             <tfoot>
                                                 <tr>
@@ -153,32 +164,51 @@
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
+        // 監聽整個 tbody 的輸入事件，透過事件代理處理三種欄位
+        document.getElementById('maintenanceTableBody').addEventListener('input', function(e) {
+            const name = e.target.name;
+            if (name === 'maintenance_price[]' || name === 'maintenance_count[]' || name === 'maintenance_total[]') {
+                const tr = e.target.closest('tr');
+                const price = parseFloat(tr.querySelector('[name="maintenance_price[]"]').value) || 0;
+                const count = parseFloat(tr.querySelector('[name="maintenance_count[]"]').value) || 0;
+                // 自動算出 price * count 填回小計欄
+                const totalInput = tr.querySelector('[name="maintenance_total[]"]');
+                totalInput.value = (price * count).toFixed(0);
+                // 更新整張表合計
+                calculateMaintenanceTotal();
+            }
+        });
+    
         function addMaintenanceRow() {
             const tbody = document.getElementById('maintenanceTableBody');
             const row = document.createElement('tr');
             row.innerHTML = `
                 <td><input type="text" name="maintenance_name[]" class="form-control"></td>
                 <td><input type="text" name="maintenance_code[]" class="form-control"></td>
-                <td><input type="number" name="maintenance_price[]" class="form-control" step="0.01"></td>
-                <td><input type="number" name="maintenance_count[]" class="form-control" step="0.01"></td>
-                <td><input type="number" name="maintenance_total[]" class="form-control" step="0.01" onchange="calculateMaintenanceTotal()"></td>
+                <td><input type="number" name="maintenance_price[]" class="form-control" step="1"></td>
+                <td><input type="number" name="maintenance_count[]" class="form-control" step="1"></td>
+                <td><input type="number" name="maintenance_total[]" class="form-control" step="1"></td>
                 <td><button type="button" class="btn btn-danger btn-sm" onclick="removeMaintenanceRow(this)">刪除</button></td>
             `;
             tbody.appendChild(row);
+            // 畫面上新增後立即更新合計（如果預設值不為 0）
             calculateMaintenanceTotal();
         }
-
+    
         function removeMaintenanceRow(btn) {
             btn.closest('tr').remove();
             calculateMaintenanceTotal();
         }
-
+    
         function calculateMaintenanceTotal() {
-            let total = 0;
+            let sum = 0;
             document.querySelectorAll('[name="maintenance_total[]"]').forEach(input => {
-                total += parseFloat(input.value) || 0;
+                sum += parseFloat(input.value) || 0;
             });
-            document.getElementById('maintenanceTotal').textContent = total.toFixed(0);
+            document.getElementById('maintenanceTotal').textContent = sum.toFixed(0);
         }
+    
+        // 頁面初次載入時計算一次
+        calculateMaintenanceTotal();
     </script>
 @endsection

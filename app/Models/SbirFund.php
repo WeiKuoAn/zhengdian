@@ -101,5 +101,8 @@ class SbirFund extends Model
         'subtotal_6_2',
         'subtotal_6_3',
 
+        'rate_subsidy',
+        'rate_self',
+        'rate_all',
     ];
 }

@@ -103,66 +103,58 @@
                                         <!--選單-->
                                         <ul class="nav nav-tabs">
                                             <li class="nav-item">
-                                                <a href="{{ route("project.sbir01",$project->id) }}" class="nav-link ">
+                                                <a href="{{ route('project.sbir01', $project->id) }}" class="nav-link ">
                                                     壹、計畫書基本資料
                                                 </a>
                                             </li>
                                             <li class="nav-item">
-                                                <a href="{{ route("project.sbir02",$project->id) }}" class="nav-link active">
+                                                <a href="{{ route('project.sbir02', $project->id) }}"
+                                                    class="nav-link active">
                                                     貳、計畫申請表
                                                 </a>
                                             </li>
                                             <li class="nav-item">
-                                                <a href="{{ route("project.sbir03",$project->id) }}" 
-                                                    class="nav-link">
+                                                <a href="{{ route('project.sbir03', $project->id) }}" class="nav-link">
                                                     參、計畫摘要表
                                                 </a>
                                             </li>
                                             <li class="nav-item">
-                                                <a href="{{ route("project.sbir04",$project->id) }}" 
-                                                    class="nav-link">
+                                                <a href="{{ route('project.sbir04', $project->id) }}" class="nav-link">
                                                     肆、公司概況
                                                 </a>
                                             </li>
                                             <li class="nav-item">
-                                                <a href="{{ route("project.sbir05",$project->id) }}" 
-                                                    class="nav-link">
+                                                <a href="{{ route('project.sbir05', $project->id) }}" class="nav-link">
                                                     伍、研發動機
                                                 </a>
                                             </li>
                                             <li class="nav-item">
-                                                <a href="{{ route("project.sbir06",$project->id) }}" 
-                                                    class="nav-link">
+                                                <a href="{{ route('project.sbir06', $project->id) }}" class="nav-link">
                                                     陸、計畫目標
                                                 </a>
                                             </li>
                                             <li class="nav-item">
-                                                <a href="{{ route("project.sbir07",$project->id) }}" 
-                                                    class="nav-link">
+                                                <a href="{{ route('project.sbir07', $project->id) }}" class="nav-link">
                                                     柒、實施方式
                                                 </a>
                                             </li>
                                             <li class="nav-item">
-                                                <a href="{{ route("project.sbir08",$project->id) }}" 
-                                                    class="nav-link">
+                                                <a href="{{ route('project.sbir08', $project->id) }}" class="nav-link">
                                                     捌、智財分析
                                                 </a>
                                             </li>
                                             <li class="nav-item">
-                                                <a href="{{ route("project.sbir09",$project->id) }}" 
-                                                    class="nav-link">
+                                                <a href="{{ route('project.sbir09', $project->id) }}" class="nav-link">
                                                     玖、計畫執行查核點說明
                                                 </a>
                                             </li>
                                             <li class="nav-item">
-                                                <a href="{{ route("project.sbir10",$project->id) }}" 
-                                                    class="nav-link">
+                                                <a href="{{ route('project.sbir10', $project->id) }}" class="nav-link">
                                                     拾、經費需求
                                                 </a>
                                             </li>
                                             <li class="nav-item">
-                                                <a href="{{ route("project.sbir07",$project->id) }}" 
-                                                    class="nav-link">
+                                                <a href="{{ route('project.sbir07', $project->id) }}" class="nav-link">
                                                     附件
                                                 </a>
                                             </li>
@@ -189,8 +181,8 @@
                                                     <div class="col-md-6">
                                                         <label class="form-label">核准設立日期<span
                                                                 class="text-danger">*</span></label>
-                                                        <input type="text" class="date form-control change_cal_date" name="create_date"
-                                                            name="create_date"
+                                                        <input type="text" class="form-control date change_cal_date"
+                                                            name="create_date" 
                                                             @if (isset($cust_data->create_date)) value="{{ $cust_data->create_date }}" @endif>
                                                     </div>
                                                     <div class="col-md-6">
@@ -227,7 +219,8 @@
                                                     <div class="col-md-6">
                                                         <label class="form-label">出生年月日<span
                                                                 class="text-danger">*</span></label>
-                                                        <input type="text" class="date form-control change_cal_date" name="birthday"
+                                                        <input type="text" class="date form-control change_cal_date"
+                                                            name="birthday"
                                                             @if (isset($cust_data)) value="{{ $cust_data->birthday }}" @endif>
                                                     </div>
                                                     <div class="col-md-6">
@@ -349,8 +342,9 @@
                                                     <table class="table table-bordered" id="factoryTable">
                                                         <thead>
                                                             <tr>
-                                                                <th>工廠名稱</th>
+                                                                <th>選取設定</th>
                                                                 <th>郵遞區號</th>
+                                                                <th>工廠名稱</th>
                                                                 <th>地址</th>
                                                                 <th>登記編號</th>
                                                                 <th>操作</th>
@@ -361,13 +355,17 @@
                                                             @if (count($cust_factorys) > 0)
                                                                 @foreach ($cust_factorys as $index => $cust_factory)
                                                                     <tr>
-                                                                        <td><input type="text" class="form-control"
-                                                                                name="factory_names[]"
-                                                                                value="{{ $cust_factory->name }}"></td>
+                                                                        <td><select name="setting[]" class="form-control">
+                                                                            <option value="是" @if($cust_factory->setting == "是") selected @endif>是</option>
+                                                                            <option value="否" @if($cust_factory->setting == "否") selected @endif>否</option>
+                                                                        </select></td>
                                                                         <td><input type="text" class="form-control"
                                                                                 name="factory_zipcodes[]"
                                                                                 value="{{ $cust_factory->zipcode }}">
                                                                         </td>
+                                                                        <td><input type="text" class="form-control"
+                                                                                name="factory_names[]"
+                                                                                value="{{ $cust_factory->name }}"></td>
                                                                         <td><input type="text" class="form-control"
                                                                                 name="factory_address[]"
                                                                                 value="{{ $cust_factory->address }}">
@@ -530,7 +528,7 @@
                                                                 @if (isset($project_accounting_data)) value="{{ $project_accounting_data->name }}" @endif>
                                                         </div>
                                                         <div class="col-md-2">
-                                                            <label class="form-label">聯絡電話(  )#分機</label>
+                                                            <label class="form-label">聯絡電話( )#分機</label>
                                                             <input type="text" class="form-control required-input"
                                                                 name="accounting_mobile"
                                                                 @if (isset($project_accounting_data)) value="{{ $project_accounting_data->mobile }}" @endif>
@@ -584,15 +582,25 @@
         </script>
     @endif
 
+    <!-- jQuery 先引入 -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <!-- 再引入 jQuery UI -->
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
+    <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
+    
     <script>
         function addFactoryRow() {
             const tbody = document.getElementById('factoryBody');
             const row = document.createElement('tr');
 
             row.innerHTML = `
-      <td><input type="text" class="form-control" name="factory_names[]" placeholder="請輸入工廠名稱" required></td>
+            <td><select name="setting[]" class="form-control">
+                <option value="是" selected>是</option>
+                <option value="否">否</option>
+            </select></td>
       <td><input type="text" class="form-control" name="factory_zipcodes[]" placeholder="請輸入郵遞區號" required></td>
+      <td><input type="text" class="form-control" name="factory_names[]" placeholder="請輸入工廠名稱" required></td>
       <td><input type="text" class="form-control" name="factory_address[]" placeholder="請輸入地址" required></td>
       <td><input type="text" class="form-control" name="factory_numbers[]" placeholder="請輸入登記編號" required></td>
       <td><button type="button" class="btn btn-danger btn-sm" onclick="this.closest('tr').remove()">刪除</button></td>
@@ -601,7 +609,7 @@
             tbody.appendChild(row);
         }
     </script>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    
     <script>
         document.addEventListener("DOMContentLoaded", function() {
             // 讀取 JSON 檔案

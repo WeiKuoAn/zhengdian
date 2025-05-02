@@ -245,7 +245,7 @@
                                                         class="text-danger">*</span></label>
                                                 <div class="row g-2">
                                                     <div class="col-md-12">
-                                                        <input type="text" name="start_date" class="date form-control change_cal_date" value="{{ $data->start_date }}">
+                                                        <input type="text" name="start_date" class="date form-control change_cal_date" @if(isset($data->start_date)) value="{{ $data->start_date }}" @endif>
                                                     </div>
                                                 </div>
                                             </div>
@@ -257,7 +257,7 @@
                                                         class="text-danger">*</span></label>
                                                 <div class="row g-2">
                                                     <div class="col-md-12">
-                                                        <input type="text" name="end_date" class="date form-control change_cal_date" value="{{ $data->end_date }}">
+                                                        <input type="text" name="end_date" class="date form-control change_cal_date" @if(isset($data->end_date)) value="{{ $data->end_date }}" @endif>
                                                     </div>
                                                 </div>
                                             </div>

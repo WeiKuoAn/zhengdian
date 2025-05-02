@@ -115,8 +115,33 @@
                                                 </tr>
                                             </thead>
                                             <tbody id="equipmentTableBody">
-                                                <!-- 動態列插入於此 -->
+                                                @if (isset($datas) && count($datas) > 0)
+                                                    @foreach ($datas as $key => $data)
+                                                        <tr>
+                                                            <td><input type="text" name="name[]" class="form-control"
+                                                                    value="{{ $data->name }}"></td>
+                                                            <td><input type="text" name="code[]" class="form-control"
+                                                                    value="{{ $data->code }}"></td>
+                                                            <td><input type="number" name="price[]" class="form-control"
+                                                                    step="1" value="{{ $data->price }}"></td>
+                                                            <td><input type="number" name="count[]" class="form-control"
+                                                                    step="1" value="{{ $data->count }}"></td>
+                                                            <td><input type="number" name="life[]" class="form-control"
+                                                                    step="1" value="{{ $data->life }}"></td>
+                                                            <td class="monthlyFee">{{ $data->monthly_fee }}</td>
+                                                            <td><input type="number" name="investment_months[]"
+                                                                    class="form-control" step="1"
+                                                                    value="{{ $data->investment_months }}"></td>
+                                                            <td class="usageEstimate">{{ $data->usage_estimate }}</td>
+                                                            <td>
+                                                                <button class="btn btn-sm btn-danger"
+                                                                    onclick="removeRow(this)">刪除</button>
+                                                            </td>
+                                                        </tr>
+                                                    @endforeach
+                                                @endif
                                             </tbody>
+
                                             <tfoot>
                                                 <tr>
                                                     <td colspan="7" class="text-end text-danger">合計</td>
@@ -125,7 +150,8 @@
                                                 </tr>
                                             </tfoot>
                                         </table>
-                                        <button class="btn btn-secondary" type="button" onclick="addEquipmentRow()">新增一列</button>
+                                        <button class="btn btn-secondary" type="button"
+                                            onclick="addEquipmentRow()">新增一列</button>
 
                                         <!-- 按鈕 -->
                                         <div class="d-flex justify-content-start gap-2 mt-4">
@@ -167,8 +193,8 @@
             }
             const estimate = monthly * months;
 
-            row.querySelector('.monthlyFee').innerText = monthly.toFixed(3);
-            row.querySelector('.usageEstimate').innerText = estimate.toFixed(0);
+            row.querySelector('.monthlyFee').textContent = monthly.toFixed(3);
+            row.querySelector('.usageEstimate').textContent = estimate.toFixed(0);
 
             return estimate;
         }
@@ -178,7 +204,7 @@
             document.querySelectorAll('#equipmentTableBody tr').forEach(row => {
                 total += calculateRow(row);
             });
-            document.getElementById('totalUsageEstimate').innerText = total.toFixed(2);
+            document.getElementById('totalUsageEstimate').textContent = total.toFixed(0);
         }
 
         function addEquipmentRow() {
@@ -193,7 +219,7 @@
                 <td class="monthlyFee">0.00</td>
                 <td><input type="number" name="investment_months[]" class="form-control" step="1"></td>
                 <td class="usageEstimate">0.00</td>
-                                <td>
+                <td>
                     <button class="btn btn-sm btn-danger" onclick="removeRow(this)">刪除</button>
                 </td>
             `;
@@ -208,5 +234,14 @@
             btn.closest('tr').remove();
             calculateTotal();
         }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('#equipmentTableBody tr').forEach(row => {
+                row.querySelectorAll('input').forEach(input => {
+                    input.addEventListener('input', () => calculateTotal());
+                });
+            });
+            calculateTotal(); // 初始化總計
+        });
     </script>
 @endsection

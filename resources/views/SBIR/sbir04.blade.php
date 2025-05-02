@@ -211,7 +211,8 @@
                                                 </div>
 
                                                 <hr>
-                                                <h5 class="text-uppercase bg-light p-2 mt-3 mb-3">公司近三年主要經營之產品項目、銷售業績及市場占有率</h5>
+                                                <h5 class="text-uppercase bg-light p-2 mt-3 mb-3">公司近三年主要經營之產品項目、銷售業績及市場占有率
+                                                </h5>
                                                 <div class="mb-3">
                                                     <table class="table table-bordered" id="threeYearTable">
                                                         <thead>
@@ -437,10 +438,12 @@
                                                                 @if (count($sbir04_goplans) > 0)
                                                                     @foreach ($sbir04_goplans as $goplan)
                                                                         <tr>
-                                                                            <td><input type="text" name="plan_type[]"
-                                                                                    class="form-control"
-                                                                                    value="{{ $goplan->plan_type }}">
-                                                                            </td>
+                                                                            <td><select name="plan_type[]" class="form-control">
+                                                                                <option value="A.協助傳統產業技術開發計畫(CITD計畫)" @if($goplan->plan_type == "A.協助傳統產業技術開發計畫(CITD計畫)") selected @endif>A.協助傳統產業技術開發計畫(CITD計畫)</option>
+                                                                                <option value="B.小型企業創新研發計畫(SBIR計畫)" @if($goplan->plan_type == "B.小型企業創新研發計畫(SBIR計畫)") selected @endif>B.小型企業創新研發計畫(SBIR計畫)</option>
+                                                                                <option value="C.服務業創新研發計畫(SIIR計畫)" @if($goplan->plan_type == "C.服務業創新研發計畫(SIIR計畫)") selected @endif>C.服務業創新研發計畫(SIIR計畫)</option>
+                                                                                <option value="D.其他研發計畫" @if($goplan->plan_type == "D.其他研發計畫") selected @endif>D.其他研發計畫</option>
+                                                                            </select></td>
                                                                             <td><input type="text" name="plan_name[]"
                                                                                     class="form-control"
                                                                                     value="{{ $goplan->plan_name }}">
@@ -501,25 +504,43 @@
                                                                             <textarea name="plan_focus[]" class="form-control">{{ $sbir04_goplan->plan_focus }}</textarea>
                                                                         </td>
                                                                         <td><input type="number" name="man_month[]"
-                                                                                class="form-control" value="{{ $sbir04_goplan->man_month }}"></td>
+                                                                                class="form-control"
+                                                                                value="{{ $sbir04_goplan->man_month }}">
+                                                                        </td>
                                                                         <td><input type="number" name="expected_value[]"
-                                                                                class="form-control" value="{{ $sbir04_goplan->expected_value }}"></td>
+                                                                                class="form-control"
+                                                                                value="{{ $sbir04_goplan->expected_value }}">
+                                                                        </td>
                                                                         <td><input type="number" name="expected_patent[]"
-                                                                                class="form-control" value="{{ $sbir04_goplan->expected_patent }}"></td>
+                                                                                class="form-control"
+                                                                                value="{{ $sbir04_goplan->expected_patent }}">
+                                                                        </td>
                                                                         <td><input type="number"
                                                                                 name="expected_employment[]"
-                                                                                class="form-control" value="{{ $sbir04_goplan->expected_employment }}"></td>
+                                                                                class="form-control"
+                                                                                value="{{ $sbir04_goplan->expected_employment }}">
+                                                                        </td>
                                                                         <td><input type="number" name="expected_invest[]"
-                                                                                class="form-control" value="{{ $sbir04_goplan->expected_invest }}"></td>
+                                                                                class="form-control"
+                                                                                value="{{ $sbir04_goplan->expected_invest }}">
+                                                                        </td>
                                                                         <td><input type="number" name="actual_value[]"
-                                                                                class="form-control" value="{{ $sbir04_goplan->actual_value }}"></td>
+                                                                                class="form-control"
+                                                                                value="{{ $sbir04_goplan->actual_value }}">
+                                                                        </td>
                                                                         <td><input type="number" name="actual_patent[]"
-                                                                                class="form-control" value="{{ $sbir04_goplan->actual_patent }}"></td>
+                                                                                class="form-control"
+                                                                                value="{{ $sbir04_goplan->actual_patent }}">
+                                                                        </td>
                                                                         <td><input type="number"
                                                                                 name="actual_employment[]"
-                                                                                class="form-control" value="{{ $sbir04_goplan->actual_employment }}"></td>
+                                                                                class="form-control"
+                                                                                value="{{ $sbir04_goplan->actual_employment }}">
+                                                                        </td>
                                                                         <td><input type="number" name="actual_invest[]"
-                                                                                class="form-control" value="{{ $sbir04_goplan->actual_invest }}"></td>
+                                                                                class="form-control"
+                                                                                value="{{ $sbir04_goplan->actual_invest }}">
+                                                                        </td>
                                                                         <td><button class="btn btn-sm btn-danger"
                                                                                 onclick="this.closest('tr').remove()">刪除</button>
                                                                         </td>
@@ -551,7 +572,7 @@
                                                             </tr>
                                                         </thead>
                                                         <tbody>
-                                                            @if(count($sbir04_applys) > 0)
+                                                            @if (count($sbir04_applys) > 0)
                                                                 @foreach ($sbir04_applys as $apply)
                                                                     <tr>
                                                                         <td><input type="date" name="apply_date[]"
@@ -678,7 +699,12 @@
         function addGovPlanRow() {
             document.querySelector('#govPlanTable1 tbody').insertAdjacentHTML('beforeend', `
     <tr>
-      <td><input type="text" name="plan_type[]" class="form-control"></td>
+      <td><select name="plan_type[]" class="form-control">
+          <option value="A.協助傳統產業技術開發計畫(CITD計畫)">A.協助傳統產業技術開發計畫(CITD計畫)</option>
+          <option value="B.小型企業創新研發計畫(SBIR計畫)">B.小型企業創新研發計畫(SBIR計畫)</option>
+          <option value="C.服務業創新研發計畫(SIIR計畫)">C.服務業創新研發計畫(SIIR計畫)</option>
+          <option value="D.其他研發計畫">D.其他研發計畫</option>
+      </select></td>
       <td><input type="text" name="plan_name[]" class="form-control"></td>
       <td><input type="date" name="start_date[]" class="form-control"></td>
       <td><input type="date" name="end_date[]" class="form-control"></td>

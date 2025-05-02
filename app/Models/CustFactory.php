@@ -10,6 +10,6 @@ class CustFactory extends Model
     use HasFactory;
     protected $table = 'cust_factory';
     protected $fillable = [
-        'user_id', 'project_id', 'name', 'zipcode', 'address','number'
+        'user_id', 'project_id', 'name', 'zipcode', 'address','number','setting'
     ];
 }

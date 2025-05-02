@@ -343,7 +343,7 @@ class SBIRFundController extends Controller
     {
         $project = CustProject::where('id', $id)->first();
         $staffs = SBIRStaff::where('project_id', $id)->get();
-        $datas = SbirFund01::where('project_id', $id)->get();
+        $datas = SbirFund08::where('project_id', $id)->get();
         return view('SBIR_Funding.fund08')->with('project', $project)->with('staffs', $staffs)->with('datas', $datas);
     }
 
@@ -529,7 +529,7 @@ class SBIRFundController extends Controller
     {
         $project = CustProject::where('id', $id)->first();
         $staffs = SBIRStaff::where('project_id', $id)->get();
-        $datas = SbirFund01::where('project_id', $id)->get();
+        $datas = SbirFund13::where('project_id', $id)->get();
         return view('SBIR_Funding.fund13')->with('project', $project)->with('staffs', $staffs)->with('datas', $datas);
     }
 

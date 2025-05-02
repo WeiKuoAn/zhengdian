@@ -111,7 +111,23 @@
                                                 </tr>
                                             </thead>
                                             <tbody id="cooperationTableBody">
-                                                <!-- 動態新增列 -->
+                                                @if (isset($datas))
+                                                    @foreach ($datas as $data)
+                                                        <tr>
+                                                            <td><input type="text" name="tax_id[]" class="form-control"
+                                                                    value="{{ $data->tax_id }}"></td>
+                                                            <td><input type="text" name="company_name[]"
+                                                                    class="form-control" value="{{ $data->company_name }}">
+                                                            </td>
+                                                            <td><input type="text" name="content[]" class="form-control"
+                                                                    value="{{ $data->content }}"></td>
+                                                            <td><input type="number" name="total[]" class="form-control"
+                                                                    step="1" value="{{ $data->total }}"></td>
+                                                            <td><button type="button" class="btn btn-danger btn-sm"
+                                                                    onclick="removeCooperationRow(this)">刪除</button></td>
+                                                        </tr>
+                                                    @endforeach
+                                                @endif
                                             </tbody>
                                             <tfoot>
                                                 <tr>
@@ -121,8 +137,9 @@
                                                 </tr>
                                             </tfoot>
                                         </table>
-                                        <button class="btn btn-secondary"  type="button" onclick="addCooperationRow()">新增一列</button>
-                                        
+                                        <button class="btn btn-secondary" type="button"
+                                            onclick="addCooperationRow()">新增一列</button>
+
                                         <!-- 按鈕 -->
                                         <div class="d-flex justify-content-start gap-2 mt-4">
                                             <button type="submit" class="btn btn-teal btn-success">送出存檔</button>
@@ -158,24 +175,34 @@
                 <td><input type="text" name="tax_id[]" class="form-control"></td>
                 <td><input type="text" name="company_name[]" class="form-control"></td>
                 <td><input type="text" name="content[]" class="form-control"></td>
-                <td><input type="number" name="total[]" class="form-control" step="0.01" onchange="updateCooperationTotal()"></td>
+                <td><input type="number" name="total[]" class="form-control" step="1"></td>
                 <td><button type="button" class="btn btn-danger btn-sm" onclick="removeCooperationRow(this)">刪除</button></td>
             `;
             tbody.appendChild(row);
+            row.querySelectorAll('input').forEach(input => {
+                input.addEventListener('input', updateCooperationTotal);
+            });
             updateCooperationTotal();
         }
-        
+
         function removeCooperationRow(btn) {
             btn.closest('tr').remove();
             updateCooperationTotal();
         }
-        
+
         function updateCooperationTotal() {
             let total = 0;
-            document.querySelectorAll('[name="amounts[]"]').forEach(input => {
+            document.querySelectorAll('[name="total[]"]').forEach(input => {
                 total += parseFloat(input.value) || 0;
             });
             document.getElementById('cooperationTotal').textContent = total.toFixed(2);
         }
-        </script>
+
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('[name="total[]"]').forEach(input => {
+                input.addEventListener('input', updateCooperationTotal);
+            });
+            updateCooperationTotal();
+        });
+    </script>
 @endsection

@@ -112,21 +112,23 @@
                                                 </tr>
                                             </thead>
                                             <tbody id="staffTableBody">
-                                                {{-- @foreach ($staffs as $key => $staff)
-                                                    <tr>
-                                                        <td><input type="text" name="name[]" class="form-control"
-                                                                value="{{ $staff->staff_name }}"></td>
-                                                        <td><input type="text" name="unit[]" class="form-control"
-                                                                value="{{ $staff->staff_name }}"></td>
-                                                        <td><input type="number" name="quantity[]" class="form-control"
-                                                                step="0.01"></td>
-                                                        <td><input type="number" name="price[]" class="form-control"
-                                                                step="0.01"></td>
-                                                        <td class="budget">0</td>
-                                                        <td><button type="button" class="btn btn-danger"
-                                                                onclick="removeStaffRow(this)">刪除</button></td>
-                                                    </tr>
-                                                @endforeach --}}
+                                                @if (isset($datas) && count($datas) > 0)
+                                                    @foreach ($datas as $key => $data)
+                                                        <tr>
+                                                            <td><input type="text" name="name[]" class="form-control"
+                                                                    value="{{ $data->name }}"></td>
+                                                            <td><input type="text" name="unit[]" class="form-control"
+                                                                    value="{{ $data->unit }}"></td>
+                                                            <td><input type="number" name="quantity[]" class="form-control"
+                                                                    step="1" value="{{ $data->quantity }}"></td>
+                                                            <td><input type="number" name="price[]" class="form-control"
+                                                                    step="1" value="{{ $data->price }}"></td>
+                                                            <td class="budget">0</td>
+                                                            <td><button type="button" class="btn btn-danger"
+                                                                    onclick="removeStaffRow(this)">刪除</button></td>
+                                                        </tr>
+                                                    @endforeach
+                                                @endif
                                             </tbody>
                                             <tfoot>
                                                 <tr>
@@ -144,7 +146,7 @@
                                         <div class="d-flex justify-content-start gap-2">
                                             <button type="submit" class="btn btn-teal btn-success">送出存檔</button>
                                             <a href="{{ route('project.sbir10', $project->id) }}"><button type="button"
-                                                class="btn btn-primary">回上一頁</button></a>
+                                                    class="btn btn-primary">回上一頁</button></a>
                                         </div>
                                     </div>
 
