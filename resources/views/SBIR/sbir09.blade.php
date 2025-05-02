@@ -162,8 +162,59 @@
 
                                         <div class="card-body">
                                             <div class="mb-5">
-                                                <h5 class="text-uppercase bg-light p-2 mt-3 mb-3">預定查核點說明</h5>
+                                                <h5 class="text-uppercase bg-light p-2 mt-3 mb-3">預定進度及查核點</h5>
+                                                <div class="mb-3">
+                                                    <table class="table table-bordered" id="pointsTable">
+                                                        <thead>
+                                                            <tr>
+                                                                <th>工作項目</th>
+                                                                <th>計畫權重</th>
+                                                                <th>預定投入人月</th>
+                                                                <th>管理</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            @if (count($points) > 0)
+                                                                @foreach ($points as $point)
+                                                                    <tr>
+                                                                        <td>
+                                                                            <input type="text"
+                                                                                name="point_items[]"
+                                                                                class="form-control"
+                                                                                value="{{ $point->item }}">
+                                                                        </td>
+                                                                        <td>
+                                                                            <input type="text" name="point_weights[]"
+                                                                                class="date form-control change_cal_date"
+                                                                                value="{{ $point->weight }}">
+                                                                        </td>
+                                                                        <td>
+                                                                            <input type="text"
+                                                                                name="point_months[]"
+                                                                                class="form-control"
+                                                                                value="{{ $point->month }}">
+                                                                        </td>
+                                                                        <td>
+                                                                            <button class="btn btn-danger btn-sm"
+                                                                                onclick="this.closest('tr').remove()">刪除</button>
+                                                                        </td>
+                                                                    </tr>
+                                                                @endforeach
+                                                            @endif
+                                                        </tbody>
+                                                    </table>
 
+                                                    <div class="mt-4">
+                                                        <button class="btn btn-secondary" type="button"
+                                                            onclick="addpointRow()">新增資料</button>
+                                                        <a href="{{ route('sbir09.export', $project->id) }}"
+                                                            class="btn btn-success">
+                                                            匯出計畫書預定進度及查核點 Word 檔
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                                <hr>
+                                                <h5 class="text-uppercase bg-light p-2 mt-3 mb-3">預定查核點說明</h5>
                                                 <div class="mb-3">
                                                     <table class="table table-bordered" id="checkpointsTable">
                                                         <thead>
@@ -185,7 +236,9 @@
                                                                                 value="{{ $checkpoint->checkpoint_code }}">
                                                                         </td>
                                                                         <td>
-                                                                            <input type="text" name="checkpoint_dues[]" class="date form-control change_cal_date" value="{{ $checkpoint->checkpoint_due }}">
+                                                                            <input type="text" name="checkpoint_dues[]"
+                                                                                class="date form-control change_cal_date"
+                                                                                value="{{ $checkpoint->checkpoint_due }}">
                                                                         </td>
                                                                         <td>
                                                                             <input type="text"
@@ -760,26 +813,53 @@
         </script>
     @endif
 
-     <!-- jQuery 先引入 -->
-     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- jQuery 先引入 -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
-     <!-- 再引入 jQuery UI -->
-     <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
-     <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
+    <!-- 再引入 jQuery UI -->
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
+    <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
     <script>
-        function addCheckpointRow() {
-            const table = document.getElementById('checkpointsTable').querySelector('tbody');
+        // 原本新增工作項目的函式
+        function addpointRow() {
+            const tbody = document.getElementById('pointsTable').querySelector('tbody');
             const row = document.createElement('tr');
-
             row.innerHTML = `
-      <td><input type="text" name="checkpoint_codes[]" class="form-control" placeholder="如 A1, B1"></td>
+      <td><input type="text" name="point_items[]" class="form-control" placeholder="如 A1.xxx"></td>
+      <td><input type="text" name="point_weights[]" class="date form-control change_cal_date"></td>
+      <td><input type="text" name="point_months[]" class="form-control"></td>
+      <td><button class="btn btn-danger btn-sm" onclick="this.closest('tr').remove()">刪除</button></td>
+    `;
+            tbody.appendChild(row);
+        }
+
+        // Helper：往 checkpointsTable 插入一列並填入 code
+        function addCheckpointRowWithCode(code) {
+            const tbody = document.getElementById('checkpointsTable').querySelector('tbody');
+            const row = document.createElement('tr');
+            row.innerHTML = `
+      <td><input type="text" name="checkpoint_codes[]" class="form-control" value="${code}"></td>
       <td><input type="text" name="checkpoint_dues[]" class="date form-control change_cal_date"></td>
       <td><input type="text" name="checkpoint_contents[]" class="form-control"></td>
       <td><button class="btn btn-danger btn-sm" onclick="this.closest('tr').remove()">刪除</button></td>
     `;
-
-            table.appendChild(row);
+            tbody.appendChild(row);
         }
+
+        // 事件代理：監聽 pointsTable tbody 裡，checkpoint_codes[] 欄位的 change
+        document
+            .getElementById('pointsTable')
+            .querySelector('tbody')
+            .addEventListener('change', function(e) {
+                if (e.target.name === 'point_items[]') {
+                    const val = e.target.value.trim();
+                    // 只接受「字母＋數字＋.」開頭
+                    const m = val.match(/^([A-Za-z]\d+)\./);
+                    if (m) {
+                        addCheckpointRowWithCode(m[1]);
+                    }
+                }
+            });
 
 
         function addEducationRow() {

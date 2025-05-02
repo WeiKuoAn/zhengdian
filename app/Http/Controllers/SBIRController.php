@@ -39,6 +39,7 @@ use ZipArchive;
 use RecursiveIteratorIterator;
 use RecursiveDirectoryIterator;
 use App\Models\Sbir09CheckPoint;
+use App\Models\Sbir09Point;
 use App\Models\Sbir09HostEducation;
 use App\Models\Sbir09HostExperience;
 use App\Models\Sbir09HostPlan;
@@ -601,6 +602,7 @@ class SBIRController extends Controller
         $project = CustProject::where('id', $id)->first();
         $data = SBIR07::where('project_id', $id)->first();
         $checkpoints = Sbir09CheckPoint::where('project_id', $id)->get();
+        $points = Sbir09Point::where('project_id', $id)->get();
         $project_host_data = ProjectHost::where('project_id', $id)->first();
         $host_educations = Sbir09HostEducation::where('project_id', $id)->get();
         $host_Experiences = Sbir09HostExperience::where('project_id', $id)->get();
@@ -624,12 +626,27 @@ class SBIRController extends Controller
             ->with('project_staffs', $project_staffs)
             ->with('project_personnel_count', $project_personnel_count)
             ->with('personCount', $personCount)
+            ->with('points', $points)
         ;
     }
 
     public function sbir09_data(Request $request, $id)
     {
         $project = CustProject::where('id', $id)->first();
+
+        if ($request->has('point_items')) {
+            Sbir09Point::where('project_id', $project->id)->delete();
+
+            foreach ($request->point_items as $index => $point_item) {
+                Sbir09Point::create([
+                    'user_id'  => $project->user_id,
+                    'project_id' => $project->id,
+                    'item' => $request->point_items[$index] ?? null,
+                    'weight' => $request->point_weights[$index] ?? null,
+                    'month'  => $request->point_months[$index] ?? null,
+                ]);
+            }
+        }
 
         if ($request->has('checkpoint_codes')) {
             Sbir09CheckPoint::where('project_id', $project->id)->delete();
@@ -739,12 +756,31 @@ class SBIRController extends Controller
         return redirect()->back()->with('success', '資料儲存成功');
     }
 
-    public function sbir10($id)
+    public function sbir09_export($id)
     {
+        // 加載 Word 模板
+        $templateProcessor =  new TemplateProcessor(storage_path('app/templates/sbir09.docx'));
+        // 獲取客戶資料
         $project = CustProject::where('id', $id)->first();
-        $data = SbirFund::where('project_id', $id)->first();
+        $sbir_points = Sbir09Point::where('project_id', $id)->get();
+        $user_data = User::where('id', $project->user_id)->first();
+        $templateProcessor->cloneRow('item', count($sbir_points));
+        $all_month = 0;
+        foreach ($sbir_points as $key => $sbir_point) {
+            $rowIndex = $key + 1;
+            $templateProcessor->setValue("item#{$rowIndex}", $sbir_point->item ?? ' ');
+            $templateProcessor->setValue("weight#{$rowIndex}", $sbir_point->weight ?? ' ');
+            $templateProcessor->setValue("month#{$rowIndex}", $sbir_point->month ?? ' ');
+            $all_month += $sbir_point->month;
+        }
+        $templateProcessor->setValue("all_month", $all_month ?? ' ');
+        // 保存修改後的文件到臨時路徑
+        $fileName = $user_data->name . '-預定進度及查核點' . '.docx';
+        $tempFilePath = tempnam(sys_get_temp_dir(), 'phpword') . '.docx';
+        $templateProcessor->saveAs($tempFilePath);
 
-        return view('SBIR.sbir10')->with('project', $project)->with('data', $data);
+        // 將文件作為下載返回，並在傳送後刪除臨時文件
+        return response()->download($tempFilePath, $fileName)->deleteFileAfterSend(true);
     }
 
     public function sbir10_da(Request $request, $id)
@@ -910,7 +946,7 @@ class SBIRController extends Controller
         $templateProcessor->setValue('cust_insurance_total', $cust_data->insurance_total ?? ' ');
 
         //工廠
-        $cust_factory_data = CustFactory::where('project_id', $id)->where('setting','是')->first();
+        $cust_factory_data = CustFactory::where('project_id', $id)->where('setting', '是')->first();
         $templateProcessor->setValue('sbir02_factory_zipcode', $cust_factory_data->zipcode ?? ' ');
         $templateProcessor->setValue('sbir02_factory_address', $cust_factory_data->address ?? ' ');
         $templateProcessor->setValue('sbir02_factory_number', $cust_factory_data->number ?? ' ');
@@ -986,7 +1022,7 @@ class SBIRController extends Controller
                 $i = $key + 1;
                 $templateProcessor->setValue("sbir04_gov_plan_type#{$i}",       $plan->plan_type);
                 $templateProcessor->setValue("sbir04_gov_plan_name#{$i}",       $plan->plan_name);
-                $templateProcessor->setValue("sbir04_gov_plan_start_end#{$i}",        $plan->start_date."~".$plan->end_date);
+                $templateProcessor->setValue("sbir04_gov_plan_start_end#{$i}",        $plan->start_date . "~" . $plan->end_date);
                 $templateProcessor->setValue("sbir04_gov_plan_gov_subsidy#{$i}",       number_format($plan->gov_subsidy));
                 $templateProcessor->setValue("sbir04_gov_plan_gov_self_funding#{$i}", number_format($plan->self_funding));
                 $templateProcessor->setValue("sbir04_gov_plan_focus#{$i}",      $plan->plan_focus);
@@ -994,18 +1030,18 @@ class SBIRController extends Controller
                 $templateProcessor->setValue(
                     "sbir04_gov_plan_expected#{$i}",
                     // 四個標題並且各自換行
-                    "增加產值：" .number_format($plan->expected_value)."\n" .
-                    "專利申請：" .number_format($plan->expected_patent)."\n" .
-                    "增加就業人數：" .number_format($plan->expected_employment)."\n" .
-                    "促進投資：" .number_format($plan->expected_invest)
+                    "增加產值：" . number_format($plan->expected_value) . "\n" .
+                        "專利申請：" . number_format($plan->expected_patent) . "\n" .
+                        "增加就業人數：" . number_format($plan->expected_employment) . "\n" .
+                        "促進投資：" . number_format($plan->expected_invest)
                 );
                 $templateProcessor->setValue(
                     "sbir04_gov_plan_actual#{$i}",
                     // 四個標題並且各自換行
-                    "增加產值：" .number_format($plan->actual_value)."\n" .
-                    "專利申請：" .number_format($plan->actual_patent)."\n" .
-                    "增加就業人數：" .number_format($plan->actual_employment)."\n" .
-                    "促進投資：" .number_format($plan->actual_invest)
+                    "增加產值：" . number_format($plan->actual_value) . "\n" .
+                        "專利申請：" . number_format($plan->actual_patent) . "\n" .
+                        "增加就業人數：" . number_format($plan->actual_employment) . "\n" .
+                        "促進投資：" . number_format($plan->actual_invest)
                 );
             }
         }
@@ -1013,7 +1049,7 @@ class SBIRController extends Controller
 
         $sbir04_applyingplans = Sbir04Applyingplan::where('project_id', $project->id)->get();
         $sbir04_applyingplans_count = count($sbir04_applyingplans);
-        
+
         if ($sbir04_applyingplans_count === 0) {
             // 不呼叫 cloneRow，保留模板裡原本那一列的 ${sbir04_applyingplan_apply_*}
             $templateProcessor->setValue('sbir04_applyingplan_key',       '無');

@@ -198,6 +198,7 @@ Route::get('/project/{id}/sbir08/get-field', function (\Illuminate\Http\Request 
 
 Route::get('project/sbir09/{id}', [SBIRController::class, 'sbir09'])->name('project.sbir09');
 Route::post('project/sbir09/{id}', [SBIRController::class, 'sbir09_data'])->name('project.sbir09.data');
+Route::get('project/sbir09/{id}/export', [SBIRController::class, 'sbir09_export'])->name('sbir09.export');
 
 Route::get('project/sbir10/{id}', [SBIRController::class, 'sbir10'])->name('project.sbir10');
 Route::post('project/sbir10/{id}', [SBIRController::class, 'sbir10_da'])->name('project.sbir10.data');
