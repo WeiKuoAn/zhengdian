@@ -783,6 +783,13 @@ class SBIRController extends Controller
         return response()->download($tempFilePath, $fileName)->deleteFileAfterSend(true);
     }
 
+    public function sbir10($id)
+    {
+        $project = CustProject::where('id', $id)->first();
+        $data = SbirFund::where('project_id', $id)->first();
+        return view('SBIR.sbir10')->with('project', $project)->with('data', $data);
+    }
+
     public function sbir10_da(Request $request, $id)
     {
         $project = CustProject::where('id', $id)->first();
@@ -907,7 +914,11 @@ class SBIRController extends Controller
         //part0.封面
         $templateProcessor->setValue('start_date', formatRocDate($sbir01->start_date ?? ' ')); // 計畫開始日期
         $templateProcessor->setValue('end_date',   formatRocDate($sbir01->end_date ?? ' ')); // 計畫結束日期
-        $templateProcessor->setValue('start_month',   mb_substr(formatRocDate($sbir01->start_date), 0, 7)); // 計畫結束日期
+        if (isset($sbir01->start_date)) {
+            $templateProcessor->setValue('start_month',   mb_substr(formatRocDate($sbir01->start_date), 0, 7)); // 計畫結束日期
+        } else {
+            $templateProcessor->setValue('start_month',   ''); // 計畫結束日期
+        }
         $templateProcessor->setValue('plan_name', $sbir01->plan_name ?? ' '); // 計畫名稱
         $templateProcessor->setValue('cust_name', $user_data->name ?? ' '); // 公司名稱
 
@@ -960,16 +971,16 @@ class SBIRController extends Controller
         $templateProcessor->setValue('sbir03_innovation_focus', str_replace("\n\n", '</w:t><w:br/><w:t>', $sbir03->innovation_focus ?? ' '));
         $templateProcessor->setValue('sbir03_execution_advantage', str_replace("\n\n", '</w:t><w:br/><w:t>', $sbir03->execution_advantage ?? ' '));
 
-        $templateProcessor->setValue('sbir03_benefit_output_value', safeWordValue(number_format($sbir03->benefit_output_value)));
-        $templateProcessor->setValue('sbir03_benefit_new_products', safeWordValue(number_format($sbir03->benefit_new_products)));
-        $templateProcessor->setValue('sbir03_benefit_derived_products', safeWordValue(number_format($sbir03->benefit_derived_products)));
-        $templateProcessor->setValue('sbir03_benefit_rnd_cost', safeWordValue(number_format($sbir03->benefit_rnd_cost)));
-        $templateProcessor->setValue('sbir03_benefit_investment', safeWordValue(number_format($sbir03->benefit_investment)));
-        $templateProcessor->setValue('sbir03_benefit_cost_reduction', safeWordValue(number_format($sbir03->benefit_cost_reduction)));
-        $templateProcessor->setValue('sbir03_benefit_jobs_created', safeWordValue(number_format($sbir03->benefit_jobs_created)));
-        $templateProcessor->setValue('sbir03_benefit_new_companies', safeWordValue(number_format($sbir03->benefit_new_companies)));
-        $templateProcessor->setValue('sbir03_benefit_patents', safeWordValue(number_format($sbir03->benefit_patents)));
-        $templateProcessor->setValue('sbir03_benefit_new_patents', safeWordValue(number_format($sbir03->benefit_new_patents)));
+        $templateProcessor->setValue('sbir03_benefit_output_value', safeWordValue(number_format($sbir03->benefit_output_value ?? null)));
+        $templateProcessor->setValue('sbir03_benefit_new_products', safeWordValue(number_format($sbir03->benefit_new_products ?? null)));
+        $templateProcessor->setValue('sbir03_benefit_derived_products', safeWordValue(number_format($sbir03->benefit_derived_products ?? null)));
+        $templateProcessor->setValue('sbir03_benefit_rnd_cost', safeWordValue(number_format($sbir03->benefit_rnd_cost ?? null)));
+        $templateProcessor->setValue('sbir03_benefit_investment', safeWordValue(number_format($sbir03->benefit_investment ?? null)));
+        $templateProcessor->setValue('sbir03_benefit_cost_reduction', safeWordValue(number_format($sbir03->benefit_cost_reduction ?? null)));
+        $templateProcessor->setValue('sbir03_benefit_jobs_created', safeWordValue(number_format($sbir03->benefit_jobs_created ?? null)));
+        $templateProcessor->setValue('sbir03_benefit_new_companies', safeWordValue(number_format($sbir03->benefit_new_companies ?? null)));
+        $templateProcessor->setValue('sbir03_benefit_patents', safeWordValue(number_format($sbir03->benefit_patents ?? null)));
+        $templateProcessor->setValue('sbir03_benefit_new_patents', safeWordValue(number_format($sbir03->benefit_new_patents ?? null)));
 
         $sbir04_shareholders = Sbir04Shareholders::where('project_id', $project->id)->get();
         $templateProcessor->cloneRow('sbir04_shareholder_name', count($sbir04_shareholders));
@@ -1406,31 +1417,79 @@ class SBIRController extends Controller
         $sbir_fund08 = SbirFund08::where('project_id', $project->id)->first();
         $templateProcessor->setValue("sbir_fund08_name", $sbir_fund08->company_name ?? '-');
         $templateProcessor->setValue("sbir_fund08_content", $sbir_fund08->content ?? '-');
-        $templateProcessor->setValue("sbir_fund08_total", safeWordValue(number_format($sbir_fund08->total)) ?? '-');
+        $templateProcessor->setValue(
+            'sbir_fund08_total',
+            safeWordValue(
+                // 先取属性（null-safe），再格式化
+                is_numeric($sbir_fund08?->total ?? null)
+                    ? number_format($sbir_fund08->total)
+                    : null
+            )
+        );
 
         $sbir_fund09 = SbirFund09::where('project_id', $project->id)->first();
         $templateProcessor->setValue("sbir_fund09_name", $sbir_fund09->company_name ?? '-');
         $templateProcessor->setValue("sbir_fund09_content", $sbir_fund09->content ?? '-');
-        $templateProcessor->setValue("sbir_fund09_total", safeWordValue(number_format($sbir_fund09->total)) ?? '-');
+        $templateProcessor->setValue(
+            'sbir_fund09_total',
+            safeWordValue(
+                // 先取属性（null-safe），再格式化
+                is_numeric($sbir_fund09?->total ?? null)
+                    ? number_format($sbir_fund09->total)
+                    : null
+            )
+        );
 
         $sbir_fund10 = SbirFund10::where('project_id', $project->id)->first();
         $templateProcessor->setValue("sbir_fund10_name", $sbir_fund10->company_name ?? '-');
         $templateProcessor->setValue("sbir_fund10_content", $sbir_fund10->content ?? '-');
-        $templateProcessor->setValue("sbir_fund10_total", safeWordValue(number_format($sbir_fund10->total)) ?? '-');
+        $templateProcessor->setValue(
+            'sbir_fund10_total',
+            safeWordValue(
+                // 先取属性（null-safe），再格式化
+                is_numeric($sbir_fund10?->total ?? null)
+                    ? number_format($sbir_fund10->total)
+                    : null
+            )
+        );
 
         $sbir_fund11 = SbirFund11::where('project_id', $project->id)->first();
         $templateProcessor->setValue("sbir_fund11_name", $sbir_fund11->company_name ?? '-');
         $templateProcessor->setValue("sbir_fund11_content", $sbir_fund11->content ?? '-');
-        $templateProcessor->setValue("sbir_fund11_total", safeWordValue(number_format($sbir_fund11->total)) ?? '-');
+        $templateProcessor->setValue(
+            'sbir_fund11_total',
+            safeWordValue(
+                // 先取属性（null-safe），再格式化
+                is_numeric($sbir_fund11?->total ?? null)
+                    ? number_format($sbir_fund11->total)
+                    : null
+            )
+        );
 
         $sbir_fund12 = SbirFund12::where('project_id', $project->id)->first();
         $templateProcessor->setValue("sbir_fund12_name", $sbir_fund12->company_name ?? '-');
         $templateProcessor->setValue("sbir_fund12_content", $sbir_fund12->content ?? '-');
-        $templateProcessor->setValue("sbir_fund12_total", safeWordValue(number_format($sbir_fund12->total)) ?? '-');
+        $templateProcessor->setValue(
+            'sbir_fund12_total',
+            safeWordValue(
+                // 先取属性（null-safe），再格式化
+                is_numeric($sbir_fund12?->total ?? null)
+                    ? number_format($sbir_fund12->total)
+                    : null
+            )
+        );
 
-        $sbir_fund08_12_total_all = $sbir_fund08->total + $sbir_fund09->total + $sbir_fund10->total + $sbir_fund11->total + $sbir_fund12->total;
+        $sbir_fund08_12_total_all  =
+            ($sbir_fund08?->total ?? 0)
+            + ($sbir_fund09?->total ?? 0)
+            + ($sbir_fund10?->total ?? 0)
+            + ($sbir_fund11?->total ?? 0)
+            + ($sbir_fund12?->total ?? 0);
 
-        $templateProcessor->setValue("sbir_fund08_12_total_all", safeWordValue(number_format($sbir_fund08_12_total_all)));
+        $templateProcessor->setValue(
+            'sbir_fund08_12_total_all',
+            safeWordValue(number_format($sbir_fund08_12_total_all ))
+        );
 
         //
         $sbir_fund13s = SbirFund13::where('project_id', $project->id)->get();
