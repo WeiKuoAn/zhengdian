@@ -182,7 +182,7 @@
                                                         <label class="form-label">核准設立日期<span
                                                                 class="text-danger">*</span></label>
                                                         <input type="text" class="form-control date change_cal_date"
-                                                            name="create_date" 
+                                                            name="create_date"
                                                             @if (isset($cust_data->create_date)) value="{{ $cust_data->create_date }}" @endif>
                                                     </div>
                                                     <div class="col-md-6">
@@ -356,9 +356,13 @@
                                                                 @foreach ($cust_factorys as $index => $cust_factory)
                                                                     <tr>
                                                                         <td><select name="setting[]" class="form-control">
-                                                                            <option value="是" @if($cust_factory->setting == "是") selected @endif>是</option>
-                                                                            <option value="否" @if($cust_factory->setting == "否") selected @endif>否</option>
-                                                                        </select></td>
+                                                                                <option value="是"
+                                                                                    @if ($cust_factory->setting == '是') selected @endif>
+                                                                                    是</option>
+                                                                                <option value="否"
+                                                                                    @if ($cust_factory->setting == '否') selected @endif>
+                                                                                    否</option>
+                                                                            </select></td>
                                                                         <td><input type="text" class="form-control"
                                                                                 name="factory_zipcodes[]"
                                                                                 value="{{ $cust_factory->zipcode }}">
@@ -556,10 +560,18 @@
                                             </div>
 
 
-                                            <!-- 按鈕 -->
                                             <div class="d-flex justify-content-start gap-2">
-                                                <button type="submit" class="btn btn-teal btn-success">送出存檔</button>
-                                                <button type="button" class="btn btn-primary">回上一頁</button>
+                                                <div class="col-md-8">
+                                                    <button type="submit" class="btn btn-teal btn-success">送出存檔</button>
+                                                    <button type="button" class="btn btn-primary">回上一頁</button>
+                                                </div>
+                                                <!-- 匯出 Word 按鈕 -->
+                                                <div class="col-md-4 text-end">
+                                                    <a href="{{ route('sbir.exportWord', $project->id) }}"
+                                                        class="btn btn-danger ">
+                                                        匯出計畫書 Word 檔
+                                                    </a>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -588,7 +600,7 @@
     <!-- 再引入 jQuery UI -->
     <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
     <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
-    
+
     <script>
         function addFactoryRow() {
             const tbody = document.getElementById('factoryBody');
@@ -609,7 +621,7 @@
             tbody.appendChild(row);
         }
     </script>
-    
+
     <script>
         document.addEventListener("DOMContentLoaded", function() {
             // 讀取 JSON 檔案

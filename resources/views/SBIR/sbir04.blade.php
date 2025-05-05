@@ -100,7 +100,7 @@
                             <div class="col-12 mb-4">
                                 <div class="card">
                                     <div class="card-body">
-                                        <!--選單-->
+                                        
                                         <ul class="nav nav-tabs">
                                             <li class="nav-item">
                                                 <a href="{{ route('project.sbir01', $project->id) }}" class="nav-link ">
@@ -161,6 +161,7 @@
                                         </ul>
 
                                         <div class="card-body">
+                                            
                                             <div class="mb-5">
                                                 <h5 class="text-uppercase bg-light p-2 mt-3 mb-3">董監事持股比例</h5>
                                                 <div class="mb-3">
@@ -301,7 +302,7 @@
                                                                                 class="form-control"
                                                                                 value="{{ $main_product->product_name }}">
                                                                         </td>
-                                                                        <td><input type="number" name="output_y1[]"
+                                                                        <td><input type="text" name="output_y1[]"
                                                                                 class="form-control"
                                                                                 value="{{ $main_product->output_y1 }}">
                                                                         </td>
@@ -313,7 +314,7 @@
                                                                                 class="form-control"
                                                                                 value="{{ $main_product->share_y1 }}">
                                                                         </td>
-                                                                        <td><input type="number" name="output_y2[]"
+                                                                        <td><input type="text" name="output_y2[]"
                                                                                 class="form-control"
                                                                                 value="{{ $main_product->output_y2 }}">
                                                                         </td>
@@ -325,7 +326,7 @@
                                                                                 class="form-control"
                                                                                 value="{{ $main_product->share_y2 }}">
                                                                         </td>
-                                                                        <td><input type="number" name="output_y3[]"
+                                                                        <td><input type="text" name="output_y3[]"
                                                                                 class="form-control"
                                                                                 value="{{ $main_product->output_y3 }}">
                                                                         </td>
@@ -500,6 +501,7 @@
                                                             <tbody>
                                                                 @if (count($sbir04_goplans) > 0)
                                                                     @foreach ($sbir04_goplans as $sbir04_goplan)
+                                                                    <tr>
                                                                         <td>
                                                                             <textarea name="plan_focus[]" class="form-control">{{ $sbir04_goplan->plan_focus }}</textarea>
                                                                         </td>
@@ -544,6 +546,7 @@
                                                                         <td><button class="btn btn-sm btn-danger"
                                                                                 onclick="this.closest('tr').remove()">刪除</button>
                                                                         </td>
+                                                                    </tr>
                                                                     @endforeach
                                                                 @endif
                                                             </tbody>
@@ -612,8 +615,17 @@
 
                                                 <!-- 按鈕 -->
                                                 <div class="d-flex justify-content-start gap-2">
-                                                    <button type="submit" class="btn btn-teal btn-success">送出存檔</button>
-                                                    <button type="button" class="btn btn-primary">回上一頁</button>
+                                                    <div class="col-md-8">
+                                                        <button type="submit" class="btn btn-teal btn-success">送出存檔</button>
+                                                        <button type="button" class="btn btn-primary">回上一頁</button>
+                                                    </div>
+                                                    <!-- 匯出 Word 按鈕 -->
+                                                    <div class="col-md-4 text-end">
+                                                        <a href="{{ route('sbir.exportWord', $project->id) }}"
+                                                            class="btn btn-danger ">
+                                                            匯出計畫書 Word 檔
+                                                        </a>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
@@ -665,15 +677,15 @@
             document.querySelector('#mainProductTable tbody').insertAdjacentHTML('beforeend', `
     <tr>
       <td><input type="text" name="product_name[]" class="form-control"></td>
-      <td><input type="number" name="output_y1[]" class="form-control"></td>
+      <td><input type="text" name="output_y1[]" class="form-control"></td>
       <td><input type="number" name="sales_y1[]" class="form-control"></td>
-      <td><input type="number" name="share_y1[]" class="form-control"></td>
-      <td><input type="number" name="output_y2[]" class="form-control"></td>
+      <td><input type="number" name="share_y1[]" class="form-control" step="0.01"></td>
+      <td><input type="text" name="output_y2[]" class="form-control"></td>
       <td><input type="number" name="sales_y2[]" class="form-control"></td>
-      <td><input type="number" name="share_y2[]" class="form-control"></td>
-      <td><input type="number" name="output_y3[]" class="form-control"></td>
+      <td><input type="number" name="share_y2[]" class="form-control" step="0.01"></td>
+      <td><input type="text" name="output_y3[]" class="form-control"></td>
       <td><input type="number" name="sales_y3[]" class="form-control"></td>
-      <td><input type="number" name="share_y3[]" class="form-control"></td>
+      <td><input type="number" name="share_y3[]" class="form-control" step="0.01"></td>
       <td><button class="btn btn-sm btn-danger" onclick="this.closest('tr').remove()">刪除</button></td>
     </tr>`);
         }

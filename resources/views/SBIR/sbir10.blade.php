@@ -723,8 +723,17 @@
 
                                                 <!-- 按鈕 -->
                                                 <div class="d-flex justify-content-start gap-2">
-                                                    <button type="submit" class="btn btn-teal btn-success">送出存檔</button>
-                                                    <button type="button" class="btn btn-primary">回上一頁</button>
+                                                    <div class="col-md-8">
+                                                        <button type="submit" class="btn btn-teal btn-success">送出存檔</button>
+                                                        <button type="button" class="btn btn-primary">回上一頁</button>
+                                                    </div>
+                                                    <!-- 匯出 Word 按鈕 -->
+                                                    <div class="col-md-4 text-end">
+                                                        <a href="{{ route('sbir.exportWord', $project->id) }}"
+                                                            class="btn btn-danger ">
+                                                            匯出計畫書 Word 檔
+                                                        </a>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
