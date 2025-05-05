@@ -562,8 +562,8 @@ class SBIRController extends Controller
         $templateProcessor =  new TemplateProcessor(storage_path('app/templates/sbir08.docx'));
         // 獲取客戶資料
         $project = CustProject::where('id', $id)->first();
-        $sbir08s = SBIR08::where('project_id', $id)->get();
         $user_data = User::where('id', $project->user_id)->first();
+        $sbir08s = SBIR08::where('project_id', $id)->get();
         $templateProcessor->cloneRow('query08', count($sbir08s));
         foreach ($sbir08s as $key => $sbir08) {
             $rowIndex = $key + 1;
@@ -763,8 +763,8 @@ class SBIRController extends Controller
         $templateProcessor =  new TemplateProcessor(storage_path('app/templates/sbir09.docx'));
         // 獲取客戶資料
         $project = CustProject::where('id', $id)->first();
-        $sbir_points = Sbir09Point::where('project_id', $id)->get();
         $user_data = User::where('id', $project->user_id)->first();
+        $sbir_points = Sbir09Point::where('project_id', $id)->get();
         $templateProcessor->cloneRow('item', count($sbir_points));
         $all_month = 0;
         foreach ($sbir_points as $key => $sbir_point) {
@@ -1096,8 +1096,30 @@ class SBIRController extends Controller
             }
         }
 
+        //智財分析
+        $sbir08s = SBIR08::where('project_id', $id)->get();
+        $templateProcessor->cloneRow('query08', count($sbir08s));
+        foreach ($sbir08s as $key => $sbir08) {
+            $rowIndex = $key + 1;
+            $templateProcessor->setValue("query08#{$rowIndex}", $sbir08->query ?? ' ');
+            $templateProcessor->setValue("search_result#{$rowIndex}", $sbir08->search_result ?? ' ');
+            $templateProcessor->setValue("analysis#{$rowIndex}", $sbir08->analysis ?? ' ');
+        }
 
+        //預定進度及查核點
+        $sbir_points = Sbir09Point::where('project_id', $id)->get();
+        $templateProcessor->cloneRow('item', count($sbir_points));
+        $all_month = 0;
+        foreach ($sbir_points as $key => $sbir_point) {
+            $rowIndex = $key + 1;
+            $templateProcessor->setValue("item#{$rowIndex}", $sbir_point->item ?? ' ');
+            $templateProcessor->setValue("weight#{$rowIndex}", $sbir_point->weight ?? ' ');
+            $templateProcessor->setValue("month#{$rowIndex}", $sbir_point->month ?? ' ');
+            $all_month += $sbir_point->month;
+        }
+        $templateProcessor->setValue("all_month", $all_month ?? ' ');
 
+        //預定查核點說明
         $sbir09_checkpoints = Sbir09CheckPoint::where('project_id', $project->id)->get();
         $templateProcessor->cloneRow('sbir09_checkpoint_code', count($sbir09_checkpoints));
         foreach ($sbir09_checkpoints as $key => $sbir09_check) {
@@ -1525,6 +1547,8 @@ class SBIRController extends Controller
         return $out1;
     }
 
+    //單獨匯出研發動機
+    
 
     //匯出研發動機
     public function export($id): string
