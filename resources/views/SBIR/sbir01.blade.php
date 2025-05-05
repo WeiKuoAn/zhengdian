@@ -275,7 +275,7 @@
                                                 </div>
                                                 <!-- 匯出 Word 按鈕 -->
                                                 <div class="col-md-4 text-end">
-                                                    <a href="{{ route('sbir.exportWord', $project->id) }}"
+                                                    <a href="{{ route('sbir.exportMerged', $project->id) }}"
                                                         class="btn btn-danger ">
                                                         匯出計畫書 Word 檔
                                                     </a>

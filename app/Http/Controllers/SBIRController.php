@@ -630,6 +630,7 @@ class SBIRController extends Controller
         ;
     }
 
+
     public function sbir09_data(Request $request, $id)
     {
         $project = CustProject::where('id', $id)->first();
@@ -1115,13 +1116,13 @@ class SBIRController extends Controller
         foreach ($sbir04_main_products as $key => $sbir04_main_product) {
             $rowIndex = $key + 1;
             $templateProcessor->setValue("sbir04_product_name#{$rowIndex}", $sbir04_main_product->product_name ?? ' ');
-            $templateProcessor->setValue("sbir04_output_y1#{$rowIndex}", number_format($sbir04_main_product->output_y1) ?? ' ');
+            $templateProcessor->setValue("sbir04_output_y1#{$rowIndex}", $sbir04_main_product->output_y1 ?? ' ');
             $templateProcessor->setValue("sbir04_sales_y1#{$rowIndex}", number_format($sbir04_main_product->sales_y1) ?? ' ');
             $templateProcessor->setValue("sbir04_share_y1#{$rowIndex}", number_format($sbir04_main_product->share_y1) . '%' ?? ' ');
-            $templateProcessor->setValue("sbir04_output_y2#{$rowIndex}", number_format($sbir04_main_product->output_y2) ?? ' ');
+            $templateProcessor->setValue("sbir04_output_y2#{$rowIndex}", $sbir04_main_product->output_y2 ?? ' ');
             $templateProcessor->setValue("sbir04_sales_y2#{$rowIndex}", number_format($sbir04_main_product->sales_y2) ?? ' ');
             $templateProcessor->setValue("sbir04_share_y2#{$rowIndex}", number_format($sbir04_main_product->share_y2) . '%' ?? ' ');
-            $templateProcessor->setValue("sbir04_output_y3#{$rowIndex}", number_format($sbir04_main_product->output_y3) ?? ' ');
+            $templateProcessor->setValue("sbir04_output_y3#{$rowIndex}", $sbir04_main_product->output_y3 ?? ' ');
             $templateProcessor->setValue("sbir04_sales_y3#{$rowIndex}", number_format($sbir04_main_product->sales_y3) ?? ' ');
             $templateProcessor->setValue("sbir04_share_y3#{$rowIndex}", number_format($sbir04_main_product->share_y3) . '%' ?? ' ');
             $sbir04_sales_total_y1 += $sbir04_main_product->sales_y1;
@@ -1488,7 +1489,7 @@ class SBIRController extends Controller
 
         $templateProcessor->setValue(
             'sbir_fund08_12_total_all',
-            safeWordValue(number_format($sbir_fund08_12_total_all ))
+            safeWordValue(number_format($sbir_fund08_12_total_all))
         );
 
         //
@@ -1512,92 +1513,149 @@ class SBIRController extends Controller
         $templateProcessor->setValue("sbir_fund13_total_all", safeWordValue(number_format($sbir_fund13_total_all)));
 
         // 保存修改後的文件到臨時路徑
-        $fileName = $user_data->name . '-SBIR' . '.docx';
-        $tempFilePath = tempnam(sys_get_temp_dir(), 'phpword') . '.docx';
-        $templateProcessor->saveAs($tempFilePath);
+        // $fileName = $user_data->name . '-SBIR' . '.docx';
+        // $tempFilePath = tempnam(sys_get_temp_dir(), 'phpword') . '.docx';
+        // $templateProcessor->saveAs($tempFilePath);
 
-        // 將文件作為下載返回，並在傳送後刪除臨時文件
-        return response()->download($tempFilePath, $fileName)->deleteFileAfterSend(true);
+        // // 將文件作為下載返回，並在傳送後刪除臨時文件
+        // return response()->download($tempFilePath, $fileName)->deleteFileAfterSend(true);
+
+        $out1 = sys_get_temp_dir() . '/doc1_' . uniqid() . '.docx';
+        $templateProcessor->saveAs($out1);
+        return $out1;
     }
 
 
     //匯出研發動機
-    public function export($id)
+    public function export($id): string
     {
-        // 資料存在就抓，不存在就為 null
+        // 1. 擷取資料
         $sbir05 = SBIR05::where('project_id', $id)->first();
         $sbir06 = SBIR06::where('project_id', $id)->first();
         $sbir07 = SBIR07::where('project_id', $id)->first();
 
-        // TinyMCE HTML 轉成 Word XML（如果不存在，填空字串）
-        $wordXml1 = $this->htmlToWordXml(optional($sbir05)->text1 ?? '');
-        $wordXml2 = $this->htmlToWordXml(optional($sbir05)->text2 ?? '');
-        $wordXml3 = $this->htmlToWordXml(optional($sbir05)->text3 ?? '');
-        $wordXml4 = $this->htmlToWordXml(optional($sbir06)->text1 ?? '');
-        $wordXml5 = $this->htmlToWordXml(optional($sbir06)->text2 ?? '');
-        $wordXml6 = $this->htmlToWordXml(optional($sbir06)->text3 ?? '');
-        $wordXml7 = $this->htmlToWordXml(optional($sbir06)->text4 ?? '');
-        $wordXml8 = $this->htmlToWordXml(optional($sbir06)->text5 ?? '');
-        $wordXml9 = $this->htmlToWordXml(optional($sbir06)->text6 ?? '');
+        // 2. HTML 轉 WordML
+        $wordXml1  = $this->htmlToWordXml(optional($sbir05)->text1 ?? '');
+        $wordXml2  = $this->htmlToWordXml(optional($sbir05)->text2 ?? '');
+        $wordXml3  = $this->htmlToWordXml(optional($sbir05)->text3 ?? '');
+        $wordXml4  = $this->htmlToWordXml(optional($sbir06)->text1 ?? '');
+        $wordXml5  = $this->htmlToWordXml(optional($sbir06)->text2 ?? '');
+        $wordXml6  = $this->htmlToWordXml(optional($sbir06)->text3 ?? '');
+        $wordXml7  = $this->htmlToWordXml(optional($sbir06)->text4 ?? '');
+        $wordXml8  = $this->htmlToWordXml(optional($sbir06)->text5 ?? '');
+        $wordXml9  = $this->htmlToWordXml(optional($sbir06)->text6 ?? '');
         $wordXml10 = $this->htmlToWordXml(optional($sbir07)->text1 ?? '');
         $wordXml11 = $this->htmlToWordXml(optional($sbir07)->text2 ?? '');
         $wordXml12 = $this->htmlToWordXml(optional($sbir07)->text3 ?? '');
         $wordXml13 = $this->htmlToWordXml(optional($sbir07)->text4 ?? '');
 
-        // 解壓 Word模板
+        // 3. 解壓模板到暫存資料夾
         $templatePath = storage_path('app/templates/sbir05.docx');
-        $tempDir = storage_path('app/temp_word_' . time());
-        File::makeDirectory($tempDir);
+        $tempDir      = sys_get_temp_dir() . '/sbir05_' . uniqid();
+        File::makeDirectory($tempDir, 0755, true);
 
         $zip = new ZipArchive;
         $zip->open($templatePath);
         $zip->extractTo($tempDir);
         $zip->close();
 
-        // 讀取 document.xml
-        $docXmlPath = $tempDir . '/word/document.xml';
+        // 4. 讀取 document.xml
+        $docXmlPath  = $tempDir . '/word/document.xml';
         $documentXml = File::get($docXmlPath);
 
-        // 批次替換
-        $search = [];
-        $replace = [];
-        foreach (range(1, 13) as $i) {
-            $search[] = '<w:t>##HTML_PLACEHOLDER_text' . $i . '##</w:t>';
-            $wordContentVar = 'wordXml' . $i;
-            $replace[] = $$wordContentVar;
-        }
+        // 5. 手動替換所有 placeholders
+        $search = [
+            '<w:t>##HTML_PLACEHOLDER_text1##</w:t>',
+            '<w:t>##HTML_PLACEHOLDER_text2##</w:t>',
+            '<w:t>##HTML_PLACEHOLDER_text3##</w:t>',
+            '<w:t>##HTML_PLACEHOLDER_text4##</w:t>',
+            '<w:t>##HTML_PLACEHOLDER_text5##</w:t>',
+            '<w:t>##HTML_PLACEHOLDER_text6##</w:t>',
+            '<w:t>##HTML_PLACEHOLDER_text7##</w:t>',
+            '<w:t>##HTML_PLACEHOLDER_text8##</w:t>',
+            '<w:t>##HTML_PLACEHOLDER_text9##</w:t>',
+            '<w:t>##HTML_PLACEHOLDER_text10##</w:t>',
+            '<w:t>##HTML_PLACEHOLDER_text11##</w:t>',
+            '<w:t>##HTML_PLACEHOLDER_text12##</w:t>',
+            '<w:t>##HTML_PLACEHOLDER_text13##</w:t>',
+        ];
+
+        $replace = [
+            $wordXml1,
+            $wordXml2,
+            $wordXml3,
+            $wordXml4,
+            $wordXml5,
+            $wordXml6,
+            $wordXml7,
+            $wordXml8,
+            $wordXml9,
+            $wordXml10,
+            $wordXml11,
+            $wordXml12,
+            $wordXml13,
+        ];
 
         $documentXml = str_replace($search, $replace, $documentXml);
-
         File::put($docXmlPath, $documentXml);
 
-        // 壓回成 Word
-        $newDocxPath = storage_path('app/public/sbir05_export_' . now()->format('Ymd_His') . '.docx');
-        $zip = new ZipArchive;
-        $zip->open($newDocxPath, ZipArchive::CREATE);
+        // 6. 重打包成新的 docx
+        $out2 = sys_get_temp_dir() . '/sbir05_export_' . uniqid() . '.docx';
+        $zip  = new ZipArchive;
+        $zip->open($out2, ZipArchive::CREATE | ZipArchive::OVERWRITE);
 
-        $files = new RecursiveIteratorIterator(
-            new RecursiveDirectoryIterator($tempDir),
-            RecursiveIteratorIterator::LEAVES_ONLY
+        $files = new \RecursiveIteratorIterator(
+            new \RecursiveDirectoryIterator($tempDir, \RecursiveDirectoryIterator::SKIP_DOTS),
+            \RecursiveIteratorIterator::LEAVES_ONLY
         );
-
         foreach ($files as $file) {
             if (!$file->isDir()) {
-                $filePath = $file->getRealPath();
-                $relativePath = substr($filePath, strlen($tempDir) + 1);
-                $zip->addFile($filePath, $relativePath);
+                $relativePath = substr($file->getRealPath(), strlen($tempDir) + 1);
+                $zip->addFile($file->getRealPath(), $relativePath);
             }
         }
-
         $zip->close();
+
+        // 7. 清理暫存
         File::deleteDirectory($tempDir);
 
-        return response()->download($newDocxPath)->deleteFileAfterSend(true);
+        // 8. 回傳檔案路徑，給合併時再用
+        return $out2;
     }
 
 
+    public function exportMerged($id)
+    {
+        // 1. 先產生兩份
+        $path1 = $this->exportWord($id);
+        $path2 = $this->export($id);
 
+        // 2. 讀第二份 body
+        $zip2 = new ZipArchive();
+        $zip2->open($path2);
+        $xml2 = $zip2->getFromName('word/document.xml');
+        $zip2->close();
+        preg_match('#<w:body>(.*)</w:body>#sU', $xml2, $m);
+        $body2 = $m[1] ?? '';
 
+        // 3. 把第一份的 ${SPLIT_HERE} 換掉
+        $zip1 = new ZipArchive();
+        $zip1->open($path1);
+        $xml1 = $zip1->getFromName('word/document.xml');
+        $xml1 = str_replace('${SPLIT_HERE}', $body2, $xml1);
+        $zip1->addFromString('word/document.xml', $xml1);
+        $zip1->close();
+
+        // 4. 刪掉第二份暫存
+        @unlink($path2);
+        $project = CustProject::where('id', $id)->first();
+        $user_data = User::where('id', $project->user_id)->first();
+        $fileName = $user_data->name . '-SBIR' . '.docx';
+
+        // 5. 下載並刪掉第一份
+        return response()->download($path1, $fileName)
+            ->deleteFileAfterSend(true);
+    }
 
     private function htmlToWordXml($html)
     {
@@ -1784,6 +1842,9 @@ XML;
         $tblXml .= '</w:tbl>';
         return $tblXml;
     }
+
+
+
 
 
 
