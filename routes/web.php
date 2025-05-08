@@ -25,6 +25,7 @@ use App\Http\Controllers\SBIRController;
 use App\Http\Controllers\UserCustomerController;
 use App\Http\Controllers\UploadController;
 use App\Http\Controllers\SBIRFundController;
+use App\Http\Controllers\DashboardController;
 use App\Models\User; // ✅ 確保引用 Customer Model
 
 
@@ -32,15 +33,12 @@ require __DIR__ . '/auth.php';
 
 // Route::get('', [RoutingController::class, 'index'])->name('landing');
 
-Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
-    // Route::get('{first}/{second}/{third}', [RoutingController::class, 'thirdLevel'])->name('third');
-    // Route::get('{first}/{second}', [RoutingController::class, 'secondLevel'])->name('second');
-    // Route::get('{any}', [RoutingController::class, 'root'])->name('any');
-});
 
-Route::get('/home', function () {
-    return view('index');
-})->middleware('auth')->name('home');
+// Route::get('/home', function () {
+//     return view('index');
+// })->middleware('auth')->name('home');
+
+Route::get('home', [DashboardController::class, 'loginSuccess'])->name('index');
 
 /**/
 Route::get('/get-customer-account/{id}', [ProjectController::class, 'getCustomerAccount']);

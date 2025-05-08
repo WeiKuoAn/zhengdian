@@ -175,17 +175,36 @@
                                                     </tr>
                                                 </thead>
                                                 <tbody>
-                                                    <tr>
-                                                        <td><input type="text" name="query[]" class="form-control">
-                                                        </td>
-                                                        <td><input type="text" name="search_result[]"
-                                                                class="form-control"></td>
-                                                        <td>
-                                                            <textarea name="analysis[]" class="form-control" rows="2"></textarea>
-                                                        </td>
-                                                        <td><button type="button" class="btn btn-danger"
-                                                                onclick="removePatentRow(this)">刪除</button></td>
-                                                    </tr>
+                                                    @if (count($datas) > 0)
+                                                        @foreach ($datas as $data)
+                                                            <tr>
+                                                                <td><input type="text" name="query[]"
+                                                                        class="form-control" value="{{ $data->query }}">
+                                                                </td>
+                                                                <td><input type="text" name="search_result[]"
+                                                                        class="form-control"
+                                                                        value="{{ $data->search_result }}"></td>
+                                                                <td>
+                                                                    <textarea name="analysis[]" class="form-control" rows="2">{{ $data->analysis }}</textarea>
+                                                                </td>
+                                                                <td><button type="button" class="btn btn-danger"
+                                                                        onclick="removePatentRow(this)">刪除</button></td>
+                                                            </tr>
+                                                        @endforeach
+                                                    @else
+                                                        <tr>
+                                                            <td><input type="text" name="query[]"
+                                                                    class="form-control">
+                                                            </td>
+                                                            <td><input type="text" name="search_result[]"
+                                                                    class="form-control"></td>
+                                                            <td>
+                                                                <textarea name="analysis[]" class="form-control" rows="2"></textarea>
+                                                            </td>
+                                                            <td><button type="button" class="btn btn-danger"
+                                                                    onclick="removePatentRow(this)">刪除</button></td>
+                                                        </tr>
+                                                    @endif
                                                 </tbody>
                                             </table>
 
@@ -216,7 +235,7 @@
         </div>
 
     </div> <!-- container -->
-    
+
 @endsection
 @section('script')
     @if (session('success'))

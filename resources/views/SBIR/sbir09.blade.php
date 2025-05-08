@@ -233,7 +233,7 @@
                                                                             <input type="text"
                                                                                 name="checkpoint_codes[]"
                                                                                 class="form-control"
-                                                                                value="{{ $checkpoint->checkpoint_code }}">
+                                                                                value="{{ $checkpoint->checkpoint_code }}" readonly>
                                                                         </td>
                                                                         <td>
                                                                             <input type="text" name="checkpoint_dues[]"
@@ -782,7 +782,7 @@
                                                     </div>
                                                     <div class="col-md-4">
                                                         <label class="form-label">* 待聘人數</label>
-                                                        <input type="number" name="count_pending" class="form-control"
+                                                        <input type="number" name="count_pending" class="form-control" 
                                                             @if (isset($personCount)) value="{{ $personCount->count_pending }}" @else value="0" @endif>
                                                     </div>
                                                 </div>
@@ -847,7 +847,7 @@
             const tbody = document.getElementById('checkpointsTable').querySelector('tbody');
             const row = document.createElement('tr');
             row.innerHTML = `
-      <td><input type="text" name="checkpoint_codes[]" class="form-control" value="${code}"></td>
+      <td><input type="text" name="checkpoint_codes[]" class="form-control" value="${code}" readonly></td>
       <td><input type="text" name="checkpoint_dues[]" class="date form-control change_cal_date"></td>
       <td><input type="text" name="checkpoint_contents[]" class="form-control"></td>
       <td><button class="btn btn-danger btn-sm" onclick="this.closest('tr').remove()">刪除</button></td>

@@ -529,8 +529,8 @@ class SBIRController extends Controller
     public function sbir08($id)
     {
         $project = CustProject::where('id', $id)->first();
-        $data = SBIR07::where('project_id', $id)->first();
-        return view('SBIR.sbir08')->with('project', $project)->with('data', $data);
+        $datas = SBIR08::where('project_id', $id)->get();
+        return view('SBIR.sbir08')->with('project', $project)->with('datas', $datas);
     }
 
     public function sbir08_data(Request $request, $id)
