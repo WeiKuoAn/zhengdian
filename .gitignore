@@ -20,8 +20,14 @@ yarn-error.log
 /.idea
 /.vscode
 /.zed
+# 忽略整個 storage
 /storage/*
-# 保留 Word 匯出的檔案資料夾
-!storage/app/public/
-!storage/app/public/**
 
+# 但放行 storage/app 目錄
+!/storage/app/
+
+# 接著忽略 storage/app 下的所有東西
+/storage/app/*
+
+# 最後再放行你要追蹤的 templates
+!/storage/app/templates/
