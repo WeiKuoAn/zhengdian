@@ -12,7 +12,7 @@
             <div class="col-xl-7">
                 <div class="card">
                     <div class="card-body">
-                        <form class="form-horizontal" method="POST" action="{{ route('meetData.edit.data',$data->id) }}">
+                        <form class="form-horizontal" method="POST" action="{{ route('meetData.edit.data', $data->id) }}">
                             @csrf
                             <div class="row mb-3">
                                 <label for="inputEmail3" class="col-4 col-xl-3 col-form-label"
@@ -21,7 +21,9 @@
                                     <select class="form-control" data-toggle="select" data-width="100%" name="user_id">
                                         <option value="" selected>請選擇</option>
                                         @foreach ($cust_datas as $key => $cust_data)
-                                            <option value="{{ $cust_data->id }}" @if($data->user_id == $cust_data->id) selected @endif>{{ $cust_data->name }}</option>
+                                            <option value="{{ $cust_data->id }}"
+                                                @if ($data->user_id == $cust_data->id) selected @endif>{{ $cust_data->name }}
+                                            </option>
                                         @endforeach
                                     </select>
                                 </div>
@@ -30,24 +32,45 @@
                                 <label for="inputEmail3" class="col-4 col-xl-3 col-form-label"
                                     style="text-align: right;">會議名稱：</label>
                                 <div class="col-8 col-xl-9">
-                                    <input type="text" class="form-control" id="name" name="name" value="{{ $data->name }}">
+                                    <input type="text" class="form-control" id="name" name="name"
+                                        value="{{ $data->name }}">
                                 </div>
                             </div>
                             <div class="row mb-3">
                                 <label for="inputPassword3" class="col-4 col-xl-3 col-form-label"
                                     style="text-align: right;">議程：</label>
                                 <div class="col-8 col-xl-9">
-                                    <textarea class="form-control" id="example-textarea" name="agenda" rows="2">{{ $data->agenda }}</textarea>
+                                    <textarea class="form-control" id="example-textarea" name="agenda" rows="3">{{ $data->agenda }}</textarea>
                                 </div>
                             </div>
-                            <div class="row mb-3">
+                            <div class="row mb-2">
                                 <label for="inputPassword5" class="col-4 col-xl-3 col-form-label"
-                                    style="text-align: right;">時間：</label>
+                                    style="text-align: right;"><span class="text-danger">*</span>會議日期：</label>
                                 <div class="col-8 col-xl-9">
                                     <div class="input-group mb-2">
-                                        <input type="date" class="form-control" name="date" value="{{ substr($data->date, 0, 10) }}" required>
-                                        <input type="text" id="24hours-timepicker" name="datetime"
-                                            class="form-control" placeholder="時：分" value="{{ substr($data->date, 11, 5) }}" required>
+                                        <input type="date" class="form-control" id="date" placeholder="日期"
+                                            name="date" value="{{ substr($data->date, 0, 10) }}" required>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row mb-2">
+                                <label for="inputPassword5" class="col-4 col-xl-3 col-form-label"
+                                    style="text-align: right;"><span class="text-danger">*</span>開始時間：</label>
+                                <div class="col-8 col-xl-9">
+                                    <div class="input-group mb-2">
+                                        <input type="time" class="form-control" id="start_time" placeholder="時間"
+                                            name="start_time" value="{{ $data->start_time }}" required>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row mb-2">
+                                <label for="inputPassword5" class="col-4 col-xl-3 col-form-label"
+                                    style="text-align: right;"><span class="text-danger">*</span>結束時間：</label>
+                                <div class="col-8 col-xl-9">
+                                    <div class="input-group mb-2">
+                                        <input type="time" class="form-control" id="end_time" placeholder="時間"
+                                            name="end_time" value="{{ $data->end_time }}" required>
                                     </div>
                                 </div>
                             </div>
@@ -55,14 +78,16 @@
                                 <label for="inputEmail3" class="col-4 col-xl-3 col-form-label"
                                     style="text-align: right;">地點：</label>
                                 <div class="col-8 col-xl-9">
-                                    <input type="text" class="form-control" id="place" name="place" value="{{ $data->place }}">
+                                    <input type="text" class="form-control" id="place" name="place"
+                                        value="{{ $data->place }}">
                                 </div>
                             </div>
                             <div class="row mb-3">
                                 <label for="inputEmail3" class="col-4 col-xl-3 col-form-label"
                                     style="text-align: right;">列席：</label>
                                 <div class="col-8 col-xl-9">
-                                    <input type="text" class="form-control" id="attend" name="attend" value="{{ $data->attend }}">
+                                    <input type="text" class="form-control" id="attend" name="attend"
+                                        value="{{ $data->attend }}">
                                 </div>
                             </div>
                             <div class="row mb-3">
@@ -76,21 +101,22 @@
                                 <label for="inputEmail3" class="col-4 col-xl-3 col-form-label"
                                     style="text-align: right;">錚典待辦：</label>
                                 <div class="col-8 col-xl-9">
-                                    <textarea class="form-control" id="example-textarea" name="to_do" rows="3">{{ $data->to_do }}</textarea>
+                                    <textarea class="form-control" id="example-textarea" name="to_do" rows="5">{{ $data->to_do }}</textarea>
                                 </div>
                             </div>
                             <div class="row mb-3">
                                 <label for="inputEmail3" class="col-4 col-xl-3 col-form-label"
                                     style="text-align: right;">客戶待辦：</label>
                                 <div class="col-8 col-xl-9">
-                                    <textarea class="form-control" id="example-textarea" name="cust_to_do" rows="3">{{ $data->cust_to_do }}</textarea>
+                                    <textarea class="form-control" id="example-textarea" name="cust_to_do" rows="5">{{ $data->cust_to_do }}</textarea>
                                 </div>
                             </div>
                             <div class="row mb-3">
                                 <label for="inputEmail3" class="col-4 col-xl-3 col-form-label"
                                     style="text-align: right;">Nas連結：</label>
                                 <div class="col-8 col-xl-9">
-                                    <input type="text" class="form-control" id="nas_link" name="nas_link" value="{{ $data->nas_link }}">
+                                    <input type="text" class="form-control" id="nas_link" name="nas_link"
+                                        value="{{ $data->nas_link }}">
                                 </div>
                             </div>
                             <div class="row mb-1">

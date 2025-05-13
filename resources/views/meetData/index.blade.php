@@ -64,15 +64,24 @@
                                         <tr align="center">
                                             <td>{{ $key + 1 }}</td>
                                             <td>{{ $data->user_data->name }}</td>
-                                            <td>{{ $data->date }}</td>
+                                            <td>
+                                                {{ substr($data->date, 0, 10) }}
+                                                @if (isset($data->start_time) && isset($data->end_time))
+                                                    {{ substr($data->start_time, 0, 5) }}~{{ substr($data->end_time, 0, 5) }}
+                                                @endif
+                                            </td>
                                             <td>{{ $data->name }}</td>
                                             <td>{{ $data->place }}</td>
-                                           <!--- <td>{{ $data->to_do }}</td>---->
-                                           <!--- <td>{{ $data->cust_to_do }}</td>---->
+                                            <!--- <td>{{ $data->to_do }}</td>---->
+                                            <!--- <td>{{ $data->cust_to_do }}</td>---->
                                             <td><a href="{{ $data->nas_link }}">連結</a></td>
                                             <td align="center">
-                                                <a href="{{ route('meetData.edit', $data->id) }}" class="action-icon"> <i class="mdi mdi-square-edit-outline"></i></a>
-                                                <a href="{{ route('meetData.del', $data->id) }}" class="action-icon"> <i class="mdi mdi-trash-can-outline"></i></a>
+                                                <a href="{{ route('meetData.export', $data->id) }}" class="action-icon"> <i
+                                                        class="mdi mdi-file-word"></i></a>
+                                                <a href="{{ route('meetData.edit', $data->id) }}" class="action-icon"> <i
+                                                        class="mdi mdi-square-edit-outline"></i></a>
+                                                <a href="{{ route('meetData.del', $data->id) }}" class="action-icon"> <i
+                                                        class="mdi mdi-trash-can-outline"></i></a>
                                             </td>
                                         </tr>
                                     @endforeach

@@ -1,5 +1,6 @@
 @extends('layouts.vertical', ['title' => 'CRM Customers'])
 @section('css')
+    @vite(['node_modules/spectrum-colorpicker2/dist/spectrum.min.css', 'node_modules/flatpickr/dist/flatpickr.min.css', 'node_modules/clockpicker/dist/bootstrap-clockpicker.min.css', 'node_modules/bootstrap-datepicker/dist/css/bootstrap-datepicker.min.css'])
     @vite(['node_modules/selectize/dist/css/selectize.bootstrap3.css', 'node_modules/mohithg-switchery/dist/switchery.min.css', 'node_modules/bootstrap-touchspin/dist/jquery.bootstrap-touchspin.min.css', 'node_modules/select2/dist/css/select2.min.css', 'node_modules/multiselect/css/multi-select.css'])
 @endsection
 @section('content')
@@ -14,11 +15,11 @@
                     <div class="card-body">
                         <form class="form-horizontal" method="POST" action="{{ route('meetData.create.data') }}">
                             @csrf
-                            <div class="row mb-3">
+                            <div class="row mb-2">
                                 <label for="inputEmail3" class="col-4 col-xl-3 col-form-label"
-                                    style="text-align: right;">客戶名稱：</label>
+                                    style="text-align: right;"><span class="text-danger">*</span>客戶名稱：</label>
                                 <div class="col-8 col-xl-9">
-                                    <select class="form-control" data-toggle="select2" data-width="100%" name="user_id">
+                                    <select class="form-control" data-toggle="select2" data-width="100%" name="user_id" required>
                                         <option value="" selected>請選擇</option>
                                         @foreach ($cust_datas as $key => $cust_data)
                                             <option value="{{ $cust_data->id }}">{{ $cust_data->name }}</option>
@@ -26,69 +27,88 @@
                                     </select>
                                 </div>
                             </div>
-                            <div class="row mb-3">
+                            <div class="row mb-2">
                                 <label for="inputEmail3" class="col-4 col-xl-3 col-form-label"
                                     style="text-align: right;">會議名稱：</label>
                                 <div class="col-8 col-xl-9">
-                                    <input type="text" class="form-control" id="name" name="name">
+                                    <input type="text" class="form-control" id="name" name="name" value="{{ \Carbon\Carbon::parse($today)->format('Ymd').'會議記錄' }}">
                                 </div>
                             </div>
-                            <div class="row mb-3">
+                            <div class="row mb-2">
                                 <label for="inputPassword3" class="col-4 col-xl-3 col-form-label"
                                     style="text-align: right;">議程：</label>
                                 <div class="col-8 col-xl-9">
-                                    <textarea class="form-control" id="example-textarea" name="agenda" rows="2"></textarea>
+                                    <textarea class="form-control" id="example-textarea" name="agenda" rows="4"></textarea>
                                 </div>
                             </div>
-                            <div class="row mb-3">
+                            <div class="row mb-2">
                                 <label for="inputPassword5" class="col-4 col-xl-3 col-form-label"
-                                    style="text-align: right;">時間：</label>
+                                    style="text-align: right;"><span class="text-danger">*</span>會議日期：</label>
                                 <div class="col-8 col-xl-9">
                                     <div class="input-group mb-2">
-                                        <input type="date" class="form-control" name="date" required>
-                                        <input type="text" id="24hours-timepicker" name="datetime" class="form-control"
-                                            placeholder="時：分" required>
+                                        <input type="date" class="form-control" id="date" placeholder="日期"  name="date" value="{{ $today }}" required>
                                     </div>
                                 </div>
                             </div>
-                            <div class="row mb-3">
+
+                            <div class="row mb-2">
+                                <label for="inputPassword5" class="col-4 col-xl-3 col-form-label"
+                                    style="text-align: right;"><span class="text-danger">*</span>開始時間：</label>
+                                <div class="col-8 col-xl-9">
+                                    <div class="input-group mb-2">
+                                        <input type="time" class="form-control" id="start_time" placeholder="時間" name="start_time">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row mb-2">
+                                <label for="inputPassword5" class="col-4 col-xl-3 col-form-label"
+                                    style="text-align: right;"><span class="text-danger">*</span>結束時間：</label>
+                                <div class="col-8 col-xl-9">
+                                    <div class="input-group mb-2">
+                                        <input type="time" class="form-control" id="end_time" placeholder="時間" name="end_time">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row mb-2">
                                 <label for="inputEmail3" class="col-4 col-xl-3 col-form-label"
                                     style="text-align: right;">地點：</label>
                                 <div class="col-8 col-xl-9">
                                     <input type="text" class="form-control" id="place" name="place">
                                 </div>
                             </div>
-                            <div class="row mb-3">
+                            <div class="row mb-2">
                                 <label for="inputEmail3" class="col-4 col-xl-3 col-form-label"
                                     style="text-align: right;">列席：</label>
                                 <div class="col-8 col-xl-9">
                                     <input type="text" class="form-control" id="attend" name="attend">
                                 </div>
                             </div>
-                            <div class="row mb-3">
+                            <div class="row mb-2">
                                 <label for="inputEmail3" class="col-4 col-xl-3 col-form-label"
                                     style="text-align: right;">會議記錄：</label>
                                 <div class="col-8 col-xl-9">
-                                    <textarea class="form-control" id="example-textarea" name="record" rows="5"></textarea>
+                                    <textarea class="form-control" id="example-textarea" name="record" rows="8"></textarea>
                                 </div>
                             </div>
-                            <div class="row mb-3">
+                            <div class="row mb-2">
                                 <label for="inputEmail3" class="col-4 col-xl-3 col-form-label"
                                     style="text-align: right;">錚典待辦：</label>
                                 <div class="col-8 col-xl-9">
-                                    <textarea class="form-control" id="example-textarea" name="to_do" rows="3"></textarea>
+                                    <textarea class="form-control" id="example-textarea" name="to_do" rows="5"></textarea>
                                 </div>
                             </div>
-                            <div class="row mb-3">
+                            <div class="row mb-2">
                                 <label for="inputEmail3" class="col-4 col-xl-3 col-form-label"
                                     style="text-align: right;">客戶待辦：</label>
                                 <div class="col-8 col-xl-9">
-                                    <textarea class="form-control" id="example-textarea" name="cust_to_do" rows="3"></textarea>
+                                    <textarea class="form-control" id="example-textarea" name="cust_to_do" rows="5"></textarea>
                                 </div>
                             </div>
-                            <div class="row mb-3">
+                            <div class="row mb-2">
                                 <label for="inputEmail3" class="col-4 col-xl-3 col-form-label"
-                                    style="text-align: right;">Nas連結：</label>
+                                    style="text-align: right;">參考資料：</label>
                                 <div class="col-8 col-xl-9">
                                     <input type="text" class="form-control" id="nas_link" name="nas_link">
                                 </div>

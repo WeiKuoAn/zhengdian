@@ -22,6 +22,7 @@ use App\Http\Controllers\CalendarController;
 use App\Http\Controllers\ProjectBusinessController;
 use App\Http\Controllers\ProjectManufacturingController;
 use App\Http\Controllers\SBIRController;
+use App\Http\Controllers\SBIR2Controller;
 use App\Http\Controllers\UserCustomerController;
 use App\Http\Controllers\UploadController;
 use App\Http\Controllers\SBIRFundController;
@@ -233,6 +234,8 @@ Route::get('project/sbir/{id}/export', [SBIRController::class, 'export'])->name(
 Route::get('project/sbir08/{id}/export', [SBIRController::class, 'sbir08_export'])->name('sbir08.export');
 
 Route::get('project/sbir/{id}/exportMerged', [SBIRController::class, 'exportMerged'])->name('sbir.exportMerged');
+Route::get('sbir/{id}/export-motivation', [SBIR2Controller::class, 'exportResearchMotivation'])->name('sbir.export-motivation');
+
 
 Route::post('/upload-image', [UploadController::class, 'uploadImage']);
 
@@ -246,6 +249,7 @@ Route::get('project/midterm/{id}', [ProjectController::class, 'midterm'])->name(
 Route::get('project/final/{id}', [ProjectController::class, 'final'])->name('project.final');
 // Route::get('project/final/{id}', [ProjectController::class, 'final_update'])->name('project.final.data');
 Route::get('project/meet/{id}', [ProjectController::class, 'meet'])->name('project.meet');
+
 // Route::get('project/meet/{id}', [ProjectController::class, 'meet_update'])->name('project.meet.data');
 
 Route::get('/project/{id}', [ProjectController::class, 'show'])->name('project.show');
@@ -266,6 +270,7 @@ Route::get('meetData/edit/{id}', [MeetDataController::class, 'show'])->name('mee
 Route::post('meetData/edit/{id}', [MeetDataController::class, 'update'])->name('meetData.edit.data');
 Route::get('meetData/del/{id}', [MeetDataController::class, 'delete'])->name('meetData.del');
 Route::post('meetData/del/{id}', [MeetDataController::class, 'destroy'])->name('meetData.del.data');
+Route::get('meetData/export/{id}', [MeetDataController::class, 'export'])->name('meetData.export');
 
 /*職稱管理*/
 Route::get('/jobs', [JobController::class, 'index'])->middleware(['auth'])->name('jobs');

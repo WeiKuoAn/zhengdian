@@ -10,7 +10,7 @@ class MeetData extends Model
     use HasFactory;
     protected $table = 'meet_data';
     protected $fillable = [
-        'user_id', 'name', 'agenda' , 'date', 'attend', 'file', 'record','to_do',  'cust_to_do', 'nas_link', 'place','created_by'
+        'user_id', 'name', 'agenda' , 'date', 'attend', 'file', 'start_time', 'end_time', 'record','to_do',  'cust_to_do', 'nas_link', 'place','created_by'
     ];
 
     public function user_data()
