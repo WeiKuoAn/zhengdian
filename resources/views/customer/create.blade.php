@@ -26,12 +26,14 @@
                                     </div>
                                 </div>
 
-                                <div class="col-md-6">
-                                    <div class="mb-3">
-                                        <label class="form-label" for="AddNew-Username">客戶帳號</label><span
-                                            class="text-danger">*</span>
-                                        <input type="text" class="form-control" name="email" required>
-                                    </div>
+                                <div class="mb-3">
+                                    <label class="form-label" for="AddNew-Username">客戶帳號</label>
+                                    <span class="text-danger">*</span>
+                                    <input type="text" name="email" value="{{ old('email') }}"
+                                        class="form-control @error('email') is-invalid @enderror" required>
+                                    @error('email')
+                                        <small class="text-danger">{{ $message }}</small>
+                                    @enderror
                                 </div>
 
 
@@ -77,32 +79,6 @@
                                     </div>
                                 </div>
 
-
-
-
-                                {{-- <div class="col-md-6">
-                                    <label class="form-label">計劃案申報類別</label><span class="text-danger">*</span>
-                                    <div class="row font-size-16 mt-2">
-                                        <div class="col-md-3">
-                                            <div class="form-check mb-3">
-                                                <input class="form-check-input type" type="checkbox" name="types[]"
-                                                    id="formCheck1" value="0">
-                                                <label class="form-check-label" for="formCheck1">
-                                                    商業服務業
-                                                </label>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-2">
-                                            <div class="form-check mb-3">
-                                                <input class="form-check-input type" type="checkbox" name="types[]"
-                                                    id="formCheck2" value="1">
-                                                <label class="form-check-label" for="formCheck2">
-                                                    製造業
-                                                </label>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div> --}}
                                 <div class="col-md-6">
                                     <div class="mb-3">
                                         <label class="form-label">地址<span class="text-danger">*</span></label>
@@ -124,7 +100,7 @@
 
                                     </div>
                                 </div>
-                                
+
                                 <div class="col-md-6">
                                     <div class="mb-3">
                                         <label class="form-label">專案狀態</label>

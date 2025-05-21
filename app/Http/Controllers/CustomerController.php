@@ -333,56 +333,77 @@ class CustomerController extends Controller
      */
     public function store(Request $request)
     {
-        //先判斷帳號是否有重複
-        $data = User::where('email', $request->email)->first();
-        // dd($data);
-        if (!isset($data)) {
-            //新增帳號
-            $user = new User;
-            $user->name = $request->name;
-            $user->email = $request->email;
-            $user->password = Hash::make($request->password);
-            $user->level = '2';
-            $user->group_id = '2';
-            $user->save();
-
-            $user_data = User::orderby('id', 'DESC')->first();
-
-            $cust_data = new CustData();
-            $cust_data->user_id = $user_data->id;
-            $cust_data->capital = $request->capital;
-            $cust_data->nas_link = $request->nas_link;
-            $cust_data->registration_no = $request->registration_no;
-            $cust_data->county = $request->county;
-            $cust_data->district = $request->district;
-            $cust_data->zipcode = $request->zipcode;
-            $cust_data->address = $request->address;
-            $cust_data->principal_name = $request->principal_name;
-            $cust_data->contract_status = $request->contract_status;
-            if ((Auth::user()->level == 2)) {
-                $cust_data->limit_status = Auth::user()->group_id;
-            } else {
-                $cust_data->limit_status = $request->limit_status;
-            }
-            $cust_data->save();
-
-            //新增客戶計畫案內容
-            if ($request->has('types')) {
-                foreach ($request->types as $key => $type) {
-                    $cust_project = new CustProject();
-                    $cust_project->year = Carbon::now()->year;
-                    $cust_project->user_id = $user_data->id;
-                    $cust_project->type = $type;
-                    $cust_project->save();
-                }
-            }
+        $request->validate([
+            'name'            => 'required|string|max:255',
+            'email'           => 'required|string|max:255|unique:users,email',
+            'password'        => 'required|string|min:6',
+            'capital'         => 'required',
+            'nas_link'        => 'required',
+            'registration_no' => 'required',
+            'county'          => 'required',
+            'district'        => 'required',
+            'zipcode'         => 'required',
+            'address'         => 'required',
+            'principal_name'  => 'required',
+            'contract_status' => 'required',
+            'types'           => 'sometimes|array',
+            'limit_status'    => 'sometimes',
+        ], [
+            'email.required' => '請輸入客戶帳號',
+            'email.unique'   => '此帳號已註冊過',
+        ]);
 
 
-            return redirect()->route('customer.create')->with('success', '客戶已成功新增');
-        } else {
-            // dd(1111);
-            return redirect()->route('customer.create')->with(['hint' => '1']);
+        // 2. 檢查帳號是否重複
+        if (User::where('email', $request->email)->exists()) {
+            return redirect()
+                ->route('customer.create')
+                ->withInput()                                      // 保留使用者輸入
+                ->withErrors(['email' => '用戶已註冊過']);         // 丟出 email 欄位錯誤
         }
+
+        // 3. 新增 User
+        $user = new User;
+        $user->name     = $request->name;
+        $user->email    = $request->email;
+        $user->password = Hash::make($request->password);
+        $user->level    = '2';
+        $user->group_id = '2';
+        $user->save();
+
+        // 4. 新增 CustData
+        $custData = new CustData;
+        $custData->user_id         = $user->id;
+        $custData->capital         = $request->capital;
+        $custData->nas_link        = $request->nas_link;
+        $custData->registration_no = $request->registration_no;
+        $custData->county          = $request->county;
+        $custData->district        = $request->district;
+        $custData->zipcode         = $request->zipcode;
+        $custData->address         = $request->address;
+        $custData->principal_name  = $request->principal_name;
+        $custData->contract_status = $request->contract_status;
+        // 如果登入者是 level 2，就用自己的 group_id，否則用傳進來的 limit_status
+        $custData->limit_status    = (Auth::user()->level == 2)
+            ? Auth::user()->group_id
+            : $request->limit_status;
+        $custData->save();
+
+        // 5. 若有選專案類型，批次新增 CustProject
+        if ($request->has('types')) {
+            foreach ($request->types as $type) {
+                $proj = new CustProject;
+                $proj->year    = Carbon::now()->year;
+                $proj->user_id = $user->id;
+                $proj->type    = $type;
+                $proj->save();
+            }
+        }
+
+        // 6. 回到表單頁並顯示成功訊息
+        return redirect()
+            ->route('customer.create')
+            ->with('success', '客戶已成功新增');
     }
 
     /**
@@ -410,7 +431,7 @@ class CustomerController extends Controller
         $user = User::where('id', $id)->first();
         $user->name = $request->name;
         if (Auth::user()->level != 2) {
-            $user->status = $request->status;//登入權限
+            $user->status = $request->status; //登入權限
         }
         $user->save();
 
@@ -424,7 +445,7 @@ class CustomerController extends Controller
         $cust_data->registration_no = $request->registration_no;
         $cust_data->principal_name = $request->principal_name;
         if (Auth::user()->level != 2) {
-            $cust_data->limit_status = $request->limit_status;//限制觀看權限
+            $cust_data->limit_status = $request->limit_status; //限制觀看權限
         }
         $cust_data->contract_status = $request->contract_status;
         $cust_data->save();
