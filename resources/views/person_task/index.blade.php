@@ -6,7 +6,6 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.css">
 @endsection
 
-
 @section('content')
     <!-- Start Content-->
     <div class="container-fluid">
@@ -91,9 +90,9 @@
                                             @endif
                                         @endif
                                     </span>
-                                    <h5 class="mt-0"><b><a href="javascript: void(0);" class="text-dark">
-                                                @if (isset($task->task_data->task_template_data))
-                                                    {{ $task->task_data->task_template_data->name }}
+                                    <h5 class="mt-0"><b><a href="javascript: void(0);" class="text-dark pr-3">
+                                                @if (isset($task->context))
+                                                    {{ $task->context }}
                                                 @endif
                                             </a></b></h5>
                                     <p>
@@ -102,19 +101,45 @@
                                         @endif
                                     </p>
                                     <div class="clearfix"></div>
-                                    @if (isset($task->context))
-                                        <p class="font-13 mt-1 mb-0"><i class="mdi mdi-tooltip"></i>被派工內容：
-                                            {{ $task->context }}
+                                    @if (isset($task->task_data->task_template_data))
+                                        <p class="font-13 mt-1 mb-0"><i class="mdi mdi-tooltip"></i>任務項目：
+                                            {{ $task->task_data->task_template_data->name }}
                                         </p>
                                     @endif
-                                    <p class="font-13 mt-1 mb-0"><i class="mdi mdi-calendar"></i>預計完成時間：@if (isset($task->task_data->estimated_end))
-                                            {{ $task->task_data->estimated_end }}
-                                        @endif
-                                    </p>
                                     <p class="font-13 mt-1 mb-0"><i class="mdi mdi-account  "></i>派工人：@if (isset($task->task_data->user_data))
                                             {{ $task->task_data->user_data->name }}
                                         @endif
                                     </p>
+                                    <div class="col-12">
+                                            <button type="button"
+                                                class="btn btn-sm btn-outline-danger  waves-effect waves-light mt-1"
+                                                style="width: 100%;" data-bs-container="#tooltip-container"
+                                                data-bs-toggle="tooltip" data-bs-placement="left"
+                                                @if (isset($task->task_data->estimated_end)) title="預計完成時間：{{ $task->task_data->estimated_end }}" @endif>
+                                                <i class="mdi mdi-calendar"></i>
+                                                @if (isset($task->task_data->estimated_end))
+                                                    {{ $task->task_data->estimated_end }}
+                                                @endif
+                                            </button>
+                                        </div>
+                                    <div class="card mt-2">
+                                        <div id="headingFive">
+                                            <h5 class="position-relative btn btn-sm btn-white p-1" style="width: 100%;">
+                                                <a class="custom-accordion-title text-reset collapsed d-block"
+                                                    data-bs-toggle="collapse" href="#collapseFive{{ $task->id }}"
+                                                    aria-expanded="false" aria-controls="collapseFive{{ $task->id }}"
+                                                    onclick="event.stopPropagation();">
+                                                    任務項目描述 <i class="mdi mdi-menu-down "></i>
+                                                </a>
+                                            </h5>
+                                        </div>
+                                        <div id="collapseFive{{ $task->id }}" class="collapse"
+                                            aria-labelledby="headingFive" data-bs-parent="#custom-accordion-one">
+                                            <div class="card">
+                                                {{ $task->task_data->comments }}
+                                            </div>
+                                        </div>
+                                    </div>
                                 </li>
                             @endforeach
                         </ul>
@@ -148,9 +173,9 @@
                                             @endif
                                         @endif
                                     </span>
-                                    <h5 class="mt-0"><b><a href="javascript: void(0);" class="text-dark">
-                                                @if (isset($task->task_data->task_template_data))
-                                                    {{ $task->task_data->task_template_data->name }}
+                                    <h5 class="mt-0"><b><a href="javascript: void(0);" class="text-dark pr-3">
+                                                @if (isset($task->context))
+                                                    {{ $task->context }}
                                                 @endif
                                             </a></b></h5>
                                     <p>
@@ -159,19 +184,45 @@
                                         @endif
                                     </p>
                                     <div class="clearfix"></div>
-                                    @if (isset($task->context))
-                                        <p class="font-13 mt-1 mb-0"><i class="mdi mdi-tooltip"></i>被派工內容：
-                                            {{ $task->context }}
+                                    @if (isset($task->task_data->task_template_data))
+                                        <p class="font-13 mt-1 mb-0"><i class="mdi mdi-tooltip"></i>任務項目：
+                                            {{ $task->task_data->task_template_data->name }}
                                         </p>
                                     @endif
-                                    <p class="font-13 mt-1 mb-0"><i class="mdi mdi-calendar"></i>預計完成時間：@if (isset($task->task_data->estimated_end))
-                                            {{ $task->task_data->estimated_end }}
-                                        @endif
-                                    </p>
                                     <p class="font-13 mt-1 mb-0"><i class="mdi mdi-account  "></i>派工人：@if (isset($task->task_data->user_data))
                                             {{ $task->task_data->user_data->name }}
                                         @endif
                                     </p>
+                                    <div class="col-12">
+                                            <button type="button"
+                                                class="btn btn-sm btn-outline-danger  waves-effect waves-light mt-1"
+                                                style="width: 100%;" data-bs-container="#tooltip-container"
+                                                data-bs-toggle="tooltip" data-bs-placement="left"
+                                                @if (isset($task->task_data->estimated_end)) title="預計完成時間：{{ $task->task_data->estimated_end }}" @endif>
+                                                <i class="mdi mdi-calendar"></i>
+                                                @if (isset($task->task_data->estimated_end))
+                                                    {{ $task->task_data->estimated_end }}
+                                                @endif
+                                            </button>
+                                        </div>
+                                    <div class="card mt-2">
+                                        <div id="headingFive">
+                                            <h5 class="position-relative btn btn-sm btn-white p-1" style="width: 100%;">
+                                                <a class="custom-accordion-title text-reset collapsed d-block"
+                                                    data-bs-toggle="collapse" href="#collapseFive{{ $task->id }}"
+                                                    aria-expanded="false" aria-controls="collapseFive{{ $task->id }}"
+                                                    onclick="event.stopPropagation();">
+                                                    任務項目描述 <i class="mdi mdi-menu-down "></i>
+                                                </a>
+                                            </h5>
+                                        </div>
+                                        <div id="collapseFive{{ $task->id }}" class="collapse"
+                                            aria-labelledby="headingFive" data-bs-parent="#custom-accordion-one">
+                                            <div class="card">
+                                                {{ $task->task_data->comments }}
+                                            </div>
+                                        </div>
+                                    </div>
                                 </li>
                             @endforeach
                         </ul>
@@ -205,9 +256,9 @@
                                             @endif
                                         @endif
                                     </span>
-                                    <h5 class="mt-0"><b><a href="javascript: void(0);" class="text-dark">
-                                                @if (isset($task->task_data->task_template_data))
-                                                    {{ $task->task_data->task_template_data->name }}
+                                    <h5 class="mt-0"><b><a href="javascript: void(0);" class="text-dark pr-3">
+                                                @if (isset($task->context))
+                                                    {{ $task->context }}
                                                 @endif
                                             </a></b></h5>
                                     <p>
@@ -216,19 +267,45 @@
                                         @endif
                                     </p>
                                     <div class="clearfix"></div>
-                                    @if (isset($task->context))
-                                        <p class="font-13 mt-1 mb-0"><i class="mdi mdi-tooltip"></i>被派工內容：
-                                            {{ $task->context }}
+                                    @if (isset($task->task_data->task_template_data))
+                                        <p class="font-13 mt-1 mb-0"><i class="mdi mdi-tooltip"></i>任務項目：
+                                            {{ $task->task_data->task_template_data->name }}
                                         </p>
                                     @endif
-                                    <p class="font-13 mt-1 mb-0"><i class="mdi mdi-calendar"></i>預計完成時間：@if (isset($task->task_data->estimated_end))
-                                            {{ $task->task_data->estimated_end }}
-                                        @endif
-                                    </p>
                                     <p class="font-13 mt-1 mb-0"><i class="mdi mdi-account  "></i>派工人：@if (isset($task->task_data->user_data))
                                             {{ $task->task_data->user_data->name }}
                                         @endif
                                     </p>
+                                    <div class="col-12">
+                                            <button type="button"
+                                                class="btn btn-sm btn-outline-danger  waves-effect waves-light mt-1"
+                                                style="width: 100%;" data-bs-container="#tooltip-container"
+                                                data-bs-toggle="tooltip" data-bs-placement="left"
+                                                @if (isset($task->task_data->estimated_end)) title="預計完成時間：{{ $task->task_data->estimated_end }}" @endif>
+                                                <i class="mdi mdi-calendar"></i>
+                                                @if (isset($task->task_data->estimated_end))
+                                                    {{ $task->task_data->estimated_end }}
+                                                @endif
+                                            </button>
+                                        </div>
+                                    <div class="card mt-2">
+                                        <div id="headingFive">
+                                            <h5 class="position-relative btn btn-sm btn-white p-1" style="width: 100%;">
+                                                <a class="custom-accordion-title text-reset collapsed d-block"
+                                                    data-bs-toggle="collapse" href="#collapseFive{{ $task->id }}"
+                                                    aria-expanded="false" aria-controls="collapseFive{{ $task->id }}"
+                                                    onclick="event.stopPropagation();">
+                                                    任務項目描述 <i class="mdi mdi-menu-down "></i>
+                                                </a>
+                                            </h5>
+                                        </div>
+                                        <div id="collapseFive{{ $task->id }}" class="collapse"
+                                            aria-labelledby="headingFive" data-bs-parent="#custom-accordion-one">
+                                            <div class="card">
+                                                {{ $task->task_data->comments }}
+                                            </div>
+                                        </div>
+                                    </div>
                                 </li>
                             @endforeach
                         </ul>
@@ -262,9 +339,9 @@
                                             @endif
                                         @endif
                                     </span>
-                                    <h5 class="mt-0"><b><a href="javascript: void(0);" class="text-dark">
-                                                @if (isset($task->task_data->task_template_data))
-                                                    {{ $task->task_data->task_template_data->name }}
+                                    <h5 class="mt-0"><b><a href="javascript: void(0);" class="text-dark pr-3">
+                                                @if (isset($task->context))
+                                                    {{ $task->context }}
                                                 @endif
                                             </a></b></h5>
                                     <p>
@@ -273,20 +350,45 @@
                                         @endif
                                     </p>
                                     <div class="clearfix"></div>
-                                    @if (isset($task->context))
-                                        <p class="font-13 mt-1 mb-0"><i class="mdi mdi-tooltip"></i>被派工內容：
-                                            {{ $task->context }}
+                                    @if (isset($task->task_data->task_template_data))
+                                        <p class="font-13 mt-1 mb-0"><i class="mdi mdi-tooltip"></i>任務項目：
+                                            {{ $task->task_data->task_template_data->name }}
                                         </p>
                                     @endif
-                                    <p class="font-13 mt-1 mb-0"><i class="mdi mdi-calendar"></i>預計完成時間：@if (isset($task->task_data->estimated_end))
-                                            {{ $task->task_data->estimated_end }}
-                                        @endif
-                                    </p>
-
                                     <p class="font-13 mt-1 mb-0"><i class="mdi mdi-account  "></i>派工人：@if (isset($task->task_data->user_data))
                                             {{ $task->task_data->user_data->name }}
                                         @endif
                                     </p>
+                                    <div class="col-12">
+                                            <button type="button"
+                                                class="btn btn-sm btn-outline-danger  waves-effect waves-light mt-1"
+                                                style="width: 100%;" data-bs-container="#tooltip-container"
+                                                data-bs-toggle="tooltip" data-bs-placement="left"
+                                                @if (isset($task->task_data->estimated_end)) title="預計完成時間：{{ $task->task_data->estimated_end }}" @endif>
+                                                <i class="mdi mdi-calendar"></i>
+                                                @if (isset($task->task_data->estimated_end))
+                                                    {{ $task->task_data->estimated_end }}
+                                                @endif
+                                            </button>
+                                        </div>
+                                    <div class="card mt-2">
+                                        <div id="headingFive">
+                                            <h5 class="position-relative btn btn-sm btn-white p-1" style="width: 100%;">
+                                                <a class="custom-accordion-title text-reset collapsed d-block"
+                                                    data-bs-toggle="collapse" href="#collapseFive{{ $task->id }}"
+                                                    aria-expanded="false" aria-controls="collapseFive{{ $task->id }}"
+                                                    onclick="event.stopPropagation();">
+                                                    任務項目描述 <i class="mdi mdi-menu-down "></i>
+                                                </a>
+                                            </h5>
+                                        </div>
+                                        <div id="collapseFive{{ $task->id }}" class="collapse"
+                                            aria-labelledby="headingFive" data-bs-parent="#custom-accordion-one">
+                                            <div class="card">
+                                                {{ $task->task_data->comments }}
+                                            </div>
+                                        </div>
+                                    </div>
                                 </li>
                             @endforeach
                         </ul>
@@ -310,7 +412,7 @@
                             <input name="taskComments" id="taskComments" class="form-control" disabled></textarea>
                         </div> --}}
 
-                        
+
                         <form id="taskForm">
                             <div class="mb-3">
                                 <label for="taskStatus" class="form-label">變更狀態</label>
