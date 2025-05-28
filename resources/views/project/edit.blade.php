@@ -45,17 +45,19 @@
                                 </a>
                             </li>
                             <li class="nav-item">
+                                <a href="{{ route('project.write', $data->id) }}" aria-expanded="false"
+                                    class="nav-link">
+                                    人事/帶動企業
+                                </a>
+                            </li>
+                            @if($data->type == '3')
+                            <li class="nav-item">
                                 <a href="{{ route('project.sbir01', $data->id) }}" aria-expanded="false"
                                     class="nav-link">
                                     SBIR內容撰寫
                                 </a>
                             </li>
-                            <li class="nav-item">
-                                <a href="{{ route('project.write', $data->id) }}" aria-expanded="false"
-                                    class="nav-link">
-                                    內容撰寫
-                                </a>
-                            </li>
+                            @endif
                             <li class="nav-item">
                                 <a href="{{ route('project.send', $data->id) }}" aria-expanded="false" class="nav-link">
                                     送件作業
@@ -69,6 +71,11 @@
                             <li class="nav-item">
                                 <a href="{{ route('project.final', $data->id) }}" aria-expanded="false" class="nav-link">
                                     期末報告/結案
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{{ route('project.accounting', $data->id) }}" aria-expanded="false" class="nav-link">
+                                    經費報表
                                 </a>
                             </li>
                             <li class="nav-item">

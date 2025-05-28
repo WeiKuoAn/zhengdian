@@ -130,6 +130,8 @@ Route::get('project/background/{id}', [ProjectController::class, 'background'])-
 Route::post('project/background/{id}', [ProjectController::class, 'background_update'])->name('project.background.data');//02
 Route::get('project/write/{id}', [ProjectController::class, 'write'])->name('project.write');
 Route::post('project/write/{id}', [ProjectController::class, 'write_update'])->name('project.write.data');
+Route::get('project/accounting/{id}', [ProjectController::class, 'accounting'])->name('project.accounting');
+Route::post('project/accounting/{id}', [ProjectController::class, 'accounting_update'])->name('project.accounting.data');
 Route::delete('/project/{id}', [ProjectController::class, 'destroy'])->name('projects.destroy');
 
 Route::get('project/send/{id}', [ProjectController::class, 'send'])->name('project.send');

@@ -21,7 +21,8 @@
                         </div>
                         <ul class="nav nav-tabs nav-bordered nav-justified">
                             <li class="nav-item">
-                                <a href="{{ route('project.edit', $project->id) }}" aria-expanded="true" class="nav-link ">
+                                <a href="{{ route('project.edit', $project->id) }}" aria-expanded="false"
+                                    class="nav-link ">
                                     專案基本設定
                                 </a>
                             </li>
@@ -31,38 +32,48 @@
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a href="{{ route('project.plan', $project->id) }}" aria-expanded="false" class="nav-link">
+                                <a href="{{ route('project.plan', $project->id) }}" aria-expanded="false"
+                                    class="nav-link">
                                     排程作業
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a href="{{ route('project.background', $project->id) }}" aria-expanded="false"
-                                    class="nav-link ">
+                                <a href="{{ route('project.background', $project->id) }}" aria-expanded="false" class="nav-link ">
                                     專案背景調查
                                 </a>
                             </li>
                             <li class="nav-item">
                                 <a href="{{ route('project.write', $project->id) }}" aria-expanded="false"
+                                    class="nav-link">
+                                    人事/帶動企業
+                                </a>
+                            </li>
+                            @if($project->type == '3')
+                            <li class="nav-item">
+                                <a href="{{ route('project.sbir01', $project->id) }}" aria-expanded="false"
                                     class="nav-link active">
                                     SBIR內容撰寫
                                 </a>
                             </li>
+                            @endif
                             <li class="nav-item">
                                 <a href="{{ route('project.send', $project->id) }}" aria-expanded="false" class="nav-link">
                                     送件作業
                                 </a>
                             </li>
-
-
                             <li class="nav-item">
-                                <a href="{{ route('project.midterm', $project->id) }}" aria-expanded="false"
-                                    class="nav-link">
+                                <a href="{{ route('project.midterm', $project->id) }}" aria-expanded="false" class="nav-link">
                                     期中報告/檢核
                                 </a>
                             </li>
                             <li class="nav-item">
                                 <a href="{{ route('project.final', $project->id) }}" aria-expanded="false" class="nav-link">
                                     期末報告/結案
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{{ route('project.accounting', $project->id) }}" aria-expanded="true" class="nav-link ">
+                                    經費報表
                                 </a>
                             </li>
                             <li class="nav-item">
@@ -829,46 +840,52 @@
     <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
     <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
     <script>
-        // 原本新增工作項目的函式
-        function addpointRow() {
-            const tbody = document.getElementById('pointsTable').querySelector('tbody');
-            const row = document.createElement('tr');
-            row.innerHTML = `
+       // 原本的「點工作項目」函式
+  function addpointRow() {
+    const tbody = document.getElementById('pointsTable').querySelector('tbody');
+    const row = document.createElement('tr');
+    row.innerHTML = `
       <td><input type="text" name="point_items[]" class="form-control" placeholder="如 A1.xxx"></td>
       <td><input type="text" name="point_weights[]" class="date form-control change_cal_date"></td>
       <td><input type="text" name="point_months[]" class="form-control"></td>
       <td><button class="btn btn-danger btn-sm" onclick="this.closest('tr').remove()">刪除</button></td>
     `;
-            tbody.appendChild(row);
-        }
+    tbody.appendChild(row);
+  }
 
-        // Helper：往 checkpointsTable 插入一列並填入 code
-        function addCheckpointRowWithCode(code) {
-            const tbody = document.getElementById('checkpointsTable').querySelector('tbody');
-            const row = document.createElement('tr');
-            row.innerHTML = `
+  // Helper：往 checkpointsTable 插入一列並填入 code
+  function addCheckpointRowWithCode(code) {
+    const tbody = document.getElementById('checkpointsTable').querySelector('tbody');
+    const row = document.createElement('tr');
+    row.innerHTML = `
       <td><input type="text" name="checkpoint_codes[]" class="form-control" value="${code}" readonly></td>
       <td><input type="text" name="checkpoint_dues[]" class="date form-control change_cal_date"></td>
       <td><input type="text" name="checkpoint_contents[]" class="form-control"></td>
       <td><button class="btn btn-danger btn-sm" onclick="this.closest('tr').remove()">刪除</button></td>
     `;
-            tbody.appendChild(row);
-        }
+    tbody.appendChild(row);
+  }
 
-        // 事件代理：監聽 pointsTable tbody 裡，checkpoint_codes[] 欄位的 change
-        document
-            .getElementById('pointsTable')
-            .querySelector('tbody')
-            .addEventListener('change', function(e) {
-                if (e.target.name === 'point_items[]') {
-                    const val = e.target.value.trim();
-                    // 只接受「字母＋數字＋.」開頭
-                    const m = val.match(/^([A-Za-z]\d+)\./);
-                    if (m) {
-                        addCheckpointRowWithCode(m[1]);
-                    }
-                }
-            });
+  // 新增這個函式，讓「手動新增」按鈕可以運作
+  function addCheckpointRow() {
+    // 如果你希望每次手動新增時不帶 code，可以傳空字串
+    addCheckpointRowWithCode('');
+  }
+
+  // 事件代理：監聽 pointsTable tbody 裡，point_items[] 欄位的 change
+  document
+    .getElementById('pointsTable')
+    .querySelector('tbody')
+    .addEventListener('change', function(e) {
+      if (e.target.name === 'point_items[]') {
+        const val = e.target.value.trim();
+        // 只接受「字母＋數字＋.」開頭
+        const m = val.match(/^([A-Za-z]\d+)\./);
+        if (m) {
+          addCheckpointRowWithCode(m[1]);
+        }
+      }
+    });
 
 
         function addEducationRow() {

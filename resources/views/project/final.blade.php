@@ -21,13 +21,13 @@
                         </div>
                         <ul class="nav nav-tabs nav-bordered nav-justified">
                             <li class="nav-item">
-                                <a href="{{ route('project.edit', $data->id) }}" aria-expanded="true" class="nav-link">
+                                <a href="{{ route('project.edit', $data->id) }}" aria-expanded="true"
+                                    class="nav-link ">
                                     專案基本設定
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a href="{{ route('project.task', $data->id) }}" aria-expanded="false"
-                                    class="nav-link">
+                                <a href="{{ route('project.task', $data->id) }}" aria-expanded="false" class="nav-link">
                                     派工作業
                                 </a>
                             </li>
@@ -38,38 +38,46 @@
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a href="{{ route('project.background', $data->id) }}" aria-expanded="false"
-                                    class="nav-link ">
+                                <a href="{{ route('project.background', $data->id) }}" aria-expanded="false" class="nav-link ">
                                     專案背景調查
                                 </a>
                             </li>
                             <li class="nav-item">
                                 <a href="{{ route('project.write', $data->id) }}" aria-expanded="false"
                                     class="nav-link">
-                                    內容撰寫
+                                    人事/帶動企業
                                 </a>
                             </li>
+                            @if($data->type == '3')
                             <li class="nav-item">
-                                <a href="{{ route('project.send', $data->id) }}" aria-expanded="false"
+                                <a href="{{ route('project.sbir01', $data->id) }}" aria-expanded="false"
                                     class="nav-link">
+                                    SBIR內容撰寫
+                                </a>
+                            </li>
+                            @endif
+                            <li class="nav-item">
+                                <a href="{{ route('project.send', $data->id) }}" aria-expanded="false" class="nav-link">
                                     送件作業
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a href="{{ route('project.midterm', $data->id) }}" aria-expanded="false"
-                                    class="nav-link">
+                                <a href="{{ route('project.midterm', $data->id) }}" aria-expanded="false" class="nav-link">
                                     期中報告/檢核
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a href="{{ route('project.final', $data->id) }}" aria-expanded="false"
-                                    class="nav-link active">
+                                <a href="{{ route('project.final', $data->id) }}" aria-expanded="false" class="nav-link active">
                                     期末報告/結案
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a href="{{ route('project.meet', $data->id) }}" aria-expanded="false"
-                                    class="nav-link">
+                                <a href="{{ route('project.accounting', $data->id) }}" aria-expanded="false" class="nav-link">
+                                    經費報表
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{{ route('project.meet', $data->id) }}" aria-expanded="false" class="nav-link">
                                     會議瀏覽
                                 </a>
                             </li>

@@ -21,7 +21,8 @@
                         </div>
                         <ul class="nav nav-tabs nav-bordered nav-justified">
                             <li class="nav-item">
-                                <a href="{{ route('project.edit', $project->id) }}" aria-expanded="true" class="nav-link ">
+                                <a href="{{ route('project.edit', $project->id) }}" aria-expanded="false"
+                                    class="nav-link ">
                                     專案基本設定
                                 </a>
                             </li>
@@ -31,38 +32,48 @@
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a href="{{ route('project.plan', $project->id) }}" aria-expanded="false" class="nav-link">
+                                <a href="{{ route('project.plan', $project->id) }}" aria-expanded="false"
+                                    class="nav-link">
                                     排程作業
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a href="{{ route('project.background', $project->id) }}" aria-expanded="false"
-                                    class="nav-link ">
+                                <a href="{{ route('project.background', $project->id) }}" aria-expanded="false" class="nav-link ">
                                     專案背景調查
                                 </a>
                             </li>
                             <li class="nav-item">
                                 <a href="{{ route('project.write', $project->id) }}" aria-expanded="false"
+                                    class="nav-link">
+                                    人事/帶動企業
+                                </a>
+                            </li>
+                            @if($project->type == '3')
+                            <li class="nav-item">
+                                <a href="{{ route('project.sbir01', $project->id) }}" aria-expanded="false"
                                     class="nav-link active">
                                     SBIR內容撰寫
                                 </a>
                             </li>
+                            @endif
                             <li class="nav-item">
                                 <a href="{{ route('project.send', $project->id) }}" aria-expanded="false" class="nav-link">
                                     送件作業
                                 </a>
                             </li>
-
-
                             <li class="nav-item">
-                                <a href="{{ route('project.midterm', $project->id) }}" aria-expanded="false"
-                                    class="nav-link">
+                                <a href="{{ route('project.midterm', $project->id) }}" aria-expanded="false" class="nav-link">
                                     期中報告/檢核
                                 </a>
                             </li>
                             <li class="nav-item">
                                 <a href="{{ route('project.final', $project->id) }}" aria-expanded="false" class="nav-link">
                                     期末報告/結案
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{{ route('project.accounting', $project->id) }}" aria-expanded="true" class="nav-link ">
+                                    經費報表
                                 </a>
                             </li>
                             <li class="nav-item">
@@ -249,13 +260,17 @@
                                                             @if (isset($cust_data)) value="{{ $cust_data->insured_employees }}" @endif>
                                                     </div>
                                                     <div class="col-12">
-                                                        <label class="form-label">主要產品或服務<span
-                                                                class="text-danger">*</span>（50個字以下）</label>
-                                                        <textarea class="form-control" name="serve" rows="2" maxlength="50">
+                                                        <label class="form-label">
+                                                            主要產品或服務<span class="text-danger">*</span>（50個字以下）
+                                                        </label>
+                                                        <textarea class="form-control" id="serve" name="serve" rows="2" maxlength="50">
 @if (isset($sbir02_data))
 {{ $sbir02_data->serve }}
 @endif
 </textarea>
+                                                        <div class="form-text text-end">
+                                                            <span id="serve_count">0</span> / 50 字
+                                                        </div>
                                                     </div>
                                                     <!-- 公司登記地址 -->
                                                     <div class="col-md-12">
@@ -424,8 +439,13 @@
                                                         </select>
                                                     </div>
                                                     <div class="col-md-12">
-                                                        <label class="form-label">計畫創新技術或服務內容（500字以內）</label>
-                                                        <textarea class="form-control" name="context" rows="5" maxlength="500">{{ optional($sbir02_data)->context }}</textarea>
+                                                        <label class="form-label">
+                                                            計畫創新技術或服務內容（500字以內）
+                                                        </label>
+                                                        <textarea class="form-control" id="context" name="context" rows="5" maxlength="500">{{ optional($sbir02_data)->context }}</textarea>
+                                                        <div class="form-text text-end">
+                                                            <span id="context_count">0</span> / 500 字
+                                                        </div>
                                                     </div>
                                                     <div class="col-md-12">
                                                         <label class="form-label">是否具有技術研發能力</label>
@@ -738,5 +758,20 @@
             }
             return dateString; // Return original string if it does not match expected lengths
         }
+    </script>
+    <script>
+        document.querySelectorAll('textarea[id]').forEach(textarea => {
+            const maxLen = parseInt(textarea.getAttribute('maxlength'), 10);
+            const countEl = document.getElementById(textarea.id + '_count');
+
+            function updateCount() {
+                const len = textarea.value.trim().length;
+                countEl.textContent = len;
+                // maxlength 會自動阻止超過 maxLen
+            }
+
+            textarea.addEventListener('input', updateCount);
+            updateCount();
+        });
     </script>
 @endsection

@@ -23,7 +23,8 @@
                         </div>
                         <ul class="nav nav-tabs nav-bordered nav-justified">
                             <li class="nav-item">
-                                <a href="{{ route('project.edit', $project->id) }}" aria-expanded="true" class="nav-link ">
+                                <a href="{{ route('project.edit', $project->id) }}" aria-expanded="false"
+                                    class="nav-link ">
                                     專案基本設定
                                 </a>
                             </li>
@@ -33,38 +34,48 @@
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a href="{{ route('project.plan', $project->id) }}" aria-expanded="false" class="nav-link">
+                                <a href="{{ route('project.plan', $project->id) }}" aria-expanded="false"
+                                    class="nav-link">
                                     排程作業
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a href="{{ route('project.background', $project->id) }}" aria-expanded="false"
-                                    class="nav-link ">
+                                <a href="{{ route('project.background', $project->id) }}" aria-expanded="false" class="nav-link ">
                                     專案背景調查
                                 </a>
                             </li>
                             <li class="nav-item">
                                 <a href="{{ route('project.write', $project->id) }}" aria-expanded="false"
+                                    class="nav-link">
+                                    人事/帶動企業
+                                </a>
+                            </li>
+                            @if($project->type == '3')
+                            <li class="nav-item">
+                                <a href="{{ route('project.sbir01', $project->id) }}" aria-expanded="false"
                                     class="nav-link active">
                                     SBIR內容撰寫
                                 </a>
                             </li>
+                            @endif
                             <li class="nav-item">
                                 <a href="{{ route('project.send', $project->id) }}" aria-expanded="false" class="nav-link">
                                     送件作業
                                 </a>
                             </li>
-
-
                             <li class="nav-item">
-                                <a href="{{ route('project.midterm', $project->id) }}" aria-expanded="false"
-                                    class="nav-link">
+                                <a href="{{ route('project.midterm', $project->id) }}" aria-expanded="false" class="nav-link">
                                     期中報告/檢核
                                 </a>
                             </li>
                             <li class="nav-item">
                                 <a href="{{ route('project.final', $project->id) }}" aria-expanded="false" class="nav-link">
                                     期末報告/結案
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{{ route('project.accounting', $project->id) }}" aria-expanded="true" class="nav-link ">
+                                    經費報表
                                 </a>
                             </li>
                             <li class="nav-item">
@@ -274,26 +285,37 @@
                 file_picker_callback: function(cb, value, meta) {
                     if (meta.filetype === 'image') {
                         const input = document.createElement('input');
-                        input.setAttribute('type', 'file');
-                        input.setAttribute('accept', 'image/*');
+                        input.type = 'file';
+                        input.accept = 'image/*';
+
                         input.onchange = function() {
                             const file = this.files[0];
+                            // **1. 檔案大小檢查：超過 2MB 就跳錯誤**
+                            if (file.size > 2 * 1024 * 1024) {
+                                // a) 瀏覽器 alert
+                                alert('檔案大小不能超過 2MB');
+                                // b) 或用 TinyMCE 的通知機制（需在 init 裡用 setup 暴露 editorInstance）
+                                // editorInstance.notificationManager.open({ text: '檔案大小不能超過 2MB', type: 'error' });
+                                return;
+                            }
+
+                            // 2. 如果沒問題，才組 FormData 上傳
                             const formData = new FormData();
                             formData.append('file', file);
+
                             fetch('/upload-image', {
                                     method: 'POST',
                                     body: formData,
                                     headers: {
                                         'X-CSRF-TOKEN': document.querySelector(
-                                            'meta[name="csrf-token"]').getAttribute(
-                                            'content')
+                                            'meta[name="csrf-token"]').content
                                     }
                                 })
-                                .then(response => response.json())
-                                .then(result => {
-                                    cb(result.location);
-                                });
+                                .then(res => res.json())
+                                .then(json => cb(json.location))
+                                .catch(err => console.error(err));
                         };
+
                         input.click();
                     }
                 },

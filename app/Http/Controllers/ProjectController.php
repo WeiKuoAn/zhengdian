@@ -332,7 +332,7 @@ class ProjectController extends Controller
     {
         // 查詢對應的專案
         $data = CustProject::where('id', $id)->first();
-        // dd($data);  
+        // dd($data);
         $check_statuss = CheckStatus::where('status', 'up')->orderby('seq', 'asc')->whereNull('parent_id')->get();
         $project_types = ProjectType::where('status', 'up')->get();
         // 返回專案詳情頁面或視圖
@@ -361,6 +361,43 @@ class ProjectController extends Controller
 
         // 返回專案列表頁面
         return redirect()->route('projects');
+    }
+
+    
+
+    public function accounting(string $id, Request $request)
+    {
+        // 查詢對應的專案
+        $data = CustProject::where('id', $id)->first();
+        // dd($data);  
+        $check_statuss = CheckStatus::where('status', 'up')->orderby('seq', 'asc')->whereNull('parent_id')->get();
+        $project_types = ProjectType::where('status', 'up')->get();
+        // 返回專案詳情頁面或視圖
+        return view('project.accounting', ['data' => $data, 'request' => $request, 'check_statuss' => $check_statuss, 'project_types' => $project_types]);
+    }
+
+    /**
+     * Update the specified resource in storage.
+     */
+    public function accounting_update(Request $request, string $id)
+    {
+        // 查詢對應的專案
+        $data = CustProject::where('id', $id)->first();
+        $project_type = ProjectType::where('id', $request->type)->first();
+        $cust_data = CustData::where('user_id', $data->user_id)->first();
+        // 更新專案資料
+        $data->date = $request->date;
+        $data->name = date('Ymd', strtotime($request->date)) . '-' . ($project_type->name ?? 'N/A') . '-' . ($cust_data->user_data->name ?? '000');;
+        $data->type = $request->type;
+        $data->check_status = $request->check_status;
+        $data->save();
+
+        $cust_data->nas_link = $request->nas_link;
+        $cust_data->save();
+
+
+        // 返回專案列表頁面
+        return redirect()->route('project.accounting');
     }
 
     public function background(string $id, Request $request)

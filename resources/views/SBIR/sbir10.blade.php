@@ -21,7 +21,8 @@
                         </div>
                         <ul class="nav nav-tabs nav-bordered nav-justified">
                             <li class="nav-item">
-                                <a href="{{ route('project.edit', $project->id) }}" aria-expanded="true" class="nav-link ">
+                                <a href="{{ route('project.edit', $project->id) }}" aria-expanded="false"
+                                    class="nav-link ">
                                     專案基本設定
                                 </a>
                             </li>
@@ -31,38 +32,48 @@
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a href="{{ route('project.plan', $project->id) }}" aria-expanded="false" class="nav-link">
+                                <a href="{{ route('project.plan', $project->id) }}" aria-expanded="false"
+                                    class="nav-link">
                                     排程作業
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a href="{{ route('project.background', $project->id) }}" aria-expanded="false"
-                                    class="nav-link ">
+                                <a href="{{ route('project.background', $project->id) }}" aria-expanded="false" class="nav-link ">
                                     專案背景調查
                                 </a>
                             </li>
                             <li class="nav-item">
                                 <a href="{{ route('project.write', $project->id) }}" aria-expanded="false"
+                                    class="nav-link">
+                                    人事/帶動企業
+                                </a>
+                            </li>
+                            @if($project->type == '3')
+                            <li class="nav-item">
+                                <a href="{{ route('project.sbir01', $project->id) }}" aria-expanded="false"
                                     class="nav-link active">
                                     SBIR內容撰寫
                                 </a>
                             </li>
+                            @endif
                             <li class="nav-item">
                                 <a href="{{ route('project.send', $project->id) }}" aria-expanded="false" class="nav-link">
                                     送件作業
                                 </a>
                             </li>
-
-
                             <li class="nav-item">
-                                <a href="{{ route('project.midterm', $project->id) }}" aria-expanded="false"
-                                    class="nav-link">
+                                <a href="{{ route('project.midterm', $project->id) }}" aria-expanded="false" class="nav-link">
                                     期中報告/檢核
                                 </a>
                             </li>
                             <li class="nav-item">
                                 <a href="{{ route('project.final', $project->id) }}" aria-expanded="false" class="nav-link">
                                     期末報告/結案
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{{ route('project.accounting', $project->id) }}" aria-expanded="true" class="nav-link ">
+                                    經費報表
                                 </a>
                             </li>
                             <li class="nav-item">
@@ -196,7 +207,7 @@
                                                                 </td>
                                                                 <td class="text-center text-danger">
                                                                     <div class="calc-sum">0</div>
-                                                                    @if (isset($data->total_1_2))
+                                                                    @if (isset($data->total_1_1))
                                                                         （{{ number_format($data->total_1_1) }}）
                                                                     @endif
                                                                 </td>
