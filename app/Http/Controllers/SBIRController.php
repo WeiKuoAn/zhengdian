@@ -1548,7 +1548,81 @@ class SBIRController extends Controller
     }
 
     //單獨匯出研發動機
-    
+        //匯出研發動機
+    public function sbir05_export($id)
+    {
+        // 資料存在就抓，不存在就為 null
+        $sbir05 = SBIR05::where('project_id', $id)->first();
+        $sbir06 = SBIR06::where('project_id', $id)->first();
+        $sbir07 = SBIR07::where('project_id', $id)->first();
+
+        // TinyMCE HTML 轉成 Word XML（如果不存在，填空字串）
+        $wordXml1 = $this->htmlToWordXml(optional($sbir05)->text1 ?? '');
+        $wordXml2 = $this->htmlToWordXml(optional($sbir05)->text2 ?? '');
+        $wordXml3 = $this->htmlToWordXml(optional($sbir05)->text3 ?? '');
+        $wordXml4 = $this->htmlToWordXml(optional($sbir06)->text1 ?? '');
+        $wordXml5 = $this->htmlToWordXml(optional($sbir06)->text2 ?? '');
+        $wordXml6 = $this->htmlToWordXml(optional($sbir06)->text3 ?? '');
+        $wordXml7 = $this->htmlToWordXml(optional($sbir06)->text4 ?? '');
+        $wordXml8 = $this->htmlToWordXml(optional($sbir06)->text5 ?? '');
+        $wordXml9 = $this->htmlToWordXml(optional($sbir06)->text6 ?? '');
+        $wordXml10 = $this->htmlToWordXml(optional($sbir07)->text1 ?? '');
+        $wordXml11 = $this->htmlToWordXml(optional($sbir07)->text2 ?? '');
+        $wordXml12 = $this->htmlToWordXml(optional($sbir07)->text3 ?? '');
+        $wordXml13 = $this->htmlToWordXml(optional($sbir07)->text4 ?? '');
+
+        // 解壓 Word模板
+        $templatePath = storage_path('app/templates/sbir05.docx');
+        $tempDir = storage_path('app/temp_word_' . time());
+        File::makeDirectory($tempDir);
+
+        $zip = new ZipArchive;
+        $zip->open($templatePath);
+        $zip->extractTo($tempDir);
+        $zip->close();
+
+        // 讀取 document.xml
+        $docXmlPath = $tempDir . '/word/document.xml';
+        $documentXml = File::get($docXmlPath);
+
+        // 批次替換
+        $search = [];
+        $replace = [];
+        foreach (range(1, 13) as $i) {
+            $search[] = '<w:t>##HTML_PLACEHOLDER_text' . $i . '##</w:t>';
+            $wordContentVar = 'wordXml' . $i;
+            $replace[] = $$wordContentVar;
+        }
+
+        $documentXml = str_replace($search, $replace, $documentXml);
+
+        File::put($docXmlPath, $documentXml);
+
+        // 壓回成 Word
+        $newDocxPath = storage_path('app/public/sbir05_export_' . now()->format('Ymd_His') . '.docx');
+        $zip = new ZipArchive;
+        $zip->open($newDocxPath, ZipArchive::CREATE);
+
+        $files = new RecursiveIteratorIterator(
+            new RecursiveDirectoryIterator($tempDir),
+            RecursiveIteratorIterator::LEAVES_ONLY
+        );
+
+        foreach ($files as $file) {
+            if (!$file->isDir()) {
+                $filePath = $file->getRealPath();
+                $relativePath = substr($filePath, strlen($tempDir) + 1);
+                $zip->addFile($filePath, $relativePath);
+            }
+        }
+
+        $zip->close();
+        File::deleteDirectory($tempDir);
+
+        return response()->download($newDocxPath)->deleteFileAfterSend(true);
+    }
+
+
 
     //匯出研發動機
     public function export($id): string

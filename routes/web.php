@@ -160,6 +160,7 @@ Route::get('project/sbir/{id}/exportWord', [SBIRController::class, 'exportWord']
 //SBIR05
 Route::get('project/sbir05/{id}', [SBIRController::class, 'sbir05'])->name('project.sbir05');
 Route::post('project/sbir05/{id}', [SBIRController::class, 'sbir05_data'])->name('project.sbir05.data');
+Route::get('project/sbir05/{id}/export', [SBIRController::class, 'sbir05_export'])->name('project.sbir05.export');
 Route::post('/project/{id}/sbir05/update-field', [SBIRController::class, 'sbir05_updateField']);
 Route::get('/project/{id}/sbir05/get-field', function (\Illuminate\Http\Request $request, $id) {
     $field = $request->query('field');

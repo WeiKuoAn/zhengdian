@@ -216,7 +216,7 @@
 
                                             <!-- 匯出 Word 按鈕 -->
                                             <div class="text-end mt-4">
-                                                <a href="{{ route('sbir.export', $project->id) }}"
+                                                <a href="{{ route('project.sbir05.export', $project->id) }}"
                                                     class="btn btn-success">
                                                     匯出計畫書 Word 檔
                                                 </a>
