@@ -149,6 +149,7 @@
 @section('script')
     <script src="https://code.essoduke.org/js/twzipcode/twzipcode.latest.js"></script>
 
+
     <script>
         // TWzipcode.js
         let twzipcode = new TWzipcode({
@@ -160,4 +161,24 @@
         });
         console.log(twzipcode.get());
     </script>
+    @if (session('success'))
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                Swal.fire({
+                    icon: 'success',
+                    title: '成功！',
+                    text: '{{ session('success') }}',
+                    confirmButtonText: '知道了',
+                    allowOutsideClick: false,
+                    allowEscapeKey: false,
+                    allowEnterKey: true,
+                    backdrop: true, // 這是滿版背景遮罩
+                    customClass: {
+                        popup: 'swal-wide'
+                    }
+                });
+            });
+        </script>
+    @endif
 @endsection
