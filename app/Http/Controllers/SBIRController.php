@@ -1548,7 +1548,7 @@ class SBIRController extends Controller
     }
 
     //單獨匯出研發動機
-        //匯出研發動機
+    //匯出研發動機
     public function sbir05_export($id)
     {
         // 資料存在就抓，不存在就為 null
@@ -1597,9 +1597,11 @@ class SBIRController extends Controller
         $documentXml = str_replace($search, $replace, $documentXml);
 
         File::put($docXmlPath, $documentXml);
+        $project = CustProject::where('id', $id)->first();
+        $user_data = User::where('id', $project->user_id)->first();
 
         // 壓回成 Word
-        $newDocxPath = storage_path('app/public/sbir05_export_' . now()->format('Ymd_His') . '.docx');
+        $newDocxPath = storage_path('app/public/SBIR計畫書_' . $user_data->name . '_計畫內容與實施方式' . now()->format('Ymd') . '.docx');
         $zip = new ZipArchive;
         $zip->open($newDocxPath, ZipArchive::CREATE);
 
