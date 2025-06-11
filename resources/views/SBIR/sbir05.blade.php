@@ -23,8 +23,7 @@
                         </div>
                         <ul class="nav nav-tabs nav-bordered nav-justified">
                             <li class="nav-item">
-                                <a href="{{ route('project.edit', $project->id) }}" aria-expanded="false"
-                                    class="nav-link ">
+                                <a href="{{ route('project.edit', $project->id) }}" aria-expanded="false" class="nav-link ">
                                     專案基本設定
                                 </a>
                             </li>
@@ -34,29 +33,28 @@
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a href="{{ route('project.plan', $project->id) }}" aria-expanded="false"
-                                    class="nav-link">
+                                <a href="{{ route('project.plan', $project->id) }}" aria-expanded="false" class="nav-link">
                                     排程作業
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a href="{{ route('project.background', $project->id) }}" aria-expanded="false" class="nav-link ">
+                                <a href="{{ route('project.background', $project->id) }}" aria-expanded="false"
+                                    class="nav-link ">
                                     專案背景調查
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a href="{{ route('project.write', $project->id) }}" aria-expanded="false"
-                                    class="nav-link">
+                                <a href="{{ route('project.write', $project->id) }}" aria-expanded="false" class="nav-link">
                                     人事/帶動企業
                                 </a>
                             </li>
-                            @if($project->type == '3')
-                            <li class="nav-item">
-                                <a href="{{ route('project.sbir01', $project->id) }}" aria-expanded="false"
-                                    class="nav-link active">
-                                    SBIR內容撰寫
-                                </a>
-                            </li>
+                            @if ($project->type == '3')
+                                <li class="nav-item">
+                                    <a href="{{ route('project.sbir01', $project->id) }}" aria-expanded="false"
+                                        class="nav-link active">
+                                        SBIR內容撰寫
+                                    </a>
+                                </li>
                             @endif
                             <li class="nav-item">
                                 <a href="{{ route('project.send', $project->id) }}" aria-expanded="false" class="nav-link">
@@ -64,17 +62,20 @@
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a href="{{ route('project.midterm', $project->id) }}" aria-expanded="false" class="nav-link">
+                                <a href="{{ route('project.midterm', $project->id) }}" aria-expanded="false"
+                                    class="nav-link">
                                     期中報告/檢核
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a href="{{ route('project.final', $project->id) }}" aria-expanded="false" class="nav-link">
+                                <a href="{{ route('project.final', $project->id) }}" aria-expanded="false"
+                                    class="nav-link">
                                     期末報告/結案
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a href="{{ route('project.accounting', $project->id) }}" aria-expanded="true" class="nav-link ">
+                                <a href="{{ route('project.accounting', $project->id) }}" aria-expanded="true"
+                                    class="nav-link ">
                                     經費報表
                                 </a>
                             </li>
@@ -277,8 +278,24 @@
                 selector: '#modalEditor',
                 height: 500,
                 menubar: 'file edit view insert format tools table help',
-                plugins: 'lists table image code link  table',
+                plugins: 'lists table image code link paste',
                 toolbar: 'undo redo | blocks | bold italic underline forecolor backcolor | alignleft aligncenter alignright | indent outdent | bullist numlist | table image link | code',
+
+                // ✅ 處理貼上行為：保留常見樣式、過濾 Word 樣式
+                paste_as_text: false,
+                paste_remove_styles_if_webkit: false,
+                paste_webkit_styles: 'font-weight font-style text-decoration color background-color',
+                paste_data_images: false, // 如需 base64 圖片可改 true
+                valid_elements: 'p,br,b,strong,i,em,u,a[href|target],ul,ol,li,table,tr,td,th,thead,tbody,img[src|alt|width|height],h1,h2,h3',
+                valid_styles: {
+                    '*': 'font-weight,font-style,text-decoration,color,background-color'
+                },
+                paste_preprocess: function(plugin, args) {
+                    args.content = args.content
+                        .replace(/<!--[\s\S]*?-->/g, '') // 移除 HTML 註解（常見於 Word）
+                        .replace(/<(\/?)(font|span|style)[^>]*>/gi, ''); // 移除雜質標籤
+                },
+
                 images_upload_url: '/upload-image',
                 automatic_uploads: true,
                 file_picker_types: 'image',
@@ -290,16 +307,11 @@
 
                         input.onchange = function() {
                             const file = this.files[0];
-                            // **1. 檔案大小檢查：超過 2MB 就跳錯誤**
                             if (file.size > 2 * 1024 * 1024) {
-                                // a) 瀏覽器 alert
                                 alert('檔案大小不能超過 2MB');
-                                // b) 或用 TinyMCE 的通知機制（需在 init 裡用 setup 暴露 editorInstance）
-                                // editorInstance.notificationManager.open({ text: '檔案大小不能超過 2MB', type: 'error' });
                                 return;
                             }
 
-                            // 2. 如果沒問題，才組 FormData 上傳
                             const formData = new FormData();
                             formData.append('file', file);
 
@@ -319,24 +331,25 @@
                         input.click();
                     }
                 },
+
                 setup: function(editor) {
                     editorInstance = editor;
                 },
+
                 table_toolbar: 'tableprops tabledelete | tableinsertrowbefore tableinsertrowafter tabledeleterow | tableinsertcolbefore tableinsertcolafter tabledeletecol',
             });
-            console.log(tinymce.majorVersion + '.' + tinymce.minorVersion);
 
-
+            // ✅ 處理 .open-editor 按鈕 → 透過 AJAX 載入資料進編輯器
             document.querySelectorAll('.open-editor').forEach(btn => {
                 btn.addEventListener('click', function() {
                     const field = this.getAttribute('data-field');
 
-                    // 改為呼叫正確的 GET 路由
                     fetch(`/project/${projectId}/sbir05/get-field?field=${field}`)
                         .then(res => res.json())
                         .then(data => {
                             const content = data.value || '';
                             document.getElementById('currentField').value = field;
+
                             const wait = setInterval(() => {
                                 const editor = tinymce.get('modalEditor');
                                 if (editor) {
@@ -349,6 +362,7 @@
             });
         });
 
+        // ✅ 儲存資料
         function saveEditorContent() {
             const field = document.getElementById('currentField').value;
             const content = tinymce.get('modalEditor').getContent();

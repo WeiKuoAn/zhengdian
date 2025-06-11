@@ -1757,51 +1757,76 @@ class SBIRController extends Controller
             ->deleteFileAfterSend(true);
     }
 
-    private function htmlToWordXml($html)
-    {
-        $xml = '';
-        libxml_use_internal_errors(true);
-        $dom = new \DOMDocument();
-        $dom->loadHTML('<?xml encoding="utf-8" ?>' . $html);
-        libxml_clear_errors();
+private function htmlToWordXml($html)
+{
+    $xml = '';
+    libxml_use_internal_errors(true);
+    $dom = new \DOMDocument();
+    $dom->loadHTML('<?xml encoding="utf-8" ?>' . $html);
+    libxml_clear_errors();
 
-        $body = $dom->getElementsByTagName('body')->item(0);
-        if (!$body) return '';
+    $body = $dom->getElementsByTagName('body')->item(0);
+    if (!$body) return '';
 
-        foreach ($body->childNodes as $node) {
-            if ($node->nodeName === 'p') {
-                $xml .= $this->convertParagraph($node);
-            } elseif ($node->nodeName === 'table') {
-                $xml .= $this->convertTableAdvanced($node);
-            }
+    foreach ($body->childNodes as $node) {
+        if ($node->nodeName === 'p') {
+            $xml .= $this->convertParagraph($node);
+        } elseif ($node->nodeName === 'table') {
+            $xml .= $this->convertTableAdvanced($node);
+        } elseif ($node->nodeName === 'ul' || $node->nodeName === 'ol') {
+            $xml .= $this->convertList($node);
         }
-
-        return trim($xml);
     }
 
+    return trim($xml);
+}
 
-    private function convertParagraph($node)
-    {
-        $paragraphXml = '';
-        foreach ($node->childNodes as $child) {
-            if ($child->nodeName === 'br') {
-                $paragraphXml .= '<w:br/>';
-            } elseif ($child->nodeType === XML_TEXT_NODE || $child->nodeName === '#text') {
-                $text = trim($child->textContent);
-                if ($text !== '') {
-                    $paragraphXml .= $this->buildRunXml($text);
+private function convertParagraph($node)
+{
+    $paragraphXml = '';
+    foreach ($node->childNodes as $child) {
+        if ($child->nodeName === 'br') {
+            $paragraphXml .= '<w:br/>';
+        } elseif ($child->nodeType === XML_TEXT_NODE || $child->nodeName === '#text') {
+            $text = trim($child->textContent);
+            if ($text !== '') {
+                $paragraphXml .= $this->buildRunXml($text);
+            }
+        } elseif ($child->nodeName === 'span') {
+            $text = trim($child->textContent);
+            if ($text !== '') {
+                $color = null;
+                if ($child instanceof \DOMElement && $child->hasAttribute('style')) {
+                    if (preg_match('/color\s*:\s*([^;]+)/i', $child->getAttribute('style'), $m)) {
+                        $color = $this->cssColorToWordColor($m[1]);
+                    }
                 }
-            } else {
-                $text = trim($child->textContent);
-                if ($text !== '') {
-                    $isBold = in_array($child->nodeName, ['b', 'strong']);
-                    $isItalic = in_array($child->nodeName, ['i', 'em']);
-                    $paragraphXml .= $this->buildRunXml($text, $isBold, $isItalic);
+                $paragraphXml .= $this->buildRunXml($text, false, false, $color);
+            }
+        } elseif ($child->nodeName === 'font') {
+            $text = trim($child->textContent);
+            $color = null;
+            if ($child instanceof \DOMElement && $child->hasAttribute('color')) {
+                $color = $this->cssColorToWordColor($child->getAttribute('color'));
+            }
+            $paragraphXml .= $this->buildRunXml($text, false, false, $color);
+        } else {
+            $text = trim($child->textContent);
+            if ($text !== '') {
+                $isBold = in_array($child->nodeName, ['b', 'strong']);
+                $isItalic = in_array($child->nodeName, ['i', 'em']);
+                $color = null;
+                if ($child instanceof \DOMElement && $child->hasAttribute('style')) {
+                    if (preg_match('/color\s*:\s*([^;]+)/i', $child->getAttribute('style'), $m)) {
+                        $color = $this->cssColorToWordColor($m[1]);
+                    }
                 }
+                $paragraphXml .= $this->buildRunXml($text, $isBold, $isItalic, $color);
             }
         }
+    }
 
-        return <<<XML
+    return <<<XML
 <w:p>
   <w:pPr>
     <w:ind w:left="1100"/>
@@ -1817,50 +1842,94 @@ class SBIRController extends Controller
 </w:p>
 
 XML;
+}
+
+private function convertList($listNode)
+{
+    $xml = '';
+    $isOrdered = $listNode->nodeName === 'ol';
+    foreach ($listNode->childNodes as $li) {
+        if ($li->nodeName !== 'li') continue;
+        $text = trim($li->textContent);
+        if ($text === '') continue;
+
+        $liContent = '';
+        foreach ($li->childNodes as $child) {
+            if ($child->nodeType === XML_TEXT_NODE || $child->nodeName === '#text') {
+                $liContent .= $this->buildRunXml(trim($child->textContent));
+            } else {
+                $isBold = in_array($child->nodeName, ['b', 'strong']);
+                $isItalic = in_array($child->nodeName, ['i', 'em']);
+                $color = null;
+                if ($child instanceof \DOMElement && $child->hasAttribute('style')) {
+                    if (preg_match('/color\s*:\s*([^;]+)/i', $child->getAttribute('style'), $m)) {
+                        $color = $this->cssColorToWordColor($m[1]);
+                    }
+                }
+                $liContent .= $this->buildRunXml(trim($child->textContent), $isBold, $isItalic, $color);
+            }
+        }
+
+        $numId = $isOrdered ? '2' : '1';
+
+        $xml .= '<w:p>
+  <w:pPr>
+    <w:ind w:left="1500"/>
+    <w:numPr>
+      <w:ilvl w:val="0"/>
+      <w:numId w:val="' . $numId . '"/>
+    </w:numPr>
+  </w:pPr>
+  ' . $liContent . '
+</w:p>';
     }
-    private function convertTableAdvanced($tableNode)
-    {
-        $tblXml = '<w:tbl>';
-        $tblXml .= '
-        <w:tblPr>
-            <w:tblW w:w="4000" w:type="pct"/> <!-- 整張表格縮小 -->
-            <w:tblInd w:w="1100" w:type="dxa"/> <!-- 表格整體縮排 -->
-            <w:tblBorders>
-                <w:top w:val="single" w:sz="4" w:space="0" w:color="000000"/>
-                <w:left w:val="single" w:sz="4" w:space="0" w:color="000000"/>
-                <w:bottom w:val="single" w:sz="4" w:space="0" w:color="000000"/>
-                <w:right w:val="single" w:sz="4" w:space="0" w:color="000000"/>
-                <w:insideH w:val="single" w:sz="4" w:space="0" w:color="000000"/>
-                <w:insideV w:val="single" w:sz="4" w:space="0" w:color="000000"/>
-            </w:tblBorders>
-        </w:tblPr>
-    ';
+    $xml .= '<w:p><w:pPr><w:ind w:left="2200"/></w:pPr><w:r><w:t xml:space="preserve"></w:t></w:r></w:p>';
+    return $xml;
+}
 
-        $rowspanMap = [];
+private function convertTableAdvanced($tableNode)
+{
+    $tblXml = '<w:tbl>';
+    $tblXml .= '
+    <w:tblPr>
+        <w:tblW w:w="4000" w:type="pct"/>
+        <w:tblInd w:w="1100" w:type="dxa"/>
+        <w:tblBorders>
+            <w:top w:val="single" w:sz="4" w:space="0" w:color="000000"/>
+            <w:left w:val="single" w:sz="4" w:space="0" w:color="000000"/>
+            <w:bottom w:val="single" w:sz="4" w:space="0" w:color="000000"/>
+            <w:right w:val="single" w:sz="4" w:space="0" w:color="000000"/>
+            <w:insideH w:val="single" w:sz="4" w:space="0" w:color="000000"/>
+            <w:insideV w:val="single" w:sz="4" w:space="0" w:color="000000"/>
+        </w:tblBorders>
+    </w:tblPr>
+';
 
-        foreach ($tableNode->getElementsByTagName('tr') as $rowIdx => $tr) {
-            $tblXml .= '<w:tr>';
-            $colIdx = 0;
+    $rowspanMap = [];
 
-            foreach ($tr->childNodes as $td) {
-                if ($td->nodeName !== 'td' && $td->nodeName !== 'th') continue;
+    foreach ($tableNode->getElementsByTagName('tr') as $rowIdx => $tr) {
+        $tblXml .= '<w:tr>';
+        $colIdx = 0;
 
-                while (isset($rowspanMap[$rowIdx][$colIdx])) {
-                    $tblXml .= $rowspanMap[$rowIdx][$colIdx];
-                    $colIdx++;
-                }
+        foreach ($tr->childNodes as $td) {
+            if ($td->nodeName !== 'td' && $td->nodeName !== 'th') continue;
 
-                $colspan = intval($td->getAttribute('colspan')) ?: 1;
-                $rowspan = intval($td->getAttribute('rowspan')) ?: 1;
+            while (isset($rowspanMap[$rowIdx][$colIdx])) {
+                $tblXml .= $rowspanMap[$rowIdx][$colIdx];
+                $colIdx++;
+            }
 
-                $tcPr = '<w:tcPr><w:tcW w:w="1500" w:type="dxa"/>';
-                if ($colspan > 1) {
-                    $tcPr .= '<w:gridSpan w:val="' . $colspan . '"/>';
-                }
-                if ($rowspan > 1) {
-                    $tcPr .= '<w:vMerge w:val="restart"/>';
-                    for ($i = 1; $i < $rowspan; $i++) {
-                        $rowspanMap[$rowIdx + $i][$colIdx] = '
+            $colspan = intval($td->getAttribute('colspan')) ?: 1;
+            $rowspan = intval($td->getAttribute('rowspan')) ?: 1;
+
+            $tcPr = '<w:tcPr><w:tcW w:w="1500" w:type="dxa"/>';
+            if ($colspan > 1) {
+                $tcPr .= '<w:gridSpan w:val="' . $colspan . '"/>';
+            }
+            if ($rowspan > 1) {
+                $tcPr .= '<w:vMerge w:val="restart"/>';
+                for ($i = 1; $i < $rowspan; $i++) {
+                    $rowspanMap[$rowIdx + $i][$colIdx] = '
 <w:tc>
   <w:tcPr>
     <w:tcW w:w="1500" w:type="dxa"/>
@@ -1869,84 +1938,124 @@ XML;
   <w:p/>
 </w:tc>
 ';
-                    }
                 }
-                $tcPr .= '</w:tcPr>';
+            }
+            $tcPr .= '</w:tcPr>';
 
-                // 🔥 這邊改成新的表格內處理方式
-                $cellParagraphs = [];
-
-                foreach ($td->childNodes as $child) {
-                    if ($child->nodeName === 'p') {
-                        // <p> 直接變成新的段落
-                        $innerParagraph = '';
-
-                        foreach ($child->childNodes as $innerChild) {
-                            if ($innerChild->nodeType === XML_TEXT_NODE || $innerChild->nodeName === '#text') {
-                                $text = trim($innerChild->textContent);
-                                if ($text !== '') {
-                                    $innerParagraph .= $this->buildRunXml($text);
+            $cellParagraphs = [];
+            foreach ($td->childNodes as $child) {
+                if ($child->nodeName === 'p') {
+                    $innerParagraph = '';
+                    foreach ($child->childNodes as $innerChild) {
+                        if ($innerChild->nodeType === XML_TEXT_NODE || $innerChild->nodeName === '#text') {
+                            $text = trim($innerChild->textContent);
+                            if ($text !== '') {
+                                $innerParagraph .= $this->buildRunXml($text);
+                            }
+                        } else {
+                            $text = trim($innerChild->textContent);
+                            if ($text !== '') {
+                                $isBold = in_array($innerChild->nodeName, ['b', 'strong']);
+                                $isItalic = in_array($innerChild->nodeName, ['i', 'em']);
+                                $color = null;
+                                if ($innerChild instanceof \DOMElement && $innerChild->hasAttribute('style')) {
+                                    if (preg_match('/color\s*:\s*([^;]+)/i', $innerChild->getAttribute('style'), $m)) {
+                                        $color = $this->cssColorToWordColor($m[1]);
+                                    }
                                 }
-                            } else {
-                                $text = trim($innerChild->textContent);
-                                if ($text !== '') {
-                                    $isBold = in_array($innerChild->nodeName, ['b', 'strong']);
-                                    $isItalic = in_array($innerChild->nodeName, ['i', 'em']);
-                                    $innerParagraph .= $this->buildRunXml($text, $isBold, $isItalic);
-                                }
+                                $innerParagraph .= $this->buildRunXml($text, $isBold, $isItalic, $color);
                             }
                         }
-
-                        if ($innerParagraph !== '') {
-                            $cellParagraphs[] = '<w:p>' . $innerParagraph . '</w:p>';
+                    }
+                    if ($innerParagraph !== '') {
+                        $cellParagraphs[] = '<w:p>' . $innerParagraph . '</w:p>';
+                    }
+                } elseif ($child->nodeName === 'br') {
+                    if (!empty($cellParagraphs)) {
+                        $last = array_pop($cellParagraphs);
+                        $last = str_replace('</w:p>', '<w:br/></w:p>', $last);
+                        $cellParagraphs[] = $last;
+                    }
+                } elseif ($child->nodeType === XML_TEXT_NODE || $child->nodeName === '#text') {
+                    $text = trim($child->textContent);
+                    if ($text !== '') {
+                        $cellParagraphs[] = '<w:p>' . $this->buildRunXml($text) . '</w:p>';
+                    }
+                } else {
+                    $text = trim($child->textContent);
+                    if ($text !== '') {
+                        $isBold = in_array($child->nodeName, ['b', 'strong']);
+                        $isItalic = in_array($child->nodeName, ['i', 'em']);
+                        $color = null;
+                        if ($child instanceof \DOMElement && $child->hasAttribute('style')) {
+                            if (preg_match('/color\s*:\s*([^;]+)/i', $child->getAttribute('style'), $m)) {
+                                $color = $this->cssColorToWordColor($m[1]);
+                            }
                         }
-                    } elseif ($child->nodeName === 'br') {
-                        // <br> 小換行：在上一個段落插入 <w:br/>
-                        if (!empty($cellParagraphs)) {
-                            $last = array_pop($cellParagraphs);
-                            $last = str_replace('</w:p>', '<w:br/></w:p>', $last);
-                            $cellParagraphs[] = $last;
-                        }
-                    } elseif ($child->nodeType === XML_TEXT_NODE || $child->nodeName === '#text') {
-                        // 純文字（沒有包 <p> 的文字）
-                        $text = trim($child->textContent);
-                        if ($text !== '') {
-                            $cellParagraphs[] = '<w:p>' . $this->buildRunXml($text) . '</w:p>';
-                        }
-                    } else {
-                        // 其他標籤（像 <span>）內部有文字的
-                        $text = trim($child->textContent);
-                        if ($text !== '') {
-                            $isBold = in_array($child->nodeName, ['b', 'strong']);
-                            $isItalic = in_array($child->nodeName, ['i', 'em']);
-                            $cellParagraphs[] = '<w:p>' . $this->buildRunXml($text, $isBold, $isItalic) . '</w:p>';
-                        }
+                        $cellParagraphs[] = '<w:p>' . $this->buildRunXml($text, $isBold, $isItalic, $color) . '</w:p>';
                     }
                 }
+            }
 
-                $cellContentXml = implode('', $cellParagraphs);
+            $cellContentXml = implode('', $cellParagraphs);
 
-                $tblXml .= '
+            $tblXml .= '
 <w:tc>
   ' . $tcPr . '
   ' . $cellContentXml . '
 </w:tc>
 ';
 
-                $colIdx += $colspan;
-            }
-
-            $tblXml .= '</w:tr>';
+            $colIdx += $colspan;
         }
 
-        $tblXml .= '</w:tbl>';
-        return $tblXml;
+        $tblXml .= '</w:tr>';
     }
 
+    $tblXml .= '</w:tbl>';
+    return $tblXml;
+}
 
+private function buildRunXml($text, $isBold = false, $isItalic = false, $color = null)
+{
+    $text = htmlspecialchars($text);
+    $bold = $isBold ? '<w:b/>' : '';
+    $italic = $isItalic ? '<w:i/>' : '';
+    $colorXml = $color ? '<w:color w:val="' . $color . '"/>' : '';
 
+    return <<<XML
+<w:r>
+  <w:rPr>
+    <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="DFKai-SB"/>
+    <w:sz w:val="24"/>
+    {$bold}{$italic}{$colorXml}
+  </w:rPr>
+  <w:t xml:space="preserve">{$text}</w:t>
+</w:r>
+XML;
+}
 
-
+private function cssColorToWordColor($cssColor)
+{
+    $cssColor = trim($cssColor);
+    if (preg_match('/^#([0-9a-f]{6})$/i', $cssColor, $m)) {
+        return strtoupper($m[1]);
+    }
+    if (preg_match('/^#([0-9a-f]{3})$/i', $cssColor, $m)) {
+        return strtoupper($m[1][0] . $m[1][0] . $m[1][1] . $m[1][1] . $m[1][2] . $m[1][2]);
+    }
+    if (preg_match('/rgb\((\d+),\s*(\d+),\s*(\d+)\)/i', $cssColor, $m)) {
+        return sprintf('%02X%02X%02X', $m[1], $m[2], $m[3]);
+    }
+    $map = [
+        'black' => '000000', 'red' => 'FF0000', 'green' => '00FF00', 'blue' => '0000FF',
+        'yellow' => 'FFFF00', 'gray' => '808080', 'white' => 'FFFFFF', 'orange' => 'FFA500',
+        'purple' => '800080', 'pink' => 'FFC0CB', 'brown' => 'A52A2A', 'cyan' => '00FFFF',
+        'magenta' => 'FF00FF',
+    ];
+    $cssColor = strtolower($cssColor);
+    return $map[$cssColor] ?? null;
+}
 
 
     private function convertTable($tableNode)
@@ -1988,32 +2097,6 @@ XML;
         $tblXml .= '</w:tbl>';
         return $tblXml;
     }
-
-
-
-
-
-
-
-
-    private function buildRunXml($text, $isBold = false, $isItalic = false)
-    {
-        $text = htmlspecialchars($text);
-        $bold = $isBold ? '<w:b/>' : '';
-        $italic = $isItalic ? '<w:i/>' : '';
-
-        return <<<XML
-<w:r>
-  <w:rPr>
-    <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="DFKai-SB"/>
-    <w:sz w:val="24"/>
-    {$bold}{$italic}
-  </w:rPr>
-  <w:t xml:space="preserve">{$text}</w:t>
-</w:r>
-XML;
-    }
-
 
 
     private function escapeXml($text)
