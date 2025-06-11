@@ -287,7 +287,6 @@
                 paste_webkit_styles: 'font-weight font-style text-decoration color background-color',
                 paste_data_images: false, // 如需 base64 圖片可改 true
                 valid_elements: 'span[style],p,br,b,strong,i,em,u,a[href|target],ul,ol,li,table,tr,td,th,thead,tbody,img[src|alt|width|height],h1,h2,h3',
-                
                 valid_styles: {
                     '*': 'font-weight,font-style,text-decoration,color,background-color'
                 },

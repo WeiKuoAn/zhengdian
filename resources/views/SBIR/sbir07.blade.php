@@ -23,8 +23,7 @@
                         </div>
                         <ul class="nav nav-tabs nav-bordered nav-justified">
                             <li class="nav-item">
-                                <a href="{{ route('project.edit', $project->id) }}" aria-expanded="false"
-                                    class="nav-link ">
+                                <a href="{{ route('project.edit', $project->id) }}" aria-expanded="false" class="nav-link ">
                                     專案基本設定
                                 </a>
                             </li>
@@ -34,29 +33,28 @@
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a href="{{ route('project.plan', $project->id) }}" aria-expanded="false"
-                                    class="nav-link">
+                                <a href="{{ route('project.plan', $project->id) }}" aria-expanded="false" class="nav-link">
                                     排程作業
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a href="{{ route('project.background', $project->id) }}" aria-expanded="false" class="nav-link ">
+                                <a href="{{ route('project.background', $project->id) }}" aria-expanded="false"
+                                    class="nav-link ">
                                     專案背景調查
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a href="{{ route('project.write', $project->id) }}" aria-expanded="false"
-                                    class="nav-link">
+                                <a href="{{ route('project.write', $project->id) }}" aria-expanded="false" class="nav-link">
                                     人事/帶動企業
                                 </a>
                             </li>
-                            @if($project->type == '3')
-                            <li class="nav-item">
-                                <a href="{{ route('project.sbir01', $project->id) }}" aria-expanded="false"
-                                    class="nav-link active">
-                                    SBIR內容撰寫
-                                </a>
-                            </li>
+                            @if ($project->type == '3')
+                                <li class="nav-item">
+                                    <a href="{{ route('project.sbir01', $project->id) }}" aria-expanded="false"
+                                        class="nav-link active">
+                                        SBIR內容撰寫
+                                    </a>
+                                </li>
                             @endif
                             <li class="nav-item">
                                 <a href="{{ route('project.send', $project->id) }}" aria-expanded="false" class="nav-link">
@@ -64,17 +62,20 @@
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a href="{{ route('project.midterm', $project->id) }}" aria-expanded="false" class="nav-link">
+                                <a href="{{ route('project.midterm', $project->id) }}" aria-expanded="false"
+                                    class="nav-link">
                                     期中報告/檢核
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a href="{{ route('project.final', $project->id) }}" aria-expanded="false" class="nav-link">
+                                <a href="{{ route('project.final', $project->id) }}" aria-expanded="false"
+                                    class="nav-link">
                                     期末報告/結案
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a href="{{ route('project.accounting', $project->id) }}" aria-expanded="true" class="nav-link ">
+                                <a href="{{ route('project.accounting', $project->id) }}" aria-expanded="true"
+                                    class="nav-link ">
                                     經費報表
                                 </a>
                             </li>
@@ -116,66 +117,58 @@
                                         <!--選單-->
                                         <ul class="nav nav-tabs">
                                             <li class="nav-item">
-                                                <a href="{{ route("project.sbir01",$project->id) }}" class="nav-link ">
+                                                <a href="{{ route('project.sbir01', $project->id) }}" class="nav-link ">
                                                     壹、計畫書基本資料
                                                 </a>
                                             </li>
                                             <li class="nav-item">
-                                                <a href="{{ route("project.sbir02",$project->id) }}" class="nav-link ">
+                                                <a href="{{ route('project.sbir02', $project->id) }}" class="nav-link ">
                                                     貳、計畫申請表
                                                 </a>
                                             </li>
                                             <li class="nav-item">
-                                                <a href="{{ route("project.sbir03",$project->id) }}" 
-                                                    class="nav-link ">
+                                                <a href="{{ route('project.sbir03', $project->id) }}" class="nav-link ">
                                                     參、計畫摘要表
                                                 </a>
                                             </li>
                                             <li class="nav-item">
-                                                <a href="{{ route("project.sbir04",$project->id) }}" 
-                                                    class="nav-link ">
+                                                <a href="{{ route('project.sbir04', $project->id) }}" class="nav-link ">
                                                     肆、公司概況
                                                 </a>
                                             </li>
                                             <li class="nav-item">
-                                                <a href="{{ route("project.sbir05",$project->id) }}" 
-                                                    class="nav-link ">
+                                                <a href="{{ route('project.sbir05', $project->id) }}" class="nav-link ">
                                                     伍、研發動機
                                                 </a>
                                             </li>
                                             <li class="nav-item">
-                                                <a href="{{ route("project.sbir06",$project->id) }}" 
-                                                    class="nav-link ">
+                                                <a href="{{ route('project.sbir06', $project->id) }}" class="nav-link ">
                                                     陸、計畫目標
                                                 </a>
                                             </li>
                                             <li class="nav-item">
-                                                <a href="{{ route("project.sbir07",$project->id) }}" 
+                                                <a href="{{ route('project.sbir07', $project->id) }}"
                                                     class="nav-link active">
                                                     柒、實施方式
                                                 </a>
                                             </li>
                                             <li class="nav-item">
-                                                <a href="{{ route("project.sbir08",$project->id) }}" 
-                                                    class="nav-link">
+                                                <a href="{{ route('project.sbir08', $project->id) }}" class="nav-link">
                                                     捌、智財分析
                                                 </a>
                                             </li>
                                             <li class="nav-item">
-                                                <a href="{{ route("project.sbir09",$project->id) }}" 
-                                                    class="nav-link">
+                                                <a href="{{ route('project.sbir09', $project->id) }}" class="nav-link">
                                                     玖、計畫執行查核點說明
                                                 </a>
                                             </li>
                                             <li class="nav-item">
-                                                <a href="{{ route("project.sbir10",$project->id) }}" 
-                                                    class="nav-link">
+                                                <a href="{{ route('project.sbir10', $project->id) }}" class="nav-link">
                                                     拾、經費需求
                                                 </a>
                                             </li>
                                             <li class="nav-item">
-                                                <a href="{{ route("project.sbir07",$project->id) }}" 
-                                                    class="nav-link">
+                                                <a href="{{ route('project.sbir07', $project->id) }}" class="nav-link">
                                                     附件
                                                 </a>
                                             </li>
@@ -234,7 +227,8 @@
                                                 </div>
                                             @endforeach
                                             @foreach ($section2s as $sec2)
-                                                <h5 class="text-uppercase bg-light p-2">{{ $sec2['title'] }}　{{ $sec2['description'] }}</h5>
+                                                <h5 class="text-uppercase bg-light p-2">
+                                                    {{ $sec2['title'] }}　{{ $sec2['description'] }}</h5>
                                                 <div class="card mb-3">
                                                     <div class="card-body">
                                                         {{-- <h5 class="card-title">{{ $sec2['title'] }}</h5>
@@ -317,6 +311,23 @@
                 menubar: true,
                 plugins: 'lists table image code link textcolor',
                 toolbar: 'undo redo | blocks | bold italic underline forecolor backcolor | alignleft aligncenter alignright | bullist numlist | image table link | code',
+
+                // ✅ 處理貼上行為：保留常見樣式、過濾 Word 樣式
+                paste_as_text: false,
+                paste_remove_styles_if_webkit: false,
+                paste_webkit_styles: 'font-weight font-style text-decoration color background-color',
+                paste_data_images: false, // 如需 base64 圖片可改 true
+                valid_elements: 'span[style],p,br,b,strong,i,em,u,a[href|target],ul,ol,li,table,tr,td,th,thead,tbody,img[src|alt|width|height],h1,h2,h3',
+                valid_styles: {
+                    '*': 'font-weight,font-style,text-decoration,color,background-color'
+                },
+
+                paste_preprocess: function(plugin, args) {
+                    args.content = args.content
+                        .replace(/<!--[\s\S]*?-->/g, '') // 移除 HTML 註解（常見於 Word）
+                        .replace(/<(\/?)(font|span|style)[^>]*>/gi, ''); // 移除雜質標籤
+                },
+
                 images_upload_url: '/upload-image',
                 automatic_uploads: true,
                 file_picker_types: 'image',
