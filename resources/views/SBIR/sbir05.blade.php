@@ -286,10 +286,12 @@
                 paste_remove_styles_if_webkit: false,
                 paste_webkit_styles: 'font-weight font-style text-decoration color background-color',
                 paste_data_images: false, // 如需 base64 圖片可改 true
-                valid_elements: 'p,br,b,strong,i,em,u,a[href|target],ul,ol,li,table,tr,td,th,thead,tbody,img[src|alt|width|height],h1,h2,h3',
+                valid_elements: 'span[style],p,br,b,strong,i,em,u,a[href|target],ul,ol,li,table,tr,td,th,thead,tbody,img[src|alt|width|height],h1,h2,h3',
+                
                 valid_styles: {
                     '*': 'font-weight,font-style,text-decoration,color,background-color'
                 },
+
                 paste_preprocess: function(plugin, args) {
                     args.content = args.content
                         .replace(/<!--[\s\S]*?-->/g, '') // 移除 HTML 註解（常見於 Word）
