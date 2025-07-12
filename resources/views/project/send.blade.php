@@ -82,16 +82,16 @@
                                 </a>
                             </li>
                         </ul>
-                        <form action="{{ route('project.edit.data', $data->id) }}" method="POST">
+                        <form action="{{ route('project.send.data', $data->id) }}" method="POST">
                             @csrf
                             <div class="row mt-3">
                                 <div class="mb-3">
                                     <label class="form-label">送件日期<span class="text-danger">*</span></label>
-                                    <input type="date" class="form-control" name="date" value="{{ $data->date }}">
+                                    <input type="date" class="form-control" name="send_date" value="{{ $data->send_date }}">
                                 </div>
                                 <div class="mb-3">
                                     <label class="form-label">送件編號<span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control" name="nas_link" value="123" >
+                                    <input type="text" class="form-control" name="send_number" value="{{ $data->send_number }}" >
                                 </div>
                                 {{-- <div class="mb-3">
                                     <label class="form-label">計畫登入密碼<span class="text-danger">*</span></label>

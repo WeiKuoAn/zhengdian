@@ -135,7 +135,7 @@ Route::post('project/accounting/{id}', [ProjectController::class, 'accounting_up
 Route::delete('/project/{id}', [ProjectController::class, 'destroy'])->name('projects.destroy');
 
 Route::get('project/send/{id}', [ProjectController::class, 'send'])->name('project.send');
-// Route::get('project/send/{id}', [ProjectController::class, 'send_update'])->name('project.send.data');
+Route::post('project/send/{id}', [ProjectController::class, 'send_update'])->name('project.send.data');   
 Route::get('project/plan/{id}', [ProjectController::class, 'plan'])->name('project.plan');
 Route::post('project/plan/{id}', [ProjectController::class, 'plan_update'])->name('project.plan.data');
 Route::get('project/task/{id}', [ProjectController::class, 'task'])->name('project.task');

@@ -747,6 +747,17 @@ class ProjectController extends Controller
         return view('project.send', ['data' => $data, 'request' => $request, 'check_statuss' => $check_statuss]);
     }
 
+    public function send_update(string $id, Request $request)
+    {
+        // 查詢對應的專案
+        $data = CustProject::where('id', $id)->first();
+        $data->send_date = $request->send_date;
+        $data->send_number = $request->send_number;
+        $data->save();
+        
+        return redirect()->route('project.send', $id)->with('success', '送件成功！');
+    }
+
     public function plan(string $id, Request $request)
     {
         // 查詢對應的專案
