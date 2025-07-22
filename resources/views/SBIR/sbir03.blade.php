@@ -170,8 +170,13 @@
                                                 </a>
                                             </li>
                                             <li class="nav-item">
-                                                <a href="{{ route('project.sbir07', $project->id) }}" class="nav-link">
+                                                <a href="{{ route('project.appendix', $project->id) }}" class="nav-link">
                                                     附件
+                                                </a>
+                                            </li>
+                                            <li class="nav-item">
+                                                <a href="{{ route('project.supplement', $project->id) }}" class="nav-link">
+                                                    補充資料
                                                 </a>
                                             </li>
                                         </ul>

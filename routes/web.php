@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\CustomerController;
+use App\Http\Controllers\CustomerProjectController;
 use App\Http\Controllers\PresonCustomerController;
 use App\Http\Controllers\PresonProjectController;
 use App\Http\Controllers\ContractStatusController;
@@ -239,6 +240,11 @@ Route::get('project/sbir08/{id}/export', [SBIRController::class, 'sbir08_export'
 Route::get('project/sbir/{id}/exportMerged', [SBIRController::class, 'exportMerged'])->name('sbir.exportMerged');
 Route::get('sbir/{id}/export-motivation', [SBIR2Controller::class, 'exportResearchMotivation'])->name('sbir.export-motivation');
 
+Route::get('project/sbir/appendix/{id}', [SBIRController::class, 'appendix'])->name('project.appendix');
+Route::post('project/sbir/appendix/{id}', [SBIRController::class, 'appendixUpdate'])->name('project.appendix.update');
+Route::get('project/sbir/supplement/{id}', [SBIRController::class, 'supplement'])->name('project.supplement');
+Route::post('project/sbir/supplement/{id}', [SBIRController::class, 'supplement_data'])->name('project.supplement.data');
+
 
 Route::post('/upload-image', [UploadController::class, 'uploadImage']);
 
@@ -305,11 +311,20 @@ Route::get('/api/calendar/events', [CalendarController::class, 'getEvents']);
 Route::post('/api/calendar/events', [CalendarController::class, 'storeOrUpdate']);
 Route::delete('/api/calendar/events/{id}', [CalendarController::class, 'destroy']);
 
-
+    
 // routes/web.php
 Route::get('/api/projects/{user_id}', [ProjectController::class, 'getProjectsByUser']);
 Route::get('customer/introduce-create', [CustomerController::class, 'IntroduceCreate'])->name('cust.introduce.create');
 Route::post('customer/introduce-create', [CustomerController::class, 'IntroduceStore'])->name('cust.introduce.store');
+
+//客戶專案瀏覽
+Route::get('customer/project', [CustomerProjectController::class, 'index'])->name('customer.project');
+Route::get('customer/project/sbir/appendix/{encrypted_id}', [CustomerProjectController::class, 'sbir_appendix'])->name('customer.project.sbir.appendix');
+Route::get('customer/project/supplement/{encrypted_id}', [CustomerProjectController::class, 'supplement'])->name('customer.project.supplement');
+Route::post('customer/project/supplement/{encrypted_id}', [CustomerProjectController::class, 'supplement_store'])->name('customer.project.supplement.store');
+
+//客戶會議瀏覽
+Route::get('customer/meet', [CustomerProjectController::class, 'Meet'])->name('customer.meet');
 
 //客戶介面-專案
 Route::get('business-create', [ProjectBusinessController::class, 'BusinessCreate'])->name('business.create');

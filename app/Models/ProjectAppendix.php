@@ -9,7 +9,7 @@ class ProjectAppendix extends Model
 {
     use HasFactory;
     protected $table = "project_appendix";
-    protected $fillable = ['project_id','checkboxes_status'];
+    protected $fillable = ['project_id','checkboxes_status','comment'];
     protected $casts = [
         'checkboxes_status' => 'array', // 自動將 JSON 字串轉換為 PHP 陣列
     ];

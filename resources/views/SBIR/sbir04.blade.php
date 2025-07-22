@@ -81,6 +81,16 @@
                                     會議瀏覽
                                 </a>
                             </li>
+                            <li class="nav-item">
+                                <a href="{{ route('project.appendix', $project->id) }}" class="nav-link">
+                                    附件
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{{ route('project.supplement', $project->id) }}" class="nav-link">
+                                    補充資料
+                                </a>
+                            </li>
                         </ul>
                         <div id="success-btn" class="modal fade" tabindex="-1" aria-labelledby="success-btnLabel"
                             aria-hidden="true" data-bs-scroll="true">

@@ -344,6 +344,18 @@
                         <span class="menu-text"> 基本資料設定 </span>
                     </a>
                 </li>
+                <li class="menu-item">
+                    <a href="{{ route('customer.project') }}" class="menu-link">
+                        <span class="menu-icon"><i data-feather="briefcase"></i></span>
+                        <span class="menu-text"> 專案瀏覽 </span>
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a href="{{ route('customer.meet') }}" class="menu-link">
+                        <span class="menu-icon"><i data-feather="message-square"></i></span>
+                        <span class="menu-text"> 會議瀏覽 </span>
+                    </a>
+                </li>
                 {{-- @foreach (Auth::user()->project_datas as $project_data)
                     @if ($project_data->status == 0)
                         @if ($project_data->type == 0)
