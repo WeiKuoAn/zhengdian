@@ -64,7 +64,7 @@ class CustomerProjectController extends Controller
             abort(403, '您沒有權限訪問此專案');
         }
 
-        $supplements = Supplement::where('project_id', $project->id)->orderBy('is_urgent', 'desc')->orderBy('date', 'asc')->orderBy('is_confirmed', 'asc')->get();
+        $supplements = Supplement::where('project_id', $project->id)->orderBy('is_confirmed', 'asc')->orderBy('is_urgent', 'desc')->orderBy('date', 'asc')->get();
 
         return view('customerProject.sbir_supplement', compact('project', 'supplements'));
     }
