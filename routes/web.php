@@ -331,6 +331,8 @@ Route::post('customer/project/supplement/{encrypted_id}', [CustomerProjectContro
 
 //客戶會議瀏覽
 Route::get('customer/meet', [CustomerProjectController::class, 'Meet'])->name('customer.meet');
+Route::get('customer/meet/check/{encrypted_id}', [CustomerProjectController::class, 'MeetCheck'])->name('customer.meet.check');
+Route::post('customer/meet/check/{encrypted_id}', [CustomerProjectController::class, 'MeetCheckData'])->name('customer.meet.check.data');
 
 //客戶介面-專案
 Route::get('business-create', [ProjectBusinessController::class, 'BusinessCreate'])->name('business.create');

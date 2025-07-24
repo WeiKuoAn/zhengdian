@@ -7,6 +7,7 @@ use App\Models\CustProject;
 use Illuminate\Support\Facades\Auth;
 use App\Services\EncryptionService;
 use App\Models\Supplement;
+use App\Models\MeetData;
 
 class CustomerProjectController extends Controller
 {
@@ -100,6 +101,29 @@ class CustomerProjectController extends Controller
 
     public function Meet()
     {
-        
+        $datas = MeetData::where('user_id', Auth::user()->id)->get();
+
+        return view('customerProject.meet', compact('datas'));
+    }
+
+    public function MeetCheck($encrypted_id)
+    {
+        $id = \App\Services\EncryptionService::decryptProjectId($encrypted_id);
+        $data = MeetData::find($id);
+        return view('customerProject.meet_check', compact('data'));
+    }
+
+    public function MeetCheckData(Request $request, $encrypted_id)
+    {
+        $id = \App\Services\EncryptionService::decryptProjectId($encrypted_id);
+        $data = \App\Models\MeetData::findOrFail($id);
+
+        // 更新欄位
+        $data->status = 1;
+        $data->confirm_time = now();
+        $data->save();
+
+        // 直接導回會議列表
+        return redirect()->route('customer.meet')->with('success', '會議已確認！');
     }
 }

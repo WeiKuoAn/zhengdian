@@ -55,6 +55,7 @@
                                         <th scope="col">地點</th>
                                         <!---<th scope="col">錚典待辦</th>--->
                                         <!---<th scope="col">客戶待辦</th>--->
+                                        <th scope="col">確認狀態</th>
                                         <th scope="col">NAS連結</th>
                                         <th scope="col" style="width: 200px;">操作</th>
                                     </tr>
@@ -74,6 +75,13 @@
                                             <td>{{ $data->place }}</td>
                                             <!--- <td>{{ $data->to_do }}</td>---->
                                             <!--- <td>{{ $data->cust_to_do }}</td>---->
+                                            <td>
+                                                @if ($data->status == 1)
+                                                    已確認 / {{ $data->confirm_time }}
+                                                @else
+                                                    未確認
+                                                @endif
+                                            </td>
                                             <td><a href="{{ $data->nas_link }}">連結</a></td>
                                             <td align="center">
                                                 <a href="{{ route('meetData.exportWordWithHtml', $data->id) }}" class="action-icon">
