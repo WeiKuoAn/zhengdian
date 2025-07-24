@@ -55,6 +55,7 @@ class MeetDataController extends Controller
         // 驗證表單輸入
         $validated = $request->validate([
             'user_id' => 'required|exists:users,id', // 確保 user_id 存在於 users 表中
+            'project_id' => 'nullable|string',
             'name' => 'required|string|max:255',
             'place' => 'nullable|string|max:255',
             'attend' => 'nullable|string|max:255',
@@ -71,6 +72,7 @@ class MeetDataController extends Controller
         // 儲存會議數據
         $meeting = new MeetData();
         $meeting->user_id = $validated['user_id'];
+        $meeting->project_id = $validated['project_id'] ?? null;
         $meeting->name = $validated['name'];
         $meeting->place = $validated['place'] ?? null;
         $meeting->attend = $validated['attend'] ?? null;

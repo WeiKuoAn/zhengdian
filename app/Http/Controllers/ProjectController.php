@@ -33,6 +33,7 @@ use App\Models\ManufactureThreeIncome;
 use App\Models\ManufactureAvoid;
 use App\Models\ManufactureIso;
 use Illuminate\Support\Facades\Auth;
+use App\Models\MeetData;
 
 class ProjectController extends Controller
 {
@@ -959,11 +960,17 @@ class ProjectController extends Controller
     {
         // 查詢對應的專案
         $data = CustProject::where('id', $id)->first();
+        $meet_datas = MeetData::where('project_id', $id)->get();
         // 返回專案詳情頁面或視圖
-        $check_statuss = CheckStatus::where('parent_id', null)->where('status', 'up')->get();
-        return view('project.meet', ['data' => $data, 'request' => $request, 'check_statuss' => $check_statuss]);
+        return view('project.meet', ['data' => $data, 'request' => $request, 'meet_datas' => $meet_datas]);
     }
 
+    public function meet_edit($id)
+    {
+        $data = \App\Models\MeetData::findOrFail($id);
+        // 只回傳資料，不回傳 view
+        return response()->json($data);
+    }
 
 
     /**

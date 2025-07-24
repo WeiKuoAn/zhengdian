@@ -261,6 +261,7 @@ Route::get('project/midterm/{id}', [ProjectController::class, 'midterm'])->name(
 Route::get('project/final/{id}', [ProjectController::class, 'final'])->name('project.final');
 // Route::get('project/final/{id}', [ProjectController::class, 'final_update'])->name('project.final.data');
 Route::get('project/meet/{id}', [ProjectController::class, 'meet'])->name('project.meet');
+Route::get('project/meet/edit/{id}', [ProjectController::class, 'meet_edit'])->name('project.meet.edit');
 
 // Route::get('project/meet/{id}', [ProjectController::class, 'meet_update'])->name('project.meet.data');
 
@@ -284,6 +285,7 @@ Route::get('meetData/del/{id}', [MeetDataController::class, 'delete'])->name('me
 Route::post('meetData/del/{id}', [MeetDataController::class, 'destroy'])->name('meetData.del.data');
 Route::get('meetData/export/{id}', [MeetDataController::class, 'export'])->name('meetData.export');
 Route::get('/meetData/exportWordWithHtml/{id}', [App\Http\Controllers\MeetDataController::class, 'exportWordWithHtml'])->name('meetData.exportWordWithHtml');
+
 
 /*職稱管理*/
 Route::get('/jobs', [JobController::class, 'index'])->middleware(['auth'])->name('jobs');
