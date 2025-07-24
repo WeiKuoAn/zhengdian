@@ -76,8 +76,9 @@
                                             <!--- <td>{{ $data->cust_to_do }}</td>---->
                                             <td><a href="{{ $data->nas_link }}">連結</a></td>
                                             <td align="center">
-                                                <a href="{{ route('meetData.export', $data->id) }}" class="action-icon"> <i
-                                                        class="mdi mdi-file-word"></i></a>
+                                                <a href="{{ route('meetData.exportWordWithHtml', $data->id) }}" class="action-icon">
+                                                    <i class="mdi mdi-file-word"></i>
+                                                </a>
                                                 <a href="{{ route('meetData.edit', $data->id) }}" class="action-icon"> <i
                                                         class="mdi mdi-square-edit-outline"></i></a>
                                                 <a href="{{ route('meetData.del', $data->id) }}" class="action-icon"> <i

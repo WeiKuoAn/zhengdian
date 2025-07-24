@@ -29,7 +29,7 @@ use App\Http\Controllers\UploadController;
 use App\Http\Controllers\SBIRFundController;
 use App\Http\Controllers\DashboardController;
 use App\Models\User; // ✅ 確保引用 Customer Model
-
+use App\Http\Controllers\AjaxController;
 
 require __DIR__ . '/auth.php';
 
@@ -61,6 +61,9 @@ Route::get('customer/edit/{id}', [CustomerController::class, 'edit'])->name('cus
 Route::post('customer/edit/{id}', [CustomerController::class, 'update'])->name('customer.edit.data');
 Route::get('customer/del/{id}', [CustomerController::class, 'delete'])->name('customer.del');
 Route::post('customer/del/{id}', [CustomerController::class, 'destroy'])->name('customer.del.data');
+
+/*客戶專案管理 */
+Route::get('customer/project/search', [AjaxController::class, 'project_search'])->name('customer.project.search');
 
 // Route::get('customer/{id}/introduce-edit', [PresonCustomerController::class, 'IntroduceEdit'])->name('user.introduce.edit');
 // Route::post('customer/{id}/introduce-edit', [PresonCustomerController::class, 'IntroduceUpdate'])->name('user.introduce.update');
@@ -280,6 +283,7 @@ Route::post('meetData/edit/{id}', [MeetDataController::class, 'update'])->name('
 Route::get('meetData/del/{id}', [MeetDataController::class, 'delete'])->name('meetData.del');
 Route::post('meetData/del/{id}', [MeetDataController::class, 'destroy'])->name('meetData.del.data');
 Route::get('meetData/export/{id}', [MeetDataController::class, 'export'])->name('meetData.export');
+Route::get('/meetData/exportWordWithHtml/{id}', [App\Http\Controllers\MeetDataController::class, 'exportWordWithHtml'])->name('meetData.exportWordWithHtml');
 
 /*職稱管理*/
 Route::get('/jobs', [JobController::class, 'index'])->middleware(['auth'])->name('jobs');
