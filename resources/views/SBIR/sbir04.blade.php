@@ -176,9 +176,14 @@
                                             </li>
                                             <li class="nav-item">
                                                 <a href="{{ route('project.sbir07', $project->id) }}" class="nav-link">
-                                                    附件
+                                                    拾壹、附件
                                                 </a>
                                             </li>
+                                            <li class="nav-item">
+                                                <a href="{{ route('project.supplement', $project->id) }}" class="nav-link">
+                                                    拾貳、補充資料
+                                                </a>
+                                            </li>   
                                         </ul>
 
                                         <div class="card-body">
@@ -642,7 +647,7 @@
                                                     </div>
                                                     <!-- 匯出 Word 按鈕 -->
                                                     <div class="col-md-4 text-end">
-                                                        <a href="{{ route('sbir.exportWord', $project->id) }}"
+                                                        <a href="{{ route('sbir.exportMerged', $project->id) }}"
                                                             class="btn btn-danger ">
                                                             匯出計畫書 Word 檔
                                                         </a>

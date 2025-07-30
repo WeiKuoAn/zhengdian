@@ -171,12 +171,12 @@
                                             <li class="nav-item">
                                                 <a href="{{ route('project.appendix', $project->id) }}"
                                                     class="nav-link active">
-                                                    附件
+                                                    拾壹、附件
                                                 </a>
                                             </li>
                                             <li class="nav-item">
                                                 <a href="{{ route('project.supplement', $project->id) }}" class="nav-link">
-                                                    補充資料
+                                                    拾貳、補充資料
                                                 </a>
                                             </li>
                                         </ul>
