@@ -27,7 +27,7 @@
                                     <div class="card-body">
                                         <div class="alert alert-info">
                                             <label class="form-label" for="AddNew-Username"><b>計劃書下載連結：
-                                                    <a href="{{ $cust_data->nas_link ?? '#' }}" target="_blank"
+                                                    <a href="{{ $cust_data->download_link ?? '#' }}" target="_blank"
                                                         style="color: #003f8d;">
                                                         請點擊我
                                                     </a>
@@ -114,7 +114,7 @@
                                         <div class="card-body mt-3">
                                             <div class="alert alert-primary" role="alert">
                                                 <label class="form-label" for="AddNew-Username"><b>1.檢附資料說明：
-                                                        <a href="{{ $cust_data->nas_link ?? '#' }}" target="_blank">
+                                                        <a href="{{ $cust_data->attached_link ?? '#' }}" target="_blank">
                                                             請點擊我
                                                         </a></b>
                                                 </label><br>
@@ -340,7 +340,7 @@
                                                                                 role="alert">
                                                                                 <label class="form-label"
                                                                                     for="AddNew-Username"><b>1.檢附資料說明：
-                                                                                        <a href="{{ $cust_data->nas_link ?? '#' }}"
+                                                                                        <a href="{{ $cust_data->attached_link ?? '#' }}"
                                                                                             target="_blank">
                                                                                             請點擊我
                                                                                         </a></b>

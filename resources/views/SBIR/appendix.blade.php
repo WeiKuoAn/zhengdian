@@ -185,7 +185,7 @@
                                         <div class="card-body mt-3">
                                             <div class="alert alert-primary" role="alert">
                                                 <label class="form-label" for="AddNew-Username"><b>1.檢附資料說明：
-                                                        <a href="{{ $cust_data->nas_link ?? '#' }}" target="_blank">
+                                                        <a href="{{ $cust_data->attached_link ?? '#' }}" target="_blank">
                                                             請點擊我
                                                         </a></b>
                                                 </label><br>

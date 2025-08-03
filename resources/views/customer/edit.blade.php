@@ -79,7 +79,7 @@
 
                                 <div class="col-md-6">
                                     <div class="mb-3">
-                                        <label class="form-label" for="AddNew-Phone">Nas連結</label><span
+                                        <label class="form-label" for="AddNew-Phone">上傳附件連結</label><span
                                             class="text-danger">*</span>
                                         <input type="text" class="form-control" name="nas_link" value="{{$data->cust_data->nas_link }}" required>
                                     </div>

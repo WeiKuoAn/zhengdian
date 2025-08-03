@@ -65,9 +65,12 @@ class CustomerProjectController extends Controller
             abort(403, '您沒有權限訪問此專案');
         }
 
+        // 獲取客戶資料
+        $cust_data = \App\Models\CustData::where('user_id', Auth::user()->id)->first();
+
         $supplements = Supplement::where('project_id', $project->id)->orderBy('is_confirmed', 'asc')->orderBy('is_urgent', 'desc')->orderBy('date', 'asc')->get();
 
-        return view('customerProject.sbir_supplement', compact('project', 'supplements'));
+        return view('customerProject.sbir_supplement', compact('project', 'supplements', 'cust_data'));
     }
 
     public function supplement_store(Request $request, $project_id)

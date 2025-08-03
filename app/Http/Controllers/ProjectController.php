@@ -357,6 +357,8 @@ class ProjectController extends Controller
         $data->save();
 
         $cust_data->nas_link = $request->nas_link;
+        $cust_data->download_link = $request->download_link;
+        $cust_data->attached_link = $request->attached_link;
         $cust_data->save();
 
 

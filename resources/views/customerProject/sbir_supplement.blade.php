@@ -239,7 +239,7 @@
                             <div class="card-body">
                                 <div class="alert alert-info">
                                     <label class="form-label" for="AddNew-Username"><b>計劃書下載連結：
-                                            <a href="{{ $cust_data->nas_link ?? '#' }}" target="_blank"
+                                            <a href="{{ $cust_data->download_link ?? '#' }}" target="_blank"
                                                 style="color: #003f8d;">
                                                 請點擊我
                                             </a>

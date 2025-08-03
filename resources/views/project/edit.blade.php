@@ -18,7 +18,7 @@
                         <div class="d-flex align-items-start mb-3">
                             <div class="w-100 ">
                                 <h3 class="mt-1 mb-0">{{ $data->name }}</h3>
-                                    <p class="mb-1 mt-1 text-muted">計畫登入帳號：ＸＸＸ　計畫登入密碼：ＸＸＸ</p>
+                                <p class="mb-1 mt-1 text-muted">計畫登入帳號：ＸＸＸ　計畫登入密碼：ＸＸＸ</p>
                             </div>
                         </div>
                         <ul class="nav nav-tabs nav-bordered nav-justified">
@@ -34,29 +34,28 @@
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a href="{{ route('project.plan', $data->id) }}" aria-expanded="false"
-                                    class="nav-link">
+                                <a href="{{ route('project.plan', $data->id) }}" aria-expanded="false" class="nav-link">
                                     排程作業
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a href="{{ route('project.background', $data->id) }}" aria-expanded="false" class="nav-link ">
+                                <a href="{{ route('project.background', $data->id) }}" aria-expanded="false"
+                                    class="nav-link ">
                                     專案背景調查
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a href="{{ route('project.write', $data->id) }}" aria-expanded="false"
-                                    class="nav-link">
+                                <a href="{{ route('project.write', $data->id) }}" aria-expanded="false" class="nav-link">
                                     人事/帶動企業
                                 </a>
                             </li>
-                            @if($data->type == '3')
-                            <li class="nav-item">
-                                <a href="{{ route('project.sbir01', $data->id) }}" aria-expanded="false"
-                                    class="nav-link">
-                                    SBIR內容撰寫
-                                </a>
-                            </li>
+                            @if ($data->type == '3')
+                                <li class="nav-item">
+                                    <a href="{{ route('project.sbir01', $data->id) }}" aria-expanded="false"
+                                        class="nav-link">
+                                        SBIR內容撰寫
+                                    </a>
+                                </li>
                             @endif
                             <li class="nav-item">
                                 <a href="{{ route('project.send', $data->id) }}" aria-expanded="false" class="nav-link">
@@ -74,7 +73,8 @@
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a href="{{ route('project.accounting', $data->id) }}" aria-expanded="false" class="nav-link">
+                                <a href="{{ route('project.accounting', $data->id) }}" aria-expanded="false"
+                                    class="nav-link">
                                     經費報表
                                 </a>
                             </li>
@@ -89,21 +89,36 @@
                             <div class="row mt-3">
                                 <div class="mb-3">
                                     <label class="form-label">專案起始日期<span class="text-danger">*</span></label>
-                                    <input type="date" class="form-control" name="date" value="{{ $data->date }}" id="dateInput">
+                                    <input type="date" class="form-control" name="date" value="{{ $data->date }}"
+                                        id="dateInput">
                                 </div>
                                 <div class="mb-3">
                                     <label for="project-priority" class="form-label">專案類型<span
                                             class="text-danger">*</span></label>
                                     <select class="form-control" data-toggle="select" data-width="100%" name="type">
                                         @foreach ($project_types as $key => $project_type)
-                                            <option value="{{ $project_type->id }}"  @if ($data->type == $project_type->id) selected @endif>{{ $project_type->name }}</option>
+                                            <option value="{{ $project_type->id }}"
+                                                @if ($data->type == $project_type->id) selected @endif>{{ $project_type->name }}
+                                            </option>
                                         @endforeach
                                     </select>
                                 </div>
                                 <div class="mb-3">
-                                    <label class="form-label">NAS連結<span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control" name="nas_link" value="{{ $data->cust_data->nas_link }}" required>
+                                    <label class="form-label">檢附資料連結<span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" name="attached_link"
+                                        value="{{ $data->cust_data->attached_link }}" required>
                                 </div>
+                                <div class="mb-3">
+                                    <label class="form-label">上傳附件連結<span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" name="nas_link"
+                                        value="{{ $data->cust_data->nas_link }}" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">計畫書下載連結<span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" name="download_link"
+                                        value="{{ $data->cust_data->download_link }}" required>
+                                </div>
+
                                 <div class="mb-3">
                                     <label class="form-label">計畫登入帳號<span class="text-danger">*</span></label>
                                     <input type="text" class="form-control" name="account" value="">
@@ -149,9 +164,9 @@
     </div> <!-- container -->
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 
-<script>
-    flatpickr("#dateInput", {
-        dateFormat: "Y/m/d" // 設定格式為 DD/MM/YYYY
-    });
-</script>
+    <script>
+        flatpickr("#dateInput", {
+            dateFormat: "Y/m/d" // 設定格式為 DD/MM/YYYY
+        });
+    </script>
 @endsection
