@@ -19,13 +19,8 @@
                                 <label for="inputEmail3" class="col-3 col-xl-2 col-form-label"
                                     style="text-align: right;">專案類別：</label>
                                 <div class="col-8 col-xl-9">
-                                    <select class="form-control" id="project_id" name="project_id" disabled>
-                                        <option value="">無</option>
-                                        @if ($data->project_id)
-                                            <option value="{{ $data->project_id }}" selected>{{ $data->project->name }}
-                                            </option>
-                                        @endif
-                                    </select>
+                                    <input type="text" class="form-control" id="project_name" name="project_name"
+                                        value="{{ $data->project->name }}" disabled style="background-color: #f8f9fa;">
                                 </div>
                             </div>
                             <div class="row mb-2">
@@ -33,14 +28,14 @@
                                     style="text-align: right;">會議名稱：</label>
                                 <div class="col-8 col-xl-9">
                                     <input type="text" class="form-control" id="name" name="name"
-                                        value="{{ $data->name }}" disabled>
+                                        value="{{ $data->name }}" disabled style="background-color: #f8f9fa;">
                                 </div>
                             </div>
                             <div class="row mb-2">
                                 <label for="inputPassword3" class="col-3 col-xl-2 col-form-label"
                                     style="text-align: right;">議程：</label>
                                 <div class="col-8 col-xl-9">
-                                    <textarea class="form-control tinymce-editor" name="agenda" rows="4">{{ $data->agenda }}</textarea>
+                                    <div class="form-control" style="background-color: #f8f9fa; min-height: 120px; border: 1px solid #ced4da; padding: 10px; white-space: pre-wrap;">{!! $data->agenda !!}</div>
                                 </div>
                             </div>
                             <div class="row mb-2">
@@ -49,7 +44,7 @@
                                 <div class="col-8 col-xl-9">
                                     <div class="input-group mb-2">
                                         <input type="date" class="form-control" id="date" placeholder="日期"
-                                            name="date" value="{{ substr($data->date, 0, 10) }}" required>
+                                            name="date" value="{{ substr($data->date, 0, 10) }}" required readonly style="background-color: #f8f9fa;">
                                     </div>
                                 </div>
                             </div>
@@ -60,7 +55,7 @@
                                 <div class="col-8 col-xl-9">
                                     <div class="input-group mb-2">
                                         <input type="time" class="form-control" id="start_time" placeholder="時間"
-                                            name="start_time" value="{{ $data->start_time }}">
+                                            name="start_time" value="{{ $data->start_time }}" readonly style="background-color: #f8f9fa;">
                                     </div>
                                 </div>
                             </div>
@@ -71,7 +66,7 @@
                                 <div class="col-8 col-xl-9">
                                     <div class="input-group mb-2">
                                         <input type="time" class="form-control" id="end_time" placeholder="時間"
-                                            name="end_time" value="{{ $data->end_time }}">
+                                            name="end_time" value="{{ $data->end_time }}" readonly style="background-color: #f8f9fa;">
                                     </div>
                                 </div>
                             </div>
@@ -81,7 +76,7 @@
                                     style="text-align: right;">地點：</label>
                                 <div class="col-8 col-xl-9">
                                     <input type="text" class="form-control" id="place" name="place"
-                                        value="{{ $data->place }}">
+                                        value="{{ $data->place }}" readonly style="background-color: #f8f9fa;">
                                 </div>
                             </div>
                             <div class="row mb-2">
@@ -89,28 +84,28 @@
                                     style="text-align: right;">列席：</label>
                                 <div class="col-8 col-xl-9">
                                     <input type="text" class="form-control" id="attend" name="attend"
-                                        value="{{ $data->attend }}">
+                                        value="{{ $data->attend }}" readonly style="background-color: #f8f9fa;">
                                 </div>
                             </div>
                             <div class="row mb-2">
                                 <label for="inputEmail3" class="col-3 col-xl-2 col-form-label"
                                     style="text-align: right;">會議記錄：</label>
                                 <div class="col-8 col-xl-9">
-                                    <textarea class="form-control tinymce-editor" name="record" rows="8">{{ $data->record }}</textarea>
+                                    <div class="form-control" style="background-color: #f8f9fa; min-height: 200px; border: 1px solid #ced4da; padding: 10px; white-space: pre-wrap;">{!! $data->record !!}</div>
                                 </div>
                             </div>
                             <div class="row mb-2">
                                 <label for="inputEmail3" class="col-3 col-xl-2 col-form-label"
                                     style="text-align: right;">錚典待辦：</label>
                                 <div class="col-8 col-xl-9">
-                                    <textarea class="form-control tinymce-editor" name="to_do" rows="5">{{ $data->to_do }}</textarea>
+                                    <div class="form-control" style="background-color: #f8f9fa; min-height: 150px; border: 1px solid #ced4da; padding: 10px; white-space: pre-wrap;">{!! $data->to_do !!}</div>
                                 </div>
                             </div>
                             <div class="row mb-2">
                                 <label for="inputEmail3" class="col-3 col-xl-2 col-form-label"
                                     style="text-align: right;">客戶待辦：</label>
                                 <div class="col-8 col-xl-9">
-                                    <textarea class="form-control tinymce-editor" name="cust_to_do" rows="5">{{ $data->cust_to_do }}</textarea>
+                                    <div class="form-control" style="background-color: #f8f9fa; min-height: 150px; border: 1px solid #ced4da; padding: 10px; white-space: pre-wrap;">{!! $data->cust_to_do !!}</div>
                                 </div>
                             </div>
                             <div class="row mb-2">
@@ -118,13 +113,15 @@
                                     style="text-align: right;">參考資料：</label>
                                 <div class="col-8 col-xl-9">
                                     <input type="text" class="form-control" id="nas_link" name="nas_link"
-                                        value="{{ $data->nas_link }}">
+                                        value="{{ $data->nas_link }}" readonly style="background-color: #f8f9fa;">
                                 </div>
                             </div>
                             <div class="row mb-1">
                                 <div class="col-12 text-center">
-                                    <button type="submit" class="btn btn-success waves-effect waves-light m-1"><i
-                                            class="fe-check-circle me-1"></i>確認會議內容</button>
+                                    @if($data->status == 0)
+                                        <button type="submit" class="btn btn-success waves-effect waves-light m-1"><i
+                                                class="fe-check-circle me-1"></i>確認會議內容</button>
+                                    @endif
                                     <button type="reset" class="btn btn-secondary waves-effect waves-light m-1"
                                         onclick="history.go(-1)"><i class="fe-x me-1"></i>回上一頁</button>
                                 </div>
@@ -188,71 +185,7 @@
                 loadProjects(user_id);
             });
 
-            tinymce.init({
-                selector: '.tinymce-editor',
-                height: 500,
-                menubar: 'file edit view insert format tools table help',
-                plugins: 'lists table image code link paste',
-                toolbar: 'undo redo | blocks | bold italic underline forecolor backcolor | alignleft aligncenter alignright | indent outdent | bullist numlist | table image link | code',
-
-                // ✅ 處理貼上行為：保留常見樣式、過濾 Word 樣式
-                paste_as_text: false,
-                paste_remove_styles_if_webkit: false,
-                paste_webkit_styles: 'font-weight font-style text-decoration color background-color',
-                paste_data_images: false, // 如需 base64 圖片可改 true
-                valid_elements: 'span[style],p,br,b,strong,i,em,u,a[href|target],ul,ol,li,table,tr,td,th,thead,tbody,img[src|alt|width|height],h1,h2,h3',
-                valid_styles: {
-                    '*': 'font-weight,font-style,text-decoration,color,background-color'
-                },
-
-                paste_preprocess: function(plugin, args) {
-                    args.content = args.content
-                        .replace(/<!--[\s\S]*?-->/g, '') // 移除 HTML 註解（常見於 Word）
-                        .replace(/<(\/?)(font|span|style)[^>]*>/gi, ''); // 移除雜質標籤
-                },
-
-                images_upload_url: '/upload-image',
-                automatic_uploads: true,
-                file_picker_types: 'image',
-                file_picker_callback: function(cb, value, meta) {
-                    if (meta.filetype === 'image') {
-                        const input = document.createElement('input');
-                        input.type = 'file';
-                        input.accept = 'image/*';
-
-                        input.onchange = function() {
-                            const file = this.files[0];
-                            if (file.size > 2 * 1024 * 1024) {
-                                alert('檔案大小不能超過 2MB');
-                                return;
-                            }
-
-                            const formData = new FormData();
-                            formData.append('file', file);
-
-                            fetch('/upload-image', {
-                                    method: 'POST',
-                                    body: formData,
-                                    headers: {
-                                        'X-CSRF-TOKEN': document.querySelector(
-                                            'meta[name="csrf-token"]').content
-                                    }
-                                })
-                                .then(res => res.json())
-                                .then(json => cb(json.location))
-                                .catch(err => console.error(err));
-                        };
-
-                        input.click();
-                    }
-                },
-
-                setup: function(editor) {
-                    editorInstance = editor;
-                },
-
-                table_toolbar: 'tableprops tabledelete | tableinsertrowbefore tableinsertrowafter tabledeleterow | tableinsertcolbefore tableinsertcolafter tabledeletecol',
-            });
+            // TinyMCE 已移除，改用純文字顯示
 
             // ✅ 處理 .open-editor 按鈕 → 透過 AJAX 載入資料進編輯器
             document.querySelectorAll('.open-editor').forEach(btn => {

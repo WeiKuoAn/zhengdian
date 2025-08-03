@@ -83,6 +83,103 @@
         </div>
 
         <div class="row">
+            <div class="col-sm-12">
+                <div class="card">
+                    <div class="card-body">
+                        <h4 class="header-title">Accordion</h4>
+                        <p class="sub-header">
+                            include accordion in your FooTable.
+                        </p>
+
+                        <table id="demo-foo-accordion" class="table table-colored mb-0 toggle-arrow-tiny">
+                            <thead>
+                                <tr>
+                                    <th data-toggle="true"> First Name </th>
+                                    <th> Last Name </th>
+                                    <th data-hide="phone"> Job Title </th>
+                                    <th data-hide="all"> DOB </th>
+                                    <th data-hide="all"> Status </th>
+                                </tr>
+                            </thead>
+                                <tbody>
+                                    @foreach ($datas as $key => $data)
+                                        <tr>
+                                            <td>{{ $key + 1 }} </td>
+                                            <td width="20%">
+                                                @if (isset($data->project_data))
+                                                    {{ $data->project_data->user_data->name }}{{ $data->project_data->name }}
+                                                @endif
+                                            </td>
+                                            <td>
+                                                @if (isset($data->task_template_data))
+                                                    {{ $data->task_template_data->name }}
+                                                @endif
+                                            </td>
+                                            <td>
+                                                @if ($data->priority == 0)
+                                                    <span class="badge bg-danger p-1">緊急</span>
+                                                @elseif($data->priority == 1)
+                                                    <span class="badge bg-primary p-1">高</span>
+                                                @elseif($data->priority == 2)
+                                                    <span class="badge bg-warning p-1">中</span>
+                                                @else
+                                                    <span class="badge bg-success p-1">低</span>
+                                                @endif
+                                            </td>
+                                            <td>
+                                                @foreach ($data->items as $item)
+                                                    <span class="badge bg-primary p-1 mb-1">{{ $item->user_data->name }}
+                                                        @if (isset($item->context))
+                                                            （{{ $item->context }}）
+                                                        @endif
+                                                    </span><br>
+                                                @endforeach
+                                            </td>
+                                            <td>
+                                                {{-- @if ($data->status == 0)
+                                                    <span class="badge bg-primary p-1">進行中</span>
+                                                @elseif($data->status == 1)
+                                                    <span class="badge bg-success p-1">送出派工</span>
+                                                @elseif($data->status == 2)
+                                                    <span class="badge bg-success p-1">接收派工</span>
+                                                @elseif($data->status == 3)
+                                                    <span class="badge bg-success p-1">進行中</span>
+                                                @elseif($data->status == 4)
+                                                    <span class="badge bg-success p-1">移轉</span>
+                                                @else
+                                                    <span class="badge bg-danger p-1">完成</span>
+                                                @endif --}}
+                                                <div class="button-list" id="tooltip-container">
+                                                    <button type="button" class="btn btn-white"
+                                                        data-bs-container="#tooltip-container" data-bs-toggle="tooltip"
+                                                        data-bs-placement="top"
+                                                        title="@foreach ($data->items as $item) {{ $item->user_data->name }}（{{ $item->status() }}）、 @endforeach">
+                                                        {{ $data->status() }}
+                                                    </button>
+                                                </div>
+                                            </td>
+                                            <td>{{ $data->estimated_end }}</td>
+                                            {{-- <td>{{ $data->user_data->name }}</td> --}}
+                                            <td>
+                                                @if (Auth::user()->id == $data->created_by)
+                                                    <a href="{{ route('task.edit', $data->id) }}" class="action-icon">
+                                                        <i class="mdi mdi-square-edit-outline"></i></a>
+                                                    <a href="{{ route('task.del', $data->id) }}" class="action-icon"> <i
+                                                            class="mdi mdi-trash-can-outline"></i></a>
+                                                @endif
+                                                <a href="{{ route('task.copy', $data->id) }}" class="action-icon">
+                                                    <i class="mdi mdi-content-copy"></i></a>
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                            </tbody>
+
+                        </table>
+                    </div>
+                </div> <!-- end card -->
+            </div> <!-- end col -->
+        </div>
+        <div class="row">
             <div class="col-12">
                 <div class="card">
                     <div class="card-body">
@@ -179,7 +276,11 @@
                 </div> <!-- end card-->
             </div> <!-- end col -->
         </div>
+        
         <!-- end row -->
 
     </div> <!-- container -->
+@endsection
+@section('script')
+    @vite(['resources/js/pages/foo-tables.init.js'])
 @endsection

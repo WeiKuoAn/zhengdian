@@ -28,6 +28,13 @@ class MeetDataController extends Controller
         if ($meet_name) {
             $datas = $datas->where('name', 'like', '%' . $meet_name . '%');
         }
+        
+        // 處理狀態篩選
+        $status = $request->input('status');
+        if ($status !== null && $status !== '') {
+            $datas = $datas->where('status', $status);
+        }
+        
         $datas = $datas->paginate(50);
         return view('meetData.index')->with('datas', $datas)->with('request', $request);
     }
@@ -86,6 +93,15 @@ class MeetDataController extends Controller
         $meeting->end_time = $request->end_time;
         $meeting->created_by = Auth::user()->id;
         $meeting->save();
+
+        // 如果是 AJAX 請求，返回 JSON
+        if ($request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => '會議記錄新增成功！',
+                'data' => $meeting
+            ]);
+        }
 
         // 返回成功響應
         return redirect()->route('meetDatas');
@@ -163,6 +179,15 @@ class MeetDataController extends Controller
             'start_time' => $validated['start_time'] ?? null,
             'end_time'   => $validated['end_time']   ?? null,
         ]);
+
+        // 如果是 AJAX 請求，返回 JSON
+        if ($request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => '會議記錄更新成功！',
+                'data' => $data->fresh()
+            ]);
+        }
 
         return redirect()->route('meetDatas');
     }

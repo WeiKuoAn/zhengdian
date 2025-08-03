@@ -22,6 +22,26 @@
                 <div class="row">
                     <div class="col-lg-12">
                         <div class="row">
+                            <div class="col-12">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <div class="alert alert-info">
+                                            <label class="form-label" for="AddNew-Username"><b>計劃書下載連結：
+                                                    <a href="{{ $cust_data->nas_link ?? '#' }}" target="_blank"
+                                                        style="color: #003f8d;">
+                                                        請點擊我
+                                                    </a>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="row">
                             <div class="col-12 mb-4">
                                 <div class="card">
                                     <div class="card-body">
@@ -93,7 +113,7 @@
 
                                         <div class="card-body mt-3">
                                             <div class="alert alert-primary" role="alert">
-                                                <label class="form-label" for="AddNew-Username"><b>1.資料範本參考：
+                                                <label class="form-label" for="AddNew-Username"><b>1.檢附資料說明：
                                                         <a href="{{ $cust_data->nas_link ?? '#' }}" target="_blank">
                                                             請點擊我
                                                         </a></b>
@@ -120,7 +140,7 @@
                                             <div class="row">
                                                 <div class="col-md-12 ">
                                                     <div class="text-center mb-3">
-                                                        <h2>送件階段-檢附資料</h2>
+                                                        <h2>送件階段 － 檢附資料</h2>
                                                     </div>
 
                                                     <div class="table-responsive">
@@ -187,7 +207,8 @@
                                                                     <td style="width: 40px;">
                                                                         <div class="form-check font-size-16">
                                                                             <input class="form-check-input" type="checkbox"
-                                                                                id="sbir_appendix05" name="sbir_appendix05">
+                                                                                id="sbir_appendix05"
+                                                                                name="sbir_appendix05">
                                                                             <label class="form-check-label"
                                                                                 for="sbir_appendix05">
                                                                                 <h5 class="font-size-16 m-0">5.最近 1
@@ -200,8 +221,9 @@
                                                                 <tr>
                                                                     <td style="width: 40px;">
                                                                         <div class="form-check font-size-16">
-                                                                            <input class="form-check-input" type="checkbox"
-                                                                                id="sbir_appendix06" name="sbir_appendix06">
+                                                                            <input class="form-check-input"
+                                                                                type="checkbox" id="sbir_appendix06"
+                                                                                name="sbir_appendix06">
                                                                             <label class="form-check-label"
                                                                                 for="sbir_appendix06">
                                                                                 <h5 class="font-size-16 m-0">6.個資同意書正本<span
@@ -311,10 +333,26 @@
                                                                     <div class="row">
                                                                         <div class="col-md-12 mt-3">
                                                                             <div class="text-center mb-3">
-                                                                                <h2>提案階段-檢附資料</h2>
+                                                                                <h2>提案階段 － 檢附資料</h2>
                                                                             </div>
 
-
+                                                                            <div class="alert alert-primary"
+                                                                                role="alert">
+                                                                                <label class="form-label"
+                                                                                    for="AddNew-Username"><b>1.檢附資料說明：
+                                                                                        <a href="{{ $cust_data->nas_link ?? '#' }}"
+                                                                                            target="_blank">
+                                                                                            請點擊我
+                                                                                        </a></b>
+                                                                                </label><br>
+                                                                                <label class="form-label"
+                                                                                    for="AddNew-Username"><b>2.上傳附件連結：
+                                                                                        <a href="{{ $cust_data->nas_link ?? '#' }}"
+                                                                                            target="_blank">
+                                                                                            請點擊我
+                                                                                        </a></b>
+                                                                                </label>
+                                                                            </div>
                                                                             <div class="table-responsive">
                                                                                 <table
                                                                                     class="table table-nowrap align-middle mb-0">

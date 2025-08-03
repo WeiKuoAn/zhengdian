@@ -73,9 +73,25 @@
 
                                 <div class="col-md-6">
                                     <div class="mb-3">
+                                        <label class="form-label" for="AddNew-Phone">檢附資料說明連結</label><span
+                                            class="text-danger">*</span>
+                                        <input type="text" class="form-control" name="attached_link" required>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <div class="mb-3">
                                         <label class="form-label" for="AddNew-Phone">Nas連結</label><span
                                             class="text-danger">*</span>
                                         <input type="text" class="form-control" name="nas_link" required>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label" for="AddNew-Phone">計劃書下載連結</label><span
+                                            class="text-danger">*</span>
+                                        <input type="text" class="form-control" name="download_link" required>
                                     </div>
                                 </div>
 

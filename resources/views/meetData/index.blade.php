@@ -24,6 +24,13 @@
                                         <input type="search" class="form-control my-1 my-md-0" id="inputPassword2"
                                             placeholder="會議名稱..." name="meet_name" value="{{ $request->meet_name }}">
                                     </div>
+                                    <div class="me-3">
+                                        <select class="form-control my-1 my-md-0" name="status" onchange="this.form.submit()">
+                                            <option value="">全部狀態</option>
+                                            <option value="0" {{ $request->status === '0' ? 'selected' : '' }}>未確認</option>
+                                            <option value="1" {{ $request->status === '1' ? 'selected' : '' }}>已確認</option>
+                                        </select>
+                                    </div>
                                     <button type="submit" class="btn btn-success waves-effect waves-light me-1">搜尋</button>
                                 </form>
                             </div>

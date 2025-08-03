@@ -339,6 +339,8 @@ class CustomerController extends Controller
             'password'        => 'required|string|min:6',
             'capital'         => 'required',
             'nas_link'        => 'required',
+            'attached_link'   => 'required',
+            'download_link'   => 'required',
             'registration_no' => 'required',
             'county'          => 'nullable|string',
             'district'        => 'nullable|string',
@@ -376,6 +378,8 @@ class CustomerController extends Controller
         $custData->user_id         = $user->id;
         $custData->capital         = $request->capital;
         $custData->nas_link        = $request->nas_link;
+        $custData->attached_link   = $request->attached_link;
+        $custData->download_link   = $request->download_link;
         $custData->registration_no = $request->registration_no;
         $custData->county          = $request->county;
         $custData->district        = $request->district;
@@ -438,6 +442,8 @@ class CustomerController extends Controller
         //編輯客戶資料
         $cust_data = CustData::where('user_id', $user->id)->first();
         $cust_data->nas_link = $request->nas_link;
+        $cust_data->attached_link = $request->attached_link;
+        $cust_data->download_link = $request->download_link;
         $cust_data->capital = $request->capital;
         $cust_data->county = $request->county;
         $cust_data->district = $request->district;

@@ -38,7 +38,11 @@
                                                 @endif
                                             </td>
                                             <td align="center">
-                                                <a href="{{ route('customer.meet.check', $encrypted_id) }}" class="btn btn-sm btn-info">確認會議</a>
+                                                @if ($data->status != 1)
+                                                    <a href="{{ route('customer.meet.check', $encrypted_id) }}" class="btn btn-sm btn-info">確認會議內容</a>
+                                                @else
+                                                    <a href="{{ route('customer.meet.check', $encrypted_id) }}" class="btn btn-sm btn-secondary">查看會議內容</a>
+                                                @endif
                                             </td>
                                         </tr>
                                     @endforeach

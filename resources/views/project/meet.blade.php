@@ -117,6 +117,7 @@
                                                 <th scope="col">錚典待辦</th>
                                                 <th scope="col">客戶待辦</th>
                                                 <th scope="col">NAS連結</th>
+                                                <th scope="col">確認狀態</th>
                                                 <th scope="col" style="width: 200px;">操作</th>
                                             </tr>
                                         </thead>
@@ -124,14 +125,32 @@
                                             @foreach ($meet_datas as $key=>$meet_data)
                                                 <tr>
                                                     <td align="center">{{ $key+1 }}</td>
-                                                    <td align="center">{{ $meet_data->date }}</td>
+                                                    <td align="center">{{ substr($meet_data->date, 0, 10) }}
+                                                        @if (isset($meet_data->start_time) && isset($meet_data->end_time))
+                                                            {{ substr($meet_data->start_time, 0, 5) }}~{{ substr($meet_data->end_time, 0, 5) }}
+                                                        @endif
+                                                    </td>
                                                     <td align="center">{{ $meet_data->name }}</td>
                                                     <td align="center">{{ $meet_data->place }}</td>
                                                     <td>{!! $meet_data->to_do !!}</td>
                                                     <td>{!! $meet_data->cust_to_do !!}</td>
-                                                    <td align="center">{{ $meet_data->nas_link }}</td>
                                                     <td align="center">
-                                                        <button type="button" class="btn btn-sm btn-info edit-meeting-btn" data-id="{{ $meet_data->id }}">編輯</button>
+                                                        <a href="{{ $meet_data->nas_link }}" target="_blank">連結</a>
+                                                    </td>
+                                                    <td align="center">
+                                                        @if ($meet_data->status == 1)
+                                                            已確認 / {{ $meet_data->confirm_time }}
+                                                        @else
+                                                            未確認
+                                                        @endif
+                                                    </td>
+                                                    <td align="center">
+                                                        <a href="#" class="action-icon edit-meeting-btn" data-id="{{ $meet_data->id }}">
+                                                            <i class="mdi mdi-square-edit-outline"></i>
+                                                        </a>   
+                                                        <a href="{{ route('meetData.exportWordWithHtml', $meet_data->id) }}" class="action-icon">
+                                                            <i class="mdi mdi-file-word"></i>
+                                                        </a>
                                                     </td>
                                                 </tr>
                                             @endforeach
@@ -477,6 +496,9 @@
                 // Modal 隱藏時銷毀 TinyMCE
                 $('#createMeetingModal').on('hidden.bs.modal', function() {
                     tinymce.remove();
+                    // 確保背景遮罩被清除
+                    $('.modal-backdrop').remove();
+                    $('body').removeClass('modal-open').css('padding-right', '');
                 });
 
                 // 表單提交處理
@@ -495,10 +517,28 @@
                         processData: false,
                         contentType: false,
                         success: function(response) {
-                            // 成功後關閉 modal 並重新載入頁面
-                            $('#createMeetingModal').modal('hide');
-                            alert('會議記錄新增成功！');
-                            location.reload();
+                            if (response.success) {
+                                // 動態新增會議記錄到表格
+                                addMeetingToTable(response.data);
+                                
+                                // 重置表單
+                                $('#createMeetingForm')[0].reset();
+                                
+                                // 關閉 modal 並清除背景遮罩
+                                var modal = bootstrap.Modal.getInstance(document.getElementById('createMeetingModal'));
+                                if (modal) {
+                                    modal.hide();
+                                }
+                                
+                                // 手動移除背景遮罩
+                                $('.modal-backdrop').remove();
+                                $('body').removeClass('modal-open').css('padding-right', '');
+                                
+                                // 移除 TinyMCE
+                                tinymce.remove();
+                                
+                                alert(response.message);
+                            }
                         },
                         error: function(xhr) {
                             if (xhr.status === 422) {
@@ -515,6 +555,50 @@
                         }
                     });
                 });
+
+                // 動態新增會議記錄到表格
+                function addMeetingToTable(meetingData) {
+                    const tbody = $('#products-datatable tbody');
+                    const rowCount = tbody.find('tr').length;
+                    const newRowNumber = rowCount + 1;
+                    
+                    // 格式化日期時間
+                    const dateStr = meetingData.date ? meetingData.date.substr(0, 10) : '';
+                    let timeStr = '';
+                    if (meetingData.start_time && meetingData.end_time) {
+                        timeStr = meetingData.start_time.substr(0, 5) + '~' + meetingData.end_time.substr(0, 5);
+                    }
+                    
+                    // 格式化狀態
+                    const statusStr = meetingData.status == 1 ? 
+                        '已確認 / ' + meetingData.confirm_time : 
+                        '未確認';
+                    
+                    const newRow = `
+                        <tr>
+                            <td align="center">${newRowNumber}</td>
+                            <td align="center">${dateStr} ${timeStr}</td>
+                            <td align="center">${meetingData.name || ''}</td>
+                            <td align="center">${meetingData.place || ''}</td>
+                            <td>${meetingData.to_do || ''}</td>
+                            <td>${meetingData.cust_to_do || ''}</td>
+                            <td align="center">
+                                ${meetingData.nas_link ? `<a href="${meetingData.nas_link}" target="_blank">連結</a>` : ''}
+                            </td>
+                            <td align="center">${statusStr}</td>
+                            <td align="center">
+                                <a href="/meetData/exportWordWithHtml/${meetingData.id}" class="action-icon">
+                                    <i class="mdi mdi-file-word"></i>
+                                </a>
+                                <a href="#" class="action-icon edit-meeting-btn" data-id="${meetingData.id}">
+                                    <i class="mdi mdi-pencil"></i>
+                                </a>   
+                            </td>
+                        </tr>
+                    `;
+                    
+                    tbody.append(newRow);
+                }
 
                 // 編輯按鈕點擊
                 // 用 on 綁定動態元素
@@ -632,13 +716,35 @@
                         url: form.attr('action'),
                         type: 'POST',
                         data: form.serialize(),
-                        success: function() {
+                        success: function(response) {
+                            // 關閉 modal 並清除背景遮罩
                             var modal = bootstrap.Modal.getInstance(document.getElementById('editMeetingModal'));
-                            modal.hide();
+                            if (modal) {
+                                modal.hide();
+                            }
+                            
+                            // 手動移除背景遮罩
+                            $('.modal-backdrop').remove();
+                            $('body').removeClass('modal-open').css('padding-right', '');
+                            
+                            // 移除 TinyMCE
+                            tinymce.remove();
+                            
+                            alert('會議記錄更新成功！');
                             location.reload();
                         },
                         error: function(xhr) {
-                            alert('儲存失敗');
+                            if (xhr.status === 422) {
+                                // 驗證錯誤
+                                const errors = xhr.responseJSON.errors;
+                                let errorMessage = '請檢查以下欄位：\n';
+                                for (let field in errors) {
+                                    errorMessage += errors[field].join('\n') + '\n';
+                                }
+                                alert(errorMessage);
+                            } else {
+                                alert('儲存失敗，請稍後再試。');
+                            }
                         }
                     });
                 });
@@ -646,6 +752,9 @@
                 // Modal 關閉時銷毀 TinyMCE
                 $('#editMeetingModal').on('hidden.bs.modal', function() {
                     tinymce.remove('.tinymce-editor');
+                    // 確保背景遮罩被清除
+                    $('.modal-backdrop').remove();
+                    $('body').removeClass('modal-open').css('padding-right', '');
                 });
             });
         </script>

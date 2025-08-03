@@ -175,7 +175,8 @@
                                                 </a>
                                             </li>
                                             <li class="nav-item">
-                                                <a href="{{ route('project.supplement', $project->id) }}" class="nav-link">
+                                                <a href="{{ route('project.supplement', $project->id) }}"
+                                                    class="nav-link">
                                                     拾貳、補充資料
                                                 </a>
                                             </li>
@@ -183,13 +184,13 @@
 
                                         <div class="card-body mt-3">
                                             <div class="alert alert-primary" role="alert">
-                                                <label class="form-label" for="AddNew-Username"><b>1.資料範本參考：
-                                                        <a href="{{ $cust_data->nas_link }}" target="_blank">
+                                                <label class="form-label" for="AddNew-Username"><b>1.檢附資料說明：
+                                                        <a href="{{ $cust_data->nas_link ?? '#' }}" target="_blank">
                                                             請點擊我
                                                         </a></b>
                                                 </label><br>
                                                 <label class="form-label" for="AddNew-Username"><b>2.上傳附件連結：
-                                                        <a href="{{ $cust_data->nas_link }}" target="_blank">
+                                                        <a href="{{ $cust_data->nas_link ?? '#' }}" target="_blank">
                                                             請點擊我
                                                         </a></b>
                                                 </label>
@@ -303,7 +304,7 @@
                                                                             <label class="form-check-label"
                                                                                 for="sbir_appendix06">
                                                                                 <h5 class="font-size-16 m-0">6.個資同意書正本<span
-                                                                                        class="text-danger">（每位計畫人員皆要）</span>
+                                                                                        class="text-danger">（每位計畫人員皆需繳交，請至「檢附資料說明」連結進行下載檔案，列印後完成簽名並蓋章）</span>
                                                                                 </h5>
                                                                             </label>
                                                                         </div>
