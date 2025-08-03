@@ -265,7 +265,7 @@ class MeetDataController extends Controller
         $toDoWordML = $this->htmlToWordXml($data->to_do ?? '');
         $custToDoWordML = $this->htmlToWordXml($data->cust_to_do ?? '');
         
-        // 2. 純文字欄位直接轉 WordML
+        // 2. 純文字欄位直接轉 WordML（不包含段落標籤）
         $nameWordML = $this->buildRunXml($data->name ?? '');
         $attendWordML = $this->buildRunXml($data->attend ?? '');
         $nasLinkWordML = $this->buildRunXml($data->nas_link ?? '');
@@ -314,13 +314,13 @@ class MeetDataController extends Controller
         ];
         $replace = [
             $agendaWordML,
-            '<w:p><w:pPr><w:ind w:left="0"/></w:pPr>' . $nameWordML . '</w:p>',
-            '<w:p><w:pPr><w:ind w:left="0"/></w:pPr>' . $attendWordML . '</w:p>',
-            '<w:p><w:pPr><w:ind w:left="0"/></w:pPr>' . $nasLinkWordML . '</w:p>',
-            '<w:p><w:pPr><w:ind w:left="0"/></w:pPr>' . $placeWordML . '</w:p>',
-            '<w:p><w:pPr><w:ind w:left="0"/></w:pPr>' . $startTimeWordML . '</w:p>',
-            '<w:p><w:pPr><w:ind w:left="0"/></w:pPr>' . $endTimeWordML . '</w:p>',
-            '<w:p><w:pPr><w:ind w:left="0"/></w:pPr>' . $dateTimeWordML . '</w:p>',
+            $this->buildRunXmlWithSize($data->name ?? '', 18, true),
+            $attendWordML,
+            $nasLinkWordML,
+            $placeWordML,
+            $startTimeWordML,
+            $endTimeWordML,
+            $dateTimeWordML,
             $recordWordML,
             $toDoWordML,
             $custToDoWordML,
@@ -360,14 +360,13 @@ class MeetDataController extends Controller
 
     private function htmlToWordXml($html)
     {
-        // 如果是純文字（沒有 HTML 標籤），返回完整的段落結構
+        // 如果是純文字（沒有 HTML 標籤），只返回 run 標籤，不包含段落
         if (strip_tags($html) === $html) {
             $html = trim($html);
             if ($html === '') {
                 return '';
             }
-            $runXml = $this->buildRunXml($html);
-            return '<w:p><w:pPr><w:ind w:left="0"/></w:pPr>' . $runXml . '</w:p>';
+            return $this->buildRunXml($html);
         }
         
         $xml = '';
@@ -447,6 +446,7 @@ class MeetDataController extends Controller
             return '';
         }
         
+        // 只有在有實際內容時才產生段落標籤
         return <<<XML
             <w:p>
               <w:pPr>
@@ -644,6 +644,34 @@ class MeetDataController extends Controller
             <w:r>
               <w:rPr>
                 <w:rFonts w:ascii="{$fontFamily}" w:eastAsia="標楷體" w:hAnsi="{$fontFamily}"/>
+                {$bold}
+                {$italic}
+                {$colorXml}
+              </w:rPr>
+              <w:t xml:space="preserve">{$text}</w:t>
+            </w:r>
+            XML;
+    }
+
+    private function buildRunXmlWithSize($text, $fontSize = 12, $isBold = false, $isItalic = false, $color = null)
+    {
+        $text = htmlspecialchars($text);
+        $bold = $isBold ? '<w:b/>' : '';
+        $italic = $isItalic ? '<w:i/>' : '';
+        $colorXml = $color ? '<w:color w:val="' . $color . '"/>' : '';
+        $sizeXml = '<w:sz w:val="' . ($fontSize * 2) . '"/>';
+        $sizeCsXml = '<w:szCs w:val="' . ($fontSize * 2) . '"/>';
+        
+        // 判斷是否包含中文字符
+        $hasChinese = preg_match('/[\x{4e00}-\x{9fff}]/u', $text);
+        $fontFamily = $hasChinese ? '標楷體' : 'Times New Roman';
+        
+        return <<<XML
+            <w:r>
+              <w:rPr>
+                <w:rFonts w:ascii="{$fontFamily}" w:eastAsia="標楷體" w:hAnsi="{$fontFamily}"/>
+                {$sizeXml}
+                {$sizeCsXml}
                 {$bold}
                 {$italic}
                 {$colorXml}
