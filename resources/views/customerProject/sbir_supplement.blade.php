@@ -141,10 +141,20 @@
             content: none !important;
         }
 
-        /* 確保緊急項目沒有額外的邊框或線條 */
-        .accordion-item[style*="border-color: #dc3545"] .accordion-button::before,
-        .accordion-item[style*="border-color: #dc3545"] .accordion-button::after {
-            display: none !important;
+        /* 確保緊急項目的收合圖示可見 */
+        .accordion-item[style*="position: relative"] .accordion-button::after {
+            display: block !important;
+            z-index: 9999 !important;
+            position: relative !important;
+        }
+
+        /* 強制收合圖示在最上層 */
+        .accordion-item[style*="position: relative"] .accordion-button::after {
+            z-index: 9999 !important;
+            position: relative !important;
+            display: block !important;
+            visibility: visible !important;
+            opacity: 1 !important;
         }
 
         .accordion-button {
@@ -193,6 +203,36 @@
             height: 1.2rem;
             margin-left: auto;
             flex-shrink: 0;
+        }
+
+        /* 確保緊急項目的收合圖示樣式不被覆蓋 */
+        .accordion-item[style*="position: relative"] .accordion-button::after {
+            background-size: 1.2rem !important;
+            transition: transform 0.3s ease !important;
+            filter: brightness(0.7) !important;
+            opacity: 1 !important;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23343a40'%3e%3cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3e%3c/svg%3e") !important;
+            background-repeat: no-repeat !important;
+            background-position: center !important;
+            width: 1.2rem !important;
+            height: 1.2rem !important;
+            margin-left: auto !important;
+            flex-shrink: 0 !important;
+            z-index: 9999 !important;
+            position: relative !important;
+            display: block !important;
+            visibility: visible !important;
+        }
+
+        /* 強制收合圖示在所有情況下都可見 */
+        .accordion-item[style*="position: relative"] .accordion-button::after,
+        .accordion-item[style*="position: relative"] .accordion-button:hover::after,
+        .accordion-item[style*="position: relative"] .accordion-button:focus::after {
+            display: block !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+            z-index: 9999 !important;
+            position: relative !important;
         }
 
         .accordion-button:not(.collapsed)::after {
@@ -267,10 +307,11 @@
             position: relative !important;
         }
 
-        /* 移除按鈕的偽元素干擾，但保留緊急項目的紅框 */
-        .accordion-item[style*="position: relative"] .accordion-button::before,
+        /* 確保緊急項目的收合圖示可見 */
         .accordion-item[style*="position: relative"] .accordion-button::after {
-            display: none !important;
+            display: block !important;
+            z-index: 9999 !important;
+            position: relative !important;
         }
 
         /* 問題標題樣式 */
