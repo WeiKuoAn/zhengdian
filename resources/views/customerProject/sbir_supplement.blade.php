@@ -53,7 +53,11 @@
         }
 
         .accordion-item.bg-light {
-            background-color: #f9fafb !important;
+            background-color: #f8f9fa !important;
+        }
+
+        .accordion-item.bg-white {
+            background-color: #ffffff !important;
         }
 
         .accordion-button {
@@ -339,17 +343,21 @@
                                             
                                             <div class="accordion" id="supplementAccordion">
                                             @forelse($supplements as $index => $item)
-                                                <div class="accordion-item mb-3 {{ $item->is_confirmed ? 'bg-light' : '' }}" 
-                                                     style="{{ $item->is_confirmed ? 'background-color: #f8f9fa !important;' : '' }}">
+                                                <div class="accordion-item mb-3 {{ !empty($item->answer) ? 'bg-white' : 'bg-light' }}" 
+                                                     style="{{ !empty($item->answer) ? 'background-color: #ffffff !important;' : 'background-color: #f8f9fa !important;' }}">
                                                     <h2 class="accordion-header" id="heading{{ $index }}">
                                                         <button class="accordion-button collapsed" 
                                                                 type="button" 
                                                                 data-bs-toggle="collapse" 
                                                                 data-bs-target="#collapse{{ $index }}" 
                                                                 aria-expanded="false" 
-                                                                aria-controls="collapse{{ $index }}">
+                                                                aria-controls="collapse{{ $index }}"
+                                                                style="{{ !empty($item->answer) ? 'background-color: #ffffff;' : 'background-color: #f8f9fa;' }}">
                                                             <div class="d-flex justify-content-between align-items-center w-100 me-3">
                                                                 <div class="d-flex align-items-center flex-grow-1">
+                                                                    @if ($item->is_confirmed)
+                                                                        <i class="mdi mdi-check-circle text-success" style="font-size: 1.2rem; margin-right: 0.5rem;" title="已確認"></i>
+                                                                    @endif
                                                                     <span class="question-number">Q{{ $index + 1 }}</span>
                                                                     <span class="question-title">{{ $item->question }}</span>
                                                                 </div>
@@ -359,11 +367,6 @@
                                                                     @else
                                                                         <span class="badge bg-secondary">一般</span>
                                                                     @endif
-                                                                    {{-- @if ($item->is_confirmed)
-                                                                        <span class="badge bg-success me-2">已確認</span>
-                                                                    @else
-                                                                        <span class="badge bg-warning text-dark me-2">待確認</span>
-                                                                    @endif --}}
                                                                     <small class="text-muted ms-2">{{ $item->date }}</small>
                                                                 </div>
                                                             </div>
@@ -373,7 +376,7 @@
                                                          class="accordion-collapse collapse" 
                                                          aria-labelledby="heading{{ $index }}" 
                                                          data-bs-parent="#supplementAccordion">
-                                                        <div class="accordion-body">
+                                                        <div class="accordion-body" style="{{ !empty($item->answer) ? 'background-color: #ffffff;' : 'background-color: #f8f9fa;' }}">
                                                             <div class="mb-4">
                                                                 <label class="form-label fw-bold fs-5" style="color: #374151;">請回覆：</label>
                                                                 <textarea name="answer[]" 
