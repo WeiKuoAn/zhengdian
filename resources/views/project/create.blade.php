@@ -6,7 +6,7 @@
     <!-- Start Content-->
     <div class="container-fluid">
 
-        @include('layouts.shared.page-title', ['title' => '設定管理', 'subtitle' => '簽約類別新增'])
+        @include('layouts.shared.page-title', ['title' => '新增專案', 'subtitle' => '專案管理'])
 
         <div class="row">
             <div class="col-xl-6">

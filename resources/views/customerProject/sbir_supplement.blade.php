@@ -14,6 +14,71 @@
             background-color: #f8f9fa !important;
         }
 
+        /* 移除標題的margin */
+        .h1, .h2, .h3, .h4, .h5, .h6, h1, h2, h3, h4, h5, h6 {
+            margin: 0 !important;
+        }
+
+        /* 提高緊急項目紅框的圖層 */
+        .accordion-item[style*="z-index: 10"] {
+            z-index: 10 !important;
+            position: relative !important;
+        }
+
+        /* 確保緊急項目的紅框在按鈕上方 */
+        .accordion-item[style*="z-index: 999"] .accordion-button {
+            z-index: 1 !important;
+            position: relative !important;
+        }
+
+        /* 確保紅框在最上層 */
+        .accordion-item[style*="border: 2px solid #dc3545"] {
+            z-index: 999 !important;
+            position: relative !important;
+        }
+
+        /* 強制紅框在最上層 */
+        .accordion-item[style*="z-index: 999"] {
+            z-index: 999 !important;
+            position: relative !important;
+        }
+
+        /* 確保按鈕在紅框下方 */
+        .accordion-item[style*="z-index: 999"] .accordion-button {
+            z-index: 1 !important;
+            position: relative !important;
+        }
+
+        /* 確保所有子元素都在紅框下方 */
+        .accordion-item[style*="z-index: 999"] * {
+            z-index: 1 !important;
+            position: relative !important;
+        }
+
+        /* 確保緊急項目的紅框overlay在最上層 */
+        .urgent-border-overlay {
+            position: absolute !important;
+            top: 0 !important;
+            left: 0 !important;
+            right: 0 !important;
+            bottom: 0 !important;
+            border: 2px solid #dc3545 !important;
+            border-radius: 1rem !important;
+            pointer-events: none !important;
+            z-index: 0 !important;
+        }
+
+        /* 強制overlay始終可見 */
+        .urgent-border-overlay,
+        .accordion-item:hover .urgent-border-overlay,
+        .accordion-button:hover .urgent-border-overlay,
+        .accordion-button:focus .urgent-border-overlay {
+            display: block !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+            z-index: 3 !important;
+        }
+
         /* Accordion 樣式優化 */
         .accordion-item {
             border: 2px solid #d1d5db;
@@ -191,18 +256,18 @@
 
 
 
+
+
+
+
+
+
         /* 確保緊急項目的框線在最上層 */
         .accordion-item[style*="position: relative"] {
             position: relative !important;
         }
 
-        /* 移除所有可能的偽元素干擾 */
-        .accordion-item[style*="position: relative"]::before,
-        .accordion-item[style*="position: relative"]::after {
-            display: none !important;
-            content: none !important;
-        }
-
+        /* 移除按鈕的偽元素干擾，但保留緊急項目的紅框 */
         .accordion-item[style*="position: relative"] .accordion-button::before,
         .accordion-item[style*="position: relative"] .accordion-button::after {
             display: none !important;
@@ -393,10 +458,10 @@
                                             
                                             <div class="accordion" id="supplementAccordion">
                                             @forelse($supplements as $index => $item)
-                                                <div class="accordion-item mb-3 {{ !empty($item->answer) ? 'bg-white' : 'bg-light' }}" 
-                                                     style="{{ !empty($item->answer) ? 'background-color: #ffffff !important;' : 'background-color: #f8f9fa !important;' }} {{ $item->is_urgent && !$item->is_confirmed ? 'border: none !important; position: relative !important;' : '' }}">
+                                                <div class="accordion-item mb-3 {{ $item->is_confirmed ? 'bg-white' : (!empty($item->answer) ? 'bg-white' : 'bg-light') }}" 
+                                                     style="{{ $item->is_confirmed ? 'background-color: #ffffff !important;' : (!empty($item->answer) ? 'background-color: #ffffff !important;' : 'background-color: #f8f9fa !important;') }} {{ $item->is_urgent && !$item->is_confirmed ? 'border: none !important; position: relative !important;' : '' }}">
                                                     @if($item->is_urgent && !$item->is_confirmed)
-                                                        <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; border: 2px solid #dc3545; border-radius: 1rem; pointer-events: none; z-index: 9999;"></div>
+                                                        <div class="urgent-border-overlay" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; border: 2px solid #dc3545; border-radius: 1rem; pointer-events: none; z-index: 9999;"></div>
                                                     @endif
                                                     <h2 class="accordion-header" id="heading{{ $index }}">
                                                         <button class="accordion-button collapsed" 
@@ -405,7 +470,7 @@
                                                                 data-bs-target="#collapse{{ $index }}" 
                                                                 aria-expanded="false" 
                                                                 aria-controls="collapse{{ $index }}"
-                                                                style="{{ !empty($item->answer) ? 'background-color: #ffffff;' : 'background-color: #f8f9fa;' }} {{ $item->is_urgent && !$item->is_confirmed ? 'background-color: #fff5f5 !important;' : '' }}">
+                                                                style="{{ $item->is_confirmed ? 'background-color: #ffffff;' : (!empty($item->answer) ? 'background-color: #ffffff;' : 'background-color: #f8f9fa;') }} {{ $item->is_urgent && !$item->is_confirmed ? 'background-color: #fff5f5 !important;' : '' }}">
                                                             <div class="d-flex justify-content-between align-items-center w-100 me-3">
                                                                 <div class="d-flex align-items-center flex-grow-1">
                                                                     @if ($item->is_confirmed)
@@ -429,7 +494,7 @@
                                                          class="accordion-collapse collapse" 
                                                          aria-labelledby="heading{{ $index }}" 
                                                          data-bs-parent="#supplementAccordion">
-                                                        <div class="accordion-body" style="{{ !empty($item->answer) ? 'background-color: #ffffff;' : 'background-color: #f8f9fa;' }} {{ $item->is_urgent && !$item->is_confirmed ? 'background-color: #fff5f5 !important;' : '' }}">
+                                                        <div class="accordion-body" style="{{ $item->is_confirmed ? 'background-color: #ffffff;' : (!empty($item->answer) ? 'background-color: #ffffff;' : 'background-color: #f8f9fa;') }} {{ $item->is_urgent && !$item->is_confirmed ? 'background-color: #fff5f5 !important;' : '' }}">
                                                             <div class="mb-4">
                                                                 <label class="form-label fw-bold fs-5" style="color: #374151;">請回覆：</label>
                                                                 <textarea name="answer[]" 
@@ -565,6 +630,9 @@
 
             // 所有項目預設都是收合狀態
             $('.accordion-collapse').removeClass('show');
+
+
+
         });
     </script>
 @endsection
