@@ -129,11 +129,6 @@
                                                     <div class="mb-3 mt-1">
                                                         <textarea class="form-control" rows="5" placeholder="" name="comment" readonly>{{ $appendix->comment }}</textarea>
                                                     </div>
-                                                    <div class="text-end">
-                                                        <button type="submit" class="btn btn-primary">
-                                                            <i class="bx bx-save me-1"></i>儲存
-                                                        </button>
-                                                    </div>
                                                 </div>
                                             @endif
                                             <div class="row">
