@@ -110,7 +110,6 @@
                                                 </a>
                                             </li>
                                         </ul>
-
                                         <div class="card-body mt-3">
                                             <div class="alert alert-primary" role="alert">
                                                 <label class="form-label" for="AddNew-Username"><b>1.檢附資料說明：
@@ -119,7 +118,7 @@
                                                         </a></b>
                                                 </label><br>
                                                 <label class="form-label" for="AddNew-Username"><b>2.上傳附件連結：
-                                                        <a href="{{ $project->nas_link ?? '#' }}" target="_blank">
+                                                        <a href="{{ $project->upload_link ?? '#' }}" target="_blank">
                                                             請點擊我
                                                         </a></b>
                                                 </label>
@@ -339,14 +338,14 @@
                                                                                 role="alert">
                                                                                 <label class="form-label"
                                                                                     for="AddNew-Username"><b>1.檢附資料說明：
-                                                                                        <a href="{{ $cust_data->attached_link ?? '#' }}"
+                                                                                        <a href="{{ $project->attached_link ?? '#' }}"
                                                                                             target="_blank">
                                                                                             請點擊我
                                                                                         </a></b>
                                                                                 </label><br>
                                                                                 <label class="form-label"
                                                                                     for="AddNew-Username"><b>2.上傳附件連結：
-                                                                                        <a href="{{ $cust_data->nas_link ?? '#' }}"
+                                                                                        <a href="{{ $project->upload_link ?? '#' }}"
                                                                                             target="_blank">
                                                                                             請點擊我
                                                                                         </a></b>

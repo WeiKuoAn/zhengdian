@@ -181,7 +181,6 @@
                                                 </a>
                                             </li>
                                         </ul>
-
                                         <div class="card-body mt-3">
                                             <div class="alert alert-primary" role="alert">
                                                 <label class="form-label" for="AddNew-Username"><b>1.檢附資料說明：
