@@ -8,8 +8,12 @@ use Illuminate\Database\Eloquent\Model;
 class CustProject extends Model
 {
     use HasFactory;
-    protected $table = "cust_project";
-    protected $fillable = ['user_id','year','type','status','name','check_limlit','check_status','send_date','send_number'];
+
+    protected $table = 'cust_project';
+
+    protected $fillable = ['user_id', 'year', 'type',
+        'status', 'name', 'check_limlit', 'check_status',
+        'send_date', 'send_number', 'appendix_status', 'upload_link', 'download_link', 'attached_link'];
 
     public function user_data()
     {
@@ -75,7 +79,7 @@ class CustProject extends Model
     {
         return $this->hasMany('App\Models\WordBenefit', 'project_id', 'id');
     }
-    
+
     public function word_custom_datas()
     {
         return $this->hasMany('App\Models\WordCustomPerformance', 'project_id', 'id');

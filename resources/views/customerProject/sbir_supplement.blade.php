@@ -60,6 +60,28 @@
             background-color: #ffffff !important;
         }
 
+        /* 移除緊急項目上方的白色線條 */
+        .accordion-item[style*="border-color: #dc3545"]::before {
+            display: none !important;
+        }
+
+        /* 更強力的移除方式 */
+        .accordion-item[style*="border-color: #dc3545"] {
+            position: relative;
+        }
+
+        .accordion-item[style*="border-color: #dc3545"]::before,
+        .accordion-item[style*="border-color: #dc3545"]::after {
+            display: none !important;
+            content: none !important;
+        }
+
+        /* 確保緊急項目沒有額外的邊框或線條 */
+        .accordion-item[style*="border-color: #dc3545"] .accordion-button::before,
+        .accordion-item[style*="border-color: #dc3545"] .accordion-button::after {
+            display: none !important;
+        }
+
         .accordion-button {
             padding: 1.5rem 1.5rem;
             font-weight: 600;
@@ -156,6 +178,34 @@
         .accordion-item.bg-light .accordion-button:hover {
             background-color: #f3f4f6;
             color: #374151;
+        }
+
+        /* 緊急項目的特殊樣式 */
+        .accordion-item[style*="position: relative"] .accordion-button:hover {
+            background-color: #fee2e2 !important;
+        }
+
+        .accordion-item[style*="position: relative"] .accordion-button:not(.collapsed) {
+            background-color: #fef2f2 !important;
+        }
+
+
+
+        /* 確保緊急項目的框線在最上層 */
+        .accordion-item[style*="position: relative"] {
+            position: relative !important;
+        }
+
+        /* 移除所有可能的偽元素干擾 */
+        .accordion-item[style*="position: relative"]::before,
+        .accordion-item[style*="position: relative"]::after {
+            display: none !important;
+            content: none !important;
+        }
+
+        .accordion-item[style*="position: relative"] .accordion-button::before,
+        .accordion-item[style*="position: relative"] .accordion-button::after {
+            display: none !important;
         }
 
         /* 問題標題樣式 */
@@ -344,7 +394,10 @@
                                             <div class="accordion" id="supplementAccordion">
                                             @forelse($supplements as $index => $item)
                                                 <div class="accordion-item mb-3 {{ !empty($item->answer) ? 'bg-white' : 'bg-light' }}" 
-                                                     style="{{ !empty($item->answer) ? 'background-color: #ffffff !important;' : 'background-color: #f8f9fa !important;' }}">
+                                                     style="{{ !empty($item->answer) ? 'background-color: #ffffff !important;' : 'background-color: #f8f9fa !important;' }} {{ $item->is_urgent && !$item->is_confirmed ? 'border: none !important; position: relative !important;' : '' }}">
+                                                    @if($item->is_urgent && !$item->is_confirmed)
+                                                        <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; border: 2px solid #dc3545; border-radius: 1rem; pointer-events: none; z-index: 9999;"></div>
+                                                    @endif
                                                     <h2 class="accordion-header" id="heading{{ $index }}">
                                                         <button class="accordion-button collapsed" 
                                                                 type="button" 
@@ -352,13 +405,13 @@
                                                                 data-bs-target="#collapse{{ $index }}" 
                                                                 aria-expanded="false" 
                                                                 aria-controls="collapse{{ $index }}"
-                                                                style="{{ !empty($item->answer) ? 'background-color: #ffffff;' : 'background-color: #f8f9fa;' }}">
+                                                                style="{{ !empty($item->answer) ? 'background-color: #ffffff;' : 'background-color: #f8f9fa;' }} {{ $item->is_urgent && !$item->is_confirmed ? 'background-color: #fff5f5 !important;' : '' }}">
                                                             <div class="d-flex justify-content-between align-items-center w-100 me-3">
                                                                 <div class="d-flex align-items-center flex-grow-1">
                                                                     @if ($item->is_confirmed)
                                                                         <i class="mdi mdi-check-circle text-success" style="font-size: 1.2rem; margin-right: 0.5rem;" title="已確認"></i>
                                                                     @endif
-                                                                    <span class="question-number">Q{{ $index + 1 }}</span>
+                                                                    <span class="question-number" style="{{ $item->is_urgent && !$item->is_confirmed ? 'color: #dc3545 !important;' : '' }}">Q{{ $index + 1 }}</span>
                                                                     <span class="question-title">{{ $item->question }}</span>
                                                                 </div>
                                                                 <div class="status-badges">
@@ -376,7 +429,7 @@
                                                          class="accordion-collapse collapse" 
                                                          aria-labelledby="heading{{ $index }}" 
                                                          data-bs-parent="#supplementAccordion">
-                                                        <div class="accordion-body" style="{{ !empty($item->answer) ? 'background-color: #ffffff;' : 'background-color: #f8f9fa;' }}">
+                                                        <div class="accordion-body" style="{{ !empty($item->answer) ? 'background-color: #ffffff;' : 'background-color: #f8f9fa;' }} {{ $item->is_urgent && !$item->is_confirmed ? 'background-color: #fff5f5 !important;' : '' }}">
                                                             <div class="mb-4">
                                                                 <label class="form-label fw-bold fs-5" style="color: #374151;">請回覆：</label>
                                                                 <textarea name="answer[]" 

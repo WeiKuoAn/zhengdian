@@ -123,6 +123,9 @@ class ProjectController extends Controller
         $data->user_id = $request->user_id;
         $data->type = $project_type->id;
         $data->check_status = $request->check_status;
+        $data->upload_link = $request->upload_link ?? null;
+        $data->download_link = $request->download_link ?? null;
+        $data->attached_link = $request->attached_link ?? null;
         $data->status = 0;
         $data->check_limlit  = 0;
         $data->save();
@@ -354,13 +357,10 @@ class ProjectController extends Controller
         $data->name = date('Ymd', strtotime($request->date)) . '-' . ($project_type->name ?? 'N/A') . '-' . ($cust_data->user_data->name ?? '000');;
         $data->type = $request->type;
         $data->check_status = $request->check_status;
+        $data->upload_link = $request->upload_link ?? null;
+        $data->download_link = $request->download_link ?? null;
+        $data->attached_link = $request->attached_link ?? null;
         $data->save();
-
-        $cust_data->nas_link = $request->nas_link;
-        $cust_data->download_link = $request->download_link;
-        $cust_data->attached_link = $request->attached_link;
-        $cust_data->save();
-
 
         // 返回專案列表頁面
         return redirect()->route('projects');

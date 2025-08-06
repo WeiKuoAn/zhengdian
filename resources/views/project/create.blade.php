@@ -40,12 +40,24 @@
                                     </select>
                                 </div>
                                 <div class="mb-3">
-                                    <label class="form-label">計畫登入帳號<span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control" name="account" value="" required id="cust_account" readonly>
+                                    <label class="form-label">計畫登入帳號</label>
+                                    <input type="text" class="form-control" name="account" value="" id="cust_account">
                                 </div>
                                 <div class="mb-3">
-                                    <label class="form-label">計畫登入密碼<span class="text-danger">*</span></label>
-                                    <input type="password" class="form-control" name="password" value="" required id="cust_password" readonly>
+                                    <label class="form-label">計畫登入密碼</label>
+                                    <input type="password" class="form-control" name="password" value="" id="cust_password">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">檢附資料連結<span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" name="attached_link" value="" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">上傳附件連結<span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" name="upload_link" value="" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">計劃書下載連結<span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" name="download_link" value="" required>
                                 </div>
                                 <div class="mb-3">
                                     <label class="form-label">專案執行階段：<span class="text-danger">*</span></label>

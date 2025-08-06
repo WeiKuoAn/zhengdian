@@ -104,29 +104,30 @@
                                     </select>
                                 </div>
                                 <div class="mb-3">
+                                    <label class="form-label">計畫登入帳號</label>
+                                    <input type="text" class="form-control" name="account" value="">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">計畫登入密碼</label>
+                                    <input type="text" class="form-control" name="password" value="">
+                                </div>
+                                <div class="mb-3">
                                     <label class="form-label">檢附資料連結<span class="text-danger">*</span></label>
                                     <input type="text" class="form-control" name="attached_link"
-                                        value="{{ $data->cust_data->attached_link }}" required>
+                                        value="{{ $data->attached_link }}" required>
                                 </div>
                                 <div class="mb-3">
                                     <label class="form-label">上傳附件連結<span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control" name="nas_link"
-                                        value="{{ $data->cust_data->nas_link }}" required>
+                                    <input type="text" class="form-control" name="upload_link"
+                                        value="{{ $data->upload_link }}" required>
                                 </div>
                                 <div class="mb-3">
                                     <label class="form-label">計畫書下載連結<span class="text-danger">*</span></label>
                                     <input type="text" class="form-control" name="download_link"
-                                        value="{{ $data->cust_data->download_link }}" required>
+                                        value="{{ $data->download_link }}" required>
                                 </div>
 
-                                <div class="mb-3">
-                                    <label class="form-label">計畫登入帳號<span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control" name="account" value="">
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label">計畫登入密碼<span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control" name="password" value="">
-                                </div>
+                               
                                 <div class="mb-3">
                                     <label class="form-label">專案執行階段：<span class="text-danger">*</span></label>
                                     <select class="form-control" data-toggle="select2" data-width="100%"

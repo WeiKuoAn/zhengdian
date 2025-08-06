@@ -27,7 +27,7 @@
                                     <div class="card-body">
                                         <div class="alert alert-info">
                                             <label class="form-label" for="AddNew-Username"><b>計劃書下載連結：
-                                                    <a href="{{ $cust_data->download_link ?? '#' }}" target="_blank"
+                                                    <a href="{{ $project->download_link ?? '#' }}" target="_blank"
                                                         style="color: #003f8d;">
                                                         請點擊我
                                                     </a>
@@ -114,12 +114,12 @@
                                         <div class="card-body mt-3">
                                             <div class="alert alert-primary" role="alert">
                                                 <label class="form-label" for="AddNew-Username"><b>1.檢附資料說明：
-                                                        <a href="{{ $cust_data->attached_link ?? '#' }}" target="_blank">
+                                                        <a href="{{ $project->attached_link ?? '#' }}" target="_blank">
                                                             請點擊我
                                                         </a></b>
                                                 </label><br>
                                                 <label class="form-label" for="AddNew-Username"><b>2.上傳附件連結：
-                                                        <a href="{{ $cust_data->nas_link ?? '#' }}" target="_blank">
+                                                        <a href="{{ $project->nas_link ?? '#' }}" target="_blank">
                                                             請點擊我
                                                         </a></b>
                                                 </label>
@@ -154,7 +154,7 @@
                                                                             <label class="form-check-label"
                                                                                 for="sbir_appendix01">
                                                                                 <h5 class="font-size-16 m-0">
-                                                                                    1.最近一年之年度損益及稅額計算表
+                                                                                    1.最近一年之年度損益及稅額計算表<span class="text-danger">（請每頁加蓋公司大章及負責人小章）</span>
                                                                                 </h5>
                                                                             </label>
                                                                         </div>
@@ -168,8 +168,7 @@
                                                                             <label class="form-check-label"
                                                                                 for="sbir_appendix02">
                                                                                 <h5 class="font-size-16 m-0">
-                                                                                    2.當年度的暫結損益表<span
-                                                                                        class="text-danger">（可不用上傳）</span>
+                                                                                    2.當年度的暫結損益表
                                                                                 </h5>
                                                                             </label>
                                                                         </div>
@@ -183,7 +182,7 @@
                                                                             <label class="form-check-label"
                                                                                 for="sbir_appendix03">
                                                                                 <h5 class="font-size-16 m-0">
-                                                                                    3.最近一期勞保繳費清單之投保人數資料
+                                                                                    3.最近一期勞保繳費清單之投保人數資料<span class="text-danger">（請每頁加蓋公司大章及負責人小章）</span>
                                                                                 </h5>
                                                                             </label>
                                                                         </div>
@@ -197,7 +196,7 @@
                                                                             <label class="form-check-label"
                                                                                 for="sbir_appendix04">
                                                                                 <h5 class="font-size-16 m-0">4.最近 1
-                                                                                    個月國稅局無違章欠稅證明
+                                                                                    個月國稅局無違章欠稅證明<span class="text-danger">（請每頁加蓋公司大章及負責人小章）</span>
                                                                                 </h5>
                                                                             </label>
                                                                         </div>
@@ -212,7 +211,7 @@
                                                                             <label class="form-check-label"
                                                                                 for="sbir_appendix05">
                                                                                 <h5 class="font-size-16 m-0">5.最近 1
-                                                                                    個月稅捐稽徵處無違章欠稅證明
+                                                                                    個月稅捐稽徵處無違章欠稅證明<span class="text-danger">（請每頁加蓋公司大章及負責人小章）</span>
                                                                                 </h5>
                                                                             </label>
                                                                         </div>
@@ -226,8 +225,8 @@
                                                                                 name="sbir_appendix06">
                                                                             <label class="form-check-label"
                                                                                 for="sbir_appendix06">
-                                                                                <h5 class="font-size-16 m-0">6.個資同意書正本<span
-                                                                                        class="text-danger">（每位計畫人員皆要）</span>
+                                                                                <h5 class="font-size-16 m-0">6.個資同意書正本※每位計畫人員皆要<span
+                                                                                        class="text-danger">（請每位人員親簽＋填日期）</span>
                                                                                 </h5>
                                                                             </label>
                                                                         </div>
@@ -241,7 +240,7 @@
                                                                                 name="sbir_appendix07">
                                                                             <label class="form-check-label"
                                                                                 for="sbir_appendix07">
-                                                                                <h5 class="font-size-16 m-0">7.計畫申請表
+                                                                                <h5 class="font-size-16 m-0">7.計畫申請表<span class="text-danger">（請用印公司大章及負責人小章）</span>
                                                                                 </h5>
                                                                             </label>
                                                                         </div>
@@ -255,7 +254,7 @@
                                                                                 name="sbir_appendix08">
                                                                             <label class="form-check-label"
                                                                                 for="sbir_appendix08">
-                                                                                <h5 class="font-size-16 m-0">8.申請公司基本資料表
+                                                                                <h5 class="font-size-16 m-0">8.申請公司基本資料表<span class="text-danger">（請用印公司大章及負責人小章）</span>
                                                                                 </h5>
                                                                             </label>
                                                                         </div>
@@ -269,7 +268,7 @@
                                                                                 name="sbir_appendix09">
                                                                             <label class="form-check-label"
                                                                                 for="sbir_appendix09">
-                                                                                <h5 class="font-size-16 m-0">9.建議迴避之人員清單
+                                                                                <h5 class="font-size-16 m-0">9.建議迴避之人員清單<span class="text-danger">（請用印公司大章及負責人小章）</span>
                                                                                 </h5>
                                                                             </label>
                                                                         </div>
@@ -284,7 +283,7 @@
                                                                             <label class="form-check-label"
                                                                                 for="sbir_appendix10">
                                                                                 <h5 class="font-size-16 m-0">
-                                                                                    10.曾執行政府計畫揭露聲明書正本 1 份
+                                                                                    10.曾執行政府計畫揭露聲明書正本 1 份<span class="text-danger">（請用印公司大章及負責人小章＋填日期）</span>
                                                                                 </h5>
                                                                             </label>
                                                                         </div>
@@ -298,7 +297,7 @@
                                                                                 name="sbir_appendix11">
                                                                             <label class="form-check-label"
                                                                                 for="sbir_appendix11">
-                                                                                <h5 class="font-size-16 m-0">11.申請者自我檢查表
+                                                                                <h5 class="font-size-16 m-0">11.申請者自我檢查表<span class="text-danger">（請用印公司大章及負責人小章）</span>
                                                                                 </h5>
                                                                             </label>
                                                                         </div>
@@ -312,7 +311,7 @@
                                                                                 name="sbir_appendix12">
                                                                             <label class="form-check-label"
                                                                                 for="sbir_appendix12">
-                                                                                <h5 class="font-size-16 m-0">12.合作意向書
+                                                                                <h5 class="font-size-16 m-0">12.合作意向書<span class="text-danger">（請用印雙方公司大章及負責人小章）</span>
                                                                                 </h5>
                                                                             </label>
                                                                         </div>
@@ -371,7 +370,7 @@
                                                                                                         for="sbir_two_appendix01">
                                                                                                         <h5
                                                                                                             class="font-size-16 m-0">
-                                                                                                            1.最新一期勞保投保名細
+                                                                                                            1.最新一期投保單位被保險人名冊
                                                                                                         </h5>
                                                                                                     </label>
                                                                                                 </div>
@@ -391,7 +390,7 @@
                                                                                                         for="sbir_two_appendix02">
                                                                                                         <h5
                                                                                                             class="text-truncate font-size-16 m-0">
-                                                                                                            2.簽到表
+                                                                                                            2.經濟部中小及新創企業署「小型企業創新研發計畫（SBIR）」計畫審查會議簽到表暨廠商聲明事項
                                                                                                         </h5>
                                                                                                     </label>
                                                                                                 </div>
@@ -411,7 +410,7 @@
                                                                                                         for="sbir_two_appendix03">
                                                                                                         <h5
                                                                                                             class="text-truncate font-size-16 m-0">
-                                                                                                            3.問卷
+                                                                                                            3.經濟部中小及新創企業署小型企業創新研發計畫（SBIR）申請廠商調查表
                                                                                                         </h5>
                                                                                                     </label>
                                                                                                 </div>
