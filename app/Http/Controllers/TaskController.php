@@ -168,8 +168,8 @@ class TaskController extends Controller
             $datas->whereIn('project_id', $projectIds); // 篩選出符合用戶 ID 的專案
         }
 
-        // 排序優先級，然後按預計結束時間排序
-        $datas = $datas->orderBy('priority', 'asc')->orderBy('estimated_end', 'asc')->get();
+        // 排序優先級，然後按預計結束時間排序，並分頁顯示50筆
+        $datas = $datas->orderBy('priority', 'asc')->orderBy('estimated_end', 'asc')->paginate(50);
         return view('task.index')->with('datas', $datas)->with('request', $request)->with('task_templates', $task_templates)->with('users', $users);
     }
 

@@ -105,7 +105,7 @@
                                 <tbody>
                                     @foreach ($datas as $key => $data)
                                         <tr>
-                                            <td>{{ $key + 1 }} </td>
+                                            <td>{{ $datas->firstItem() + $key }} </td>
                                             <td width="20%">
                                                 @if (isset($data->project_data))
                                                     {{ $data->project_data->user_data->name }}{{ $data->project_data->name }}
@@ -176,6 +176,21 @@
                                 </tbody>
                             </table>
                         </div>
+                        
+                        <!-- 分頁連結 -->
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="text-muted">
+                                        <i class="mdi mdi-information-outline me-1"></i>
+                                        顯示第 {{ $datas->firstItem() ?? 0 }} 到 {{ $datas->lastItem() ?? 0 }} 筆，共 {{ $datas->total() }} 筆資料
+                                    </div>
+                                    <nav aria-label="分頁導航">
+                                        {{ $datas->appends(request()->query())->links('pagination::custom-bootstrap-5') }}
+                                    </nav>
+                                </div>
+                            </div>
+                        </div>
                     </div> <!-- end card-body-->
                 </div> <!-- end card-->
             </div> <!-- end col -->
@@ -187,4 +202,54 @@
 @endsection
 @section('script')
     @vite(['resources/js/pages/foo-tables.init.js'])
+    
+    <style>
+        /* 自定義分頁樣式 */
+        .pagination {
+            margin-bottom: 0;
+        }
+        
+        .pagination .page-link {
+            border-radius: 6px;
+            margin: 0 2px;
+            border: 1px solid #dee2e6;
+            color: #6c757d;
+            font-weight: 500;
+            transition: all 0.2s ease-in-out;
+        }
+        
+        .pagination .page-link:hover {
+            background-color: #e9ecef;
+            border-color: #adb5bd;
+            color: #495057;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .pagination .page-item.active .page-link {
+            background-color: #727cf5;
+            border-color: #727cf5;
+            color: white;
+            box-shadow: 0 2px 4px rgba(114, 124, 245, 0.3);
+        }
+        
+        .pagination .page-item.disabled .page-link {
+            color: #adb5bd;
+            background-color: #f8f9fa;
+            border-color: #dee2e6;
+        }
+        
+        /* 響應式設計 */
+        @media (max-width: 768px) {
+            .d-flex.justify-content-between {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .pagination .page-link {
+                padding: 0.375rem 0.75rem;
+                font-size: 0.875rem;
+            }
+        }
+    </style>
 @endsection
