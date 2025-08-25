@@ -20,6 +20,7 @@ class SBIR02 extends Model
         'contact_address',
         'rd_zipcode',
         'rd_address',
+        'cust_introduce',
         'youth_startup',
         'government_support',
         'has_rnd',

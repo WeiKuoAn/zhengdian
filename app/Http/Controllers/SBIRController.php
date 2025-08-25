@@ -290,6 +290,11 @@ class SBIRController extends Controller
     public function sbir04($id)
     {
         $project = CustProject::where('id', $id)->first();
+        if (!$project) {
+            abort(404, '專案不存在');
+        }
+        
+        $sbir02_data = SBIR02::where('project_id', $id)->first();
         $sbir04_applys = Sbir04Applyingplan::where('project_id', $id)->get();
         $sbir04_awards = Sbir04Award::where('project_id', $id)->get();
         $sbir04_patents = Sbir04Patent::where('project_id', $id)->get();
@@ -299,6 +304,7 @@ class SBIRController extends Controller
         $sbir04_main_products = Sbir04MainProduct::where('project_id', $id)->get();
         return view('SBIR.sbir04')
             ->with('project', $project)
+            ->with('sbir02_data', $sbir02_data)
             ->with('sbir04_applys', $sbir04_applys)
             ->with('sbir04_awards', $sbir04_awards)
             ->with('sbir04_patents', $sbir04_patents)
@@ -311,6 +317,14 @@ class SBIRController extends Controller
     public function sbir04_data(Request $request, $id)
     {
         $project = CustProject::where('id', $id)->first();
+        if (!$project) {
+            return redirect()->back()->with('error', '專案不存在');
+        }
+        
+        $sbir02_data = SBIR02::firstOrNew(['project_id' => $project->id]);
+        $sbir02_data->user_id = $project->user_id;
+        $sbir02_data->cust_introduce = $request->cust_introduce;
+        $sbir02_data->save();
         // 1刪除舊的申請紀錄
         Sbir04Applyingplan::where('project_id', $project->id)->delete();
         // 依序儲存新的資料
@@ -449,7 +463,7 @@ class SBIRController extends Controller
                 ]);
             }
         }
-        return redirect()->back()->with('success', '資料儲存成功');
+        return redirect()->route('project.sbir04', $id)->with('success', '資料儲存成功');
     }
 
     public function sbir05($id)
@@ -951,7 +965,7 @@ class SBIRController extends Controller
         $templateProcessor->setValue('cust_insurance_total', $cust_data->insured_employees ?? ' ');
         $templateProcessor->setValue('cust_profit_margin', $cust_data->profit_margin . '%' ?? ' ');
         $templateProcessor->setValue('cust_insurance_total', $cust_data->insurance_total ?? ' ');
-
+        $templateProcessor->setValue('cust_introduce', $sbir02->cust_introduce ?? ' ');
         // 工廠
         $cust_factory_data = CustFactory::where('project_id', $id)->where('setting', '是')->first();
         $templateProcessor->setValue('sbir02_factory_zipcode', $cust_factory_data->zipcode ?? ' ');
@@ -961,7 +975,6 @@ class SBIRController extends Controller
         $templateProcessor->setValue('sbir02_serve', $sbir02->serve ?? ' ');
         $templateProcessor->setValue('sbir02_rd_zipcode', $sbir02->rd_zipcode ?? ' ');
         $templateProcessor->setValue('sbir02_rd_address', $sbir02->rd_address ?? ' ');
-
         // 計畫書摘要表
         $templateProcessor->setValue('sbir03_plan_summary', str_replace("\n\n", '</w:t><w:br/><w:t>', $sbir03->plan_summary ?? ' '));
         $templateProcessor->setValue('sbir03_innovation_focus', str_replace("\n\n", '</w:t><w:br/><w:t>', $sbir03->innovation_focus ?? ' '));
@@ -979,6 +992,8 @@ class SBIRController extends Controller
         $templateProcessor->setValue('sbir03_benefit_new_patents', safeWordValue(number_format($sbir03->benefit_new_patents ?? null)));
 
         $sbir04_shareholders = Sbir04Shareholders::where('project_id', $project->id)->get();
+
+
         $templateProcessor->cloneRow('sbir04_shareholder_name', count($sbir04_shareholders));
         $sbir04_shareholder_total_amount = 0;
         foreach ($sbir04_shareholders as $key => $sbir04_shareholder) {
