@@ -190,9 +190,7 @@
                                             
                                             <div class="mb-5">
                                                 <h5 class="text-uppercase bg-light p-2 mt-3 mb-3">公司介紹</h5>
-                                                <textarea class="form-control" id="cust_introduce" name="cust_introduce" rows="5">
-                                                @if(isset($sbir02_data->cust_introduce)){{ $sbir02_data->cust_introduce }}@elseif(isset($cust_data)){{ $cust_data->introduce }}@endif
-                                                </textarea>
+                                                <textarea class="form-control" id="cust_introduce" name="cust_introduce" rows="8">@if(isset($sbir02_data->cust_introduce)){{ $sbir02_data->cust_introduce }}@elseif(isset($cust_data)){{ $cust_data->introduce }}@endif</textarea>
                                                 <h5 class="text-uppercase bg-light p-2 mt-3 mb-3">董監事持股比例</h5>
                                                 <div class="mb-3">
                                                     <table class="table table-bordered" id="shareholdersTable">

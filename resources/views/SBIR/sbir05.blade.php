@@ -16,7 +16,7 @@
                 <div class="card">
                     <div class="card-body">
                         <div class="d-flex align-items-start mb-3">
-                            <div class="w-100 ">
+                            <div class="w-100 preview-content">
                                 <h3 class="mt-1 mb-0">{{ $project->name }}</h3>
                                 <p class="mb-1 mt-1 text-muted">計畫登入帳號：ＸＸＸ　計畫登入密碼：ＸＸＸ</p>
                             </div>
@@ -90,7 +90,7 @@
                             <div class="modal-dialog modal-dialog-centered">
                                 <div class="modal-content">
                                     <div class="modal-body">
-                                        <div class="text-center">
+                                        <div class="text-center preview-content">
                                             <i class="bx bx-check-circle display-1 text-success"></i>
                                             <h4 class="mt-3">儲存SBIR資料成功！</h4>
                                         </div>
@@ -180,7 +180,7 @@
                                             
                                         </ul>
 
-                                        <div class="card-body">
+                                        <div class="card-body preview-content">
                                             @php
                                                 $sections = [
                                                     [
@@ -205,7 +205,7 @@
 
                                             @foreach ($sections as $sec)
                                                 <div class="card mb-3">
-                                                    <div class="card-body">
+                                                    <div class="card-body preview-content">
                                                         <h5 class="card-title">{{ $sec['title'] }}</h5>
                                                         <p class="text-muted">{{ $sec['description'] }}</p>
                                                         <div id="preview_{{ $sec['field'] }}"
@@ -222,7 +222,7 @@
                                             @endforeach
 
                                             <!-- 匯出 Word 按鈕 -->
-                                            <div class="text-end mt-4">
+                                            <div class="text-end mt-4 preview-content">
                                                 <a href="{{ route('project.sbir05.export', $project->id) }}"
                                                     class="btn btn-success">
                                                     匯出計畫書 Word 檔
