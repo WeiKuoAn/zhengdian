@@ -209,7 +209,7 @@
                                                         <h5 class="card-title">{{ $sec['title'] }}</h5>
                                                         <p class="text-muted">{{ $sec['description'] }}</p>
                                                         <div id="preview_{{ $sec['field'] }}"
-                                                            class="border p-3 bg-light mb-2">
+                                                            class="border p-3 bg-light mb-2 preview-content">
                                                             {!! $data[$sec['field']] ?? '' !!}
                                                         </div>
                                                         <button type="button" class="btn btn-sm btn-primary open-editor"
@@ -259,6 +259,97 @@
         </div>
     </div>
 @endsection
+@section('style')
+    <style>
+        .preview-content {
+            max-width: 100% !important;
+            width: 100% !important;
+            overflow-wrap: break-word !important;
+            word-wrap: break-word !important;
+            word-break: break-all !important;
+            white-space: normal !important;
+            line-height: 1.6;
+            overflow-x: hidden !important;
+            display: block !important;
+            position: relative !important;
+            box-sizing: border-box !important;
+        }
+        
+        /* 強制所有內容都在容器內 */
+        .preview-content * {
+            max-width: 100% !important;
+            width: auto !important;
+            box-sizing: border-box !important;
+            word-wrap: break-word !important;
+            overflow-wrap: break-word !important;
+            word-break: break-all !important;
+            white-space: normal !important;
+        }
+        
+        /* 特別處理長文字 */
+        .preview-content p,
+        .preview-content div,
+        .preview-content span,
+        .preview-content h1,
+        .preview-content h2,
+        .preview-content h3,
+        .preview-content h4,
+        .preview-content h5,
+        .preview-content h6 {
+            max-width: 100% !important;
+            width: 100% !important;
+            word-wrap: break-word !important;
+            overflow-wrap: break-word !important;
+            word-break: break-all !important;
+            white-space: normal !important;
+            overflow: hidden !important;
+        }
+        
+        .preview-content img {
+            max-width: 100% !important;
+            width: auto !important;
+            height: auto !important;
+        }
+        
+        .preview-content table {
+            max-width: 100% !important;
+            width: 100% !important;
+            table-layout: fixed !important;
+            word-wrap: break-word !important;
+            overflow-x: auto !important;
+        }
+        
+        .preview-content td,
+        .preview-content th {
+            word-wrap: break-word !important;
+            overflow-wrap: break-word !important;
+            max-width: 0 !important;
+            overflow: hidden !important;
+            text-overflow: ellipsis !important;
+        }
+        
+        .preview-content * {
+            max-width: 100% !important;
+            box-sizing: border-box !important;
+            word-wrap: break-word !important;
+            overflow-wrap: break-word !important;
+        }
+        
+        .preview-content p,
+        .preview-content div,
+        .preview-content span {
+            max-width: 100% !important;
+            word-wrap: break-word !important;
+            overflow-wrap: break-word !important;
+        }
+        
+        /* 強制所有內容都在容器內 */
+        .preview-content {
+            contain: layout style paint;
+        }
+    </style>
+@endsection
+
 @section('script')
     @if (session('success'))
         <script>
@@ -375,7 +466,11 @@
             const content = tinymce.get('modalEditor').getContent();
 
             const preview = document.getElementById(`preview_${field}`);
-            if (preview) preview.innerHTML = content;
+            if (preview) {
+                preview.innerHTML = content;
+                // 強制重新計算寬度
+                forceContentWidth(preview);
+            }
 
             fetch(`/project/${projectId}/sbir05/update-field`, {
                     method: 'POST',
@@ -402,5 +497,48 @@
                     alert('錯誤發生：' + err.message);
                 });
         }
+        
+        // 強制控制內容寬度
+        function forceContentWidth(container) {
+            if (!container) return;
+            
+            // 強制所有子元素寬度
+            const allElements = container.querySelectorAll('*');
+            allElements.forEach(el => {
+                el.style.maxWidth = '100%';
+                el.style.width = 'auto';
+                el.style.overflowWrap = 'break-word';
+                el.style.wordWrap = 'break-word';
+                el.style.wordBreak = 'break-all';
+                el.style.whiteSpace = 'normal';
+                el.style.overflow = 'hidden';
+                el.style.boxSizing = 'border-box';
+            });
+            
+            // 特別處理表格
+            const tables = container.querySelectorAll('table');
+            tables.forEach(table => {
+                table.style.maxWidth = '100%';
+                table.style.width = '100%';
+                table.style.tableLayout = 'fixed';
+                table.style.overflowX = 'auto';
+            });
+            
+            // 特別處理圖片
+            const images = container.querySelectorAll('img');
+            images.forEach(img => {
+                img.style.maxWidth = '100%';
+                img.style.width = 'auto';
+                img.style.height = 'auto';
+            });
+        }
+        
+        // 頁面載入時強制控制所有預覽區域寬度
+        document.addEventListener('DOMContentLoaded', function() {
+            const previews = document.querySelectorAll('.preview-content');
+            previews.forEach(preview => {
+                forceContentWidth(preview);
+            });
+        });
     </script>
 @endsection
