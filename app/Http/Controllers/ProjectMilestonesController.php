@@ -40,9 +40,34 @@ class ProjectMilestonesController extends Controller
         return view('project_milestones.create', compact('project_id', 'check_status'));
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        $datas = ProjectMilestones::all();
+        $query = ProjectMilestones::with(['project_data.user_data', 'task_data', 'calendar_category_data']);
+        
+        // 客戶名稱篩選（文字搜尋）
+        if ($request->filled('customer_name')) {
+            $query->whereHas('project_data.user_data', function($q) use ($request) {
+                $q->where('name', 'like', '%' . $request->customer_name . '%');
+            });
+        }
+        
+        // 日期篩選（根據選擇的日期欄位）
+        $dateField = $request->get('date_field', 'order_date'); // 預設為表訂時間
+        
+        if ($request->filled('start_date')) {
+            $query->where($dateField, '>=', $request->start_date);
+        }
+        
+        if ($request->filled('end_date')) {
+            $query->where($dateField, '<=', $request->end_date);
+        }
+        
+        // 排序
+        $query->orderBy('order_date', 'desc');
+        
+        // 分頁
+        $datas = $query->paginate(20);
+        
         return view('project_milestones.index', compact('datas'));
     }
 
@@ -50,7 +75,9 @@ class ProjectMilestonesController extends Controller
     {
         $check_statuss = CheckStatus::where('parent_id', null)->where('status','up')->get();
         $cust_datas = User::where('group_id', 2)->where('status', 1)->get();
-        return view('project_milestones.create')->with('check_statuss', $check_statuss)->with('cust_datas', $cust_datas);
+        $task_datas = \App\Models\TaskTemplate::orderBy('seq', 'asc')->get();
+        $calendar_categorys = CalendarCategory::where('status', 'up')->get();
+        return view('project_milestones.create')->with('check_statuss', $check_statuss)->with('cust_datas', $cust_datas)->with('task_datas', $task_datas)->with('calendar_categorys', $calendar_categorys);
     }
 
     public function store(Request $request)
@@ -60,12 +87,37 @@ class ProjectMilestonesController extends Controller
             ProjectMilestones::create([
                 'project_id' => $request->project_id,
                 'milestone_type' => $request->milestone_types[$index],
-                'milestone_date' =>$request->milestone_dates[$index],
+                'milestone_date' => $request->milestone_dates[$index],
                 'formal_date' => $request->formal_dates[$index],
-                'category_id' => '1',
+                'order_date' => $request->order_dates[$index] ?? null,
+                'category_id' => $request->category_ids[$index] ?? '1',
             ]);
         }
 
-        return redirect()->route('projectMilestones');
+        return redirect()->route('projectMilestones')->with('success', '排程新增成功！');
+    }
+
+    public function show($id)
+    {
+        $data = ProjectMilestones::with(['project_data.user_data', 'task_data', 'calendar_category_data'])->findOrFail($id);
+        $task_datas = \App\Models\TaskTemplate::orderBy('seq', 'asc')->get();
+        $calendar_categorys = CalendarCategory::where('status', 'up')->get();
+        
+        return view('project_milestones.edit', compact('data', 'task_datas', 'calendar_categorys'));
+    }
+
+    public function update(Request $request, $id)
+    {
+        $data = ProjectMilestones::findOrFail($id);
+        
+        $data->update([
+            'milestone_type' => $request->milestone_type,
+            'milestone_date' => $request->milestone_date,
+            'formal_date' => $request->formal_date,
+            'order_date' => $request->order_date,
+            'category_id' => $request->category_id,
+        ]);
+
+        return redirect()->route('projectMilestones')->with('success', '排程更新成功！');
     }
 }

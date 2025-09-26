@@ -57,55 +57,28 @@
                 <div class="card">
                     <div class="card-body">
                         <div class="table-responsive">
-                            <table class="table table-centered table-nowrap table-striped" id="products-datatable">
+                            <table class="table table-centered  table-striped" id="products-datatable">
                                 <thead>
                                     <tr align="center">
                                         <th scope="col">No</th>
-                                        <th scope="col">申請年度</th>
-                                        <th scope="col">客戶名稱</th>
-                                        <th scope="col">專案名稱</th>
-                                        {{-- <th scope="col">主要聯絡人</th>
-                                        <th scope="col">聯絡人職稱</th>
-                                        <th scope="col">聯絡人電話</th> --}}
-                                        <th scope="col">階段</th>
-                                        <th scope="col" style="width: 200px;">操作</th>
+                                        <th scope="col" width="10%">申請年度</th>
+                                        <th scope="col" width="20%">客戶名稱</th>
+                                        <th scope="col" width="40%">專案名稱</th>
+                                        <th scope="col" width="15%">階段</th>
+                                        <th scope="col" width="15%">操作</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     @foreach ($datas as $key => $data)
                                         <tr>
-                                            <td>{{ $key + 1 }}</td>
-                                            <td>{{ $data->year }}年</td>
+                                            <td align="center">{{ $key + 1 }}</td>
+                                            <td align="center">{{ $data->year }}年</td>
                                             <td>
                                                 {{ $data->user_data->name }}
                                             </td>
-                                            {{-- <td>
-                                                @if ($data->type == 0)
-                                                    商業服務業
-                                                @endif
-                                                @if ($data->type == 1)
-                                                    製造業
-                                                @endif
-                                            </td> --}}
                                             <td>
                                                 {{$data->name}}
                                             </td>
-                                            {{-- <td>
-                                                @if (isset($data->project_host))
-                                                    {{ $data->project_host->name }}
-                                                @endif
-                                            </td>
-                                            <td>
-                                                @if (isset($data->project_host))
-                                                    {{ $data->project_host->job }}
-                                                @endif
-                                            </td>
-                                            <td>
-                                                @if (isset($data->project_host))
-                                                    {{ $data->project_host->mobile }}
-                                                @endif
-                                            </td> --}}
-                                            {{-- <td>{{ $data->cust_data->county . $data->cust_data->district . $data->cust_data->address }} --}}
                                             <td align="center">
                                                 @if(isset($data->check_data))
                                                 {{$data->check_data->name}}
