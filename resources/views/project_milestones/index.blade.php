@@ -105,16 +105,18 @@
                         </div>
 
                         <!-- 分頁 -->
-                        @if($datas->hasPages())
-                            <div class="d-flex justify-content-between align-items-center mt-3">
+                        <div class="row mt-3">
+                            <div class="col-sm-12 col-md-6">
                                 <div class="text-muted">
                                     顯示第 {{ $datas->firstItem() }} 到 {{ $datas->lastItem() }} 筆，共 {{ $datas->total() }} 筆資料
                                 </div>
-                                <div>
+                            </div>
+                            <div class="col-sm-12 col-md-6">
+                                <div class="text-end">
                                     {{ $datas->appends(request()->query())->links() }}
                                 </div>
                             </div>
-                        @endif
+                        </div>
                     </div> <!-- end card-body-->
                 </div> <!-- end card-->
             </div> <!-- end col -->
