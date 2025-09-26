@@ -104,16 +104,17 @@
                             </table>
                         </div>
 
-                        <!-- 分頁 -->
-                        <div class="row mt-3">
-                            <div class="col-sm-12 col-md-6">
-                                <div class="text-muted">
-                                    顯示第 {{ $datas->firstItem() }} 到 {{ $datas->lastItem() }} 筆，共 {{ $datas->total() }} 筆資料
-                                </div>
-                            </div>
-                            <div class="col-sm-12 col-md-6">
-                                <div class="text-end">
-                                    {{ $datas->appends(request()->query())->links() }}
+                        <!-- 分頁連結 -->
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="text-muted">
+                                        <i class="mdi mdi-information-outline me-1"></i>
+                                        顯示第 {{ $datas->firstItem() ?? 0 }} 到 {{ $datas->lastItem() ?? 0 }} 筆，共 {{ $datas->total() }} 筆資料
+                                    </div>
+                                    <nav aria-label="分頁導航">
+                                        {{ $datas->appends(request()->query())->links('pagination::custom-bootstrap-5') }}
+                                    </nav>
                                 </div>
                             </div>
                         </div>
