@@ -310,9 +310,13 @@
 
                                 <hr class="mt-3">
                                 <div class="col-md-12 row mt-3 appendix">
-                                    <label for="example-search-input"
-                                        class="col-form-label font-size-18"><b>附件上傳</b>（請上傳公司介紹、產品介紹簡報...等資料）<span
-                                            class="text-danger">*</span></label>
+                                    <label for="example-search-input" class="col-form-label font-size-18"><b>附件上傳：</b><span class="text-danger">*</span><br>
+                                        1.企業與產品服務介紹文件：公司基本介紹、核心產品或服務之簡報、市場定位、經營團隊介紹、組織架構圖等<br>
+                                        2.資格證明文件：<br>
+                                        　◆最近一份公司登記變更資料<br>
+                                        　◆近三年損益及稅額計算表＋資產負債表（國稅局正式收件資料）<br>
+                                        　◆最近一個月納稅義務人違章欠稅查附表（國稅＋地方稅）<br>
+                                        　◆最近一個月投保單位被保險人名冊</label>
                                     <div class="pl-5">
                                         <div class="alert alert-primary" role="alert">
                                             上傳網址： <a href="{{ $cust_data->nas_link }}" target="_blank"
@@ -598,8 +602,7 @@
                                                 {{ $cust_data->carbon_done == '1' ? 'checked' : '' }}>
                                             <label class="form-check-label" for="carbonCheck">是否做過碳盤查？</label>
                                             @if ($cust_data->carbon_done == '0')
-                                                <span class="text-danger"
-                                                    id="carbonCheck_text"></span>
+                                                <span class="text-danger" id="carbonCheck_text"></span>
                                             @elseif($cust_data->carbon_done == '1')
                                                 <span class="text-danger" id="carbonCheck_text">※是，請提供碳排查報告</span>
                                             @endif
@@ -705,14 +708,14 @@
 @endsection
 
 @section('script')
-@if(session('success'))
-    <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            var successModal = new bootstrap.Modal(document.getElementById('success-btn'));
-            successModal.show();
-        });
-    </script>
-@endif
+    @if (session('success'))
+        <script>
+            document.addEventListener("DOMContentLoaded", function() {
+                var successModal = new bootstrap.Modal(document.getElementById('success-btn'));
+                successModal.show();
+            });
+        </script>
+    @endif
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
