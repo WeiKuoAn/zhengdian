@@ -333,6 +333,13 @@ class CustomerController extends Controller
      */
     public function store(Request $request)
     {
+        // 先確認一定有登入者，避免只新增 User 卻沒有 CustData 的情況
+        $loginUser = Auth::user();
+
+        if (!$loginUser) {
+            abort(401, '請先登入再新增帳號');
+        }
+
         $request->validate([
             'name'            => 'required|string|max:255',
             'email'           => 'required|string|max:255|unique:users,email',
@@ -383,10 +390,12 @@ class CustomerController extends Controller
         $custData->address         = $request->address;
         $custData->principal_name  = $request->principal_name;
         $custData->contract_status = $request->contract_status;
-        // 如果登入者是 level 2，就用自己的 group_id，否則用傳進來的 limit_status
-        $custData->limit_status    = (Auth::user()->level == 2)
-            ? Auth::user()->group_id
-            : $request->limit_status;
+
+        if ($loginUser->level == 2) {
+            $custData->limit_status = $loginUser->group_id;
+        } else {
+            $custData->limit_status = $request->limit_status;
+        }
         $custData->save();
 
         // 5. 若有選專案類型，批次新增 CustProject
