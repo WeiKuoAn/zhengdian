@@ -112,6 +112,7 @@
                                         </select>
                                     </div>
                                 </div>
+                                @auth
                                 @if (Auth::user()->level != 2)
                                     <div class="col-md-6">
                                         <div class="mb-3">
@@ -125,6 +126,7 @@
                                         </div>
                                     </div>
                                 @endif
+                                @endauth
                             </div>
 
                     </div>

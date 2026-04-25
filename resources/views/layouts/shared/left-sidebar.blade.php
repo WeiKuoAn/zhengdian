@@ -279,6 +279,13 @@
                 </div> --}}
                 </li>
 
+                <li class="menu-item">
+                    <a href="{{ route('app.chat') }}" class="menu-link {{ request()->is('app/chat') ? 'active' : '' }}">
+                        <span class="menu-icon"><i data-feather="send"></i></span>
+                        <span class="menu-text"> Webhook 管理 </span>
+                    </a>
+                </li>
+
                 {{-- <li class="menu-item">
                 <a class="menu-link" href="#rpg" data-bs-toggle="collapse">
                     <span class="menu-icon"><i data-feather="users"></i></span>

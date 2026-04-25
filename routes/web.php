@@ -3,6 +3,7 @@
 use App\Http\Controllers\AjaxController;
 use App\Http\Controllers\CalendarCategoryController;
 use App\Http\Controllers\CalendarController;
+use App\Http\Controllers\ChatWebhookDashboardController;
 use App\Http\Controllers\CheckStatusController;
 use App\Http\Controllers\ContractStatusController;
 use App\Http\Controllers\CustomerController;
@@ -41,6 +42,8 @@ require __DIR__ . '/auth.php';
 
 Route::middleware(['auth'])->group(function () {
     Route::get('home', [DashboardController::class, 'loginSuccess'])->name('index');
+    Route::get('app/chat', [ChatWebhookDashboardController::class, 'index'])->name('app.chat');
+    Route::post('app/chat/test', [ChatWebhookDashboardController::class, 'testSend'])->name('app.chat.test');
 
     /**/
     Route::get('/get-customer-account/{id}', [ProjectController::class, 'getCustomerAccount']);
