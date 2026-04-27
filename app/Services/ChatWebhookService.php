@@ -6,6 +6,7 @@ use App\Models\ChatWebhookEvent;
 use App\Models\Task;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 
@@ -69,6 +70,52 @@ class ChatWebhookService
             'received' => true,
             'channel_id' => $request->input('channel_id'),
         ]);
+    }
+
+    public function sendIncomingToSynology(string $text): array
+    {
+        $host = rtrim((string) env('SYNOLOGY_CHAT_HOST', ''), '/');
+        $token = trim((string) env('SYNOLOGY_CHAT_TOKEN', ''), "\"' ");
+
+        if ($host === '' || $token === '') {
+            return [
+                'success' => false,
+                'message' => 'SYNOLOGY_CHAT_HOST 或 SYNOLOGY_CHAT_TOKEN 未設定',
+            ];
+        }
+
+        if (trim($text) === '') {
+            return [
+                'success' => false,
+                'message' => '請輸入要發送到 Synology Chat 的文字',
+            ];
+        }
+
+        $url = $host . '/webapi/entry.cgi';
+        $response = Http::asForm()->post($url, [
+            'api' => 'SYNO.Chat.External',
+            'method' => 'incoming',
+            'version' => '2',
+            'token' => $token,
+            'payload' => json_encode([
+                'text' => $text,
+            ], JSON_UNESCAPED_UNICODE),
+        ]);
+
+        $body = $response->json();
+        if ($response->successful() && is_array($body) && ($body['success'] ?? false) === true) {
+            return [
+                'success' => true,
+                'message' => '已送出到 Synology Chat',
+                'data' => $body,
+            ];
+        }
+
+        return [
+            'success' => false,
+            'message' => 'Synology Chat 回傳失敗',
+            'data' => $body,
+        ];
     }
 
     public function handleSlash(ChatWebhookEvent $event, Request $request): array

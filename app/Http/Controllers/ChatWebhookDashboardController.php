@@ -56,8 +56,16 @@ class ChatWebhookDashboardController extends Controller
         $result = match ($request->input('event_type')) {
             'slash' => $this->service->handleSlash($event, $request->merge($payload)),
             'outgoing' => $this->service->handleOutgoing($event, $request->merge($payload)),
-            default => $this->service->handleInbound($event, $request->merge($payload)),
+            default => $this->service->sendIncomingToSynology((string) $request->input('text', '')),
         };
+
+        if ($request->input('event_type') === 'inbound') {
+            $event->update([
+                'status' => ($result['success'] ?? false) ? 'processed' : 'failed',
+                'error_message' => ($result['success'] ?? false) ? null : (($result['message'] ?? 'Inbound push failed')),
+                'processed_at' => now(),
+            ]);
+        }
 
         $flashType = ($result['success'] ?? false) ? 'success' : 'error';
         return redirect()->route('app.chat')->with($flashType, $result['message'] ?? 'Test sent');
