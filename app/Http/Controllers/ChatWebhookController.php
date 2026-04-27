@@ -62,6 +62,11 @@ class ChatWebhookController extends Controller
                 default => $this->service->handleInbound($event, $request),
             };
 
+            if ($this->isSynologyTokenPayload($request)) {
+                $replyText = (string) ($result['message'] ?? 'Webhook received');
+                return response()->json(['text' => $replyText], 200);
+            }
+
             return response()->json([
                 'success' => (bool) ($result['success'] ?? true),
                 'message' => (string) ($result['message'] ?? 'Webhook received and processed'),
@@ -90,5 +95,10 @@ class ChatWebhookController extends Controller
                 'message' => 'Internal webhook processing error',
             ], 500);
         }
+    }
+
+    protected function isSynologyTokenPayload(ChatWebhookRequest $request): bool
+    {
+        return $request->has('_token') || $request->has('token');
     }
 }

@@ -52,8 +52,14 @@ class ChatWebhookService
 
     public function handleOutgoing(ChatWebhookEvent $event, Request $request): array
     {
+        $echoText = trim((string) ($request->input('text') ?? $request->input('message') ?? ''));
+
         return $this->markProcessed($event, 'processed', null, [
-            'echo_text' => (string) ($request->input('text') ?? $request->input('message') ?? ''),
+            'success' => true,
+            'message' => $echoText !== '' ? "收到訊息：{$echoText}" : '收到訊息',
+            'data' => [
+                'echo_text' => $echoText,
+            ],
         ]);
     }
 
@@ -187,15 +193,62 @@ class ChatWebhookService
 
     protected function verifyToken(Request $request): bool
     {
-        $configToken = trim((string) config('chat_webhook.verify_token', ''));
-        if ($configToken === '') {
+        $expectedTokens = $this->resolveExpectedTokensByRequest($request);
+        if (empty($expectedTokens)) {
             return true;
         }
 
         $headerToken = trim((string) $request->header('X-Webhook-Token', ''));
         $bearerToken = trim((string) $request->bearerToken());
+        $payloadToken = trim((string) ($request->input('_token') ?? $request->input('token') ?? ''));
 
-        return hash_equals($configToken, $headerToken) || hash_equals($configToken, $bearerToken);
+        $providedTokens = array_values(array_filter([$headerToken, $bearerToken, $payloadToken], static fn ($v) => $v !== ''));
+        if (empty($providedTokens)) {
+            return false;
+        }
+
+        foreach ($expectedTokens as $expected) {
+            foreach ($providedTokens as $provided) {
+                if (hash_equals($expected, $provided)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    protected function resolveExpectedTokensByRequest(Request $request): array
+    {
+        $tokens = [];
+
+        $baseToken = trim((string) config('chat_webhook.verify_token', ''));
+        if ($baseToken !== '') {
+            $tokens[] = $baseToken;
+        }
+
+        // 相容既有 .env 變數（SYNOLOGY_CHAT_*）
+        $legacyCommon = trim((string) env('SYNOLOGY_CHAT_TOKEN', ''));
+        if ($legacyCommon !== '') {
+            $tokens[] = $legacyCommon;
+        }
+
+        $path = (string) $request->path();
+        if (str_ends_with($path, '/outgoing')) {
+            $legacyOutgoing = trim((string) env('SYNOLOGY_CHAT_OUTGOING_TOKEN', ''));
+            if ($legacyOutgoing !== '') {
+                $tokens[] = $legacyOutgoing;
+            }
+        }
+
+        if (str_ends_with($path, '/slash')) {
+            $legacySlash = trim((string) env('SYNOLOGY_CHAT_SLASH_TOKEN', ''));
+            if ($legacySlash !== '') {
+                $tokens[] = $legacySlash;
+            }
+        }
+
+        return array_values(array_unique(array_filter($tokens, static fn ($v) => $v !== '')));
     }
 
     protected function verifySignature(Request $request): bool

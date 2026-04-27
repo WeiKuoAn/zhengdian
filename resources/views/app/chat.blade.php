@@ -49,10 +49,20 @@
 
                 <div class="card">
                     <div class="card-body">
-                        <h5 class="card-title mb-3">Webhook Endpoints</h5>
+                        <h5 class="card-title mb-3">Webhook 端點資訊</h5>
                         @foreach ($endpoints as $type => $url)
                             <div class="mb-3">
-                                <div class="small text-muted text-uppercase">{{ $type }}</div>
+                                <div class="small text-muted text-uppercase">
+                                    @if ($type === 'outgoing')
+                                        傳出 Webhook
+                                    @elseif($type === 'slash')
+                                        斜線指令
+                                    @elseif($type === 'inbound')
+                                        傳入 Webhook
+                                    @else
+                                        {{ $type }}
+                                    @endif
+                                </div>
                                 <div class="input-group">
                                     <input class="form-control" value="{{ $url }}" readonly>
                                     <button class="btn btn-outline-secondary" type="button"
