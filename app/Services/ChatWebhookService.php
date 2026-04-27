@@ -303,9 +303,9 @@ class ChatWebhookService
         }
 
         $payload = $this->extractPayload($request);
-        $headerToken = trim((string) $request->header('X-Webhook-Token', ''));
-        $bearerToken = trim((string) $request->bearerToken());
-        $payloadToken = trim((string) (($payload['_token'] ?? $payload['token'] ?? '')));
+        $headerToken = trim((string) $request->header('X-Webhook-Token', ''), "\"' ");
+        $bearerToken = trim((string) $request->bearerToken(), "\"' ");
+        $payloadToken = trim((string) (($payload['_token'] ?? $payload['token'] ?? $request->query('token') ?? '')), "\"' ");
 
         $providedTokens = array_values(array_filter([$headerToken, $bearerToken, $payloadToken], static fn ($v) => $v !== ''));
         if (empty($providedTokens)) {
@@ -327,27 +327,27 @@ class ChatWebhookService
     {
         $tokens = [];
 
-        $baseToken = trim((string) config('chat_webhook.verify_token', ''));
+        $baseToken = trim((string) config('chat_webhook.verify_token', ''), "\"' ");
         if ($baseToken !== '') {
             $tokens[] = $baseToken;
         }
 
         // 相容既有 .env 變數（SYNOLOGY_CHAT_*）
-        $legacyCommon = trim((string) env('SYNOLOGY_CHAT_TOKEN', ''));
+        $legacyCommon = trim((string) env('SYNOLOGY_CHAT_TOKEN', ''), "\"' ");
         if ($legacyCommon !== '') {
             $tokens[] = $legacyCommon;
         }
 
         $path = (string) $request->path();
         if (str_ends_with($path, '/outgoing')) {
-            $legacyOutgoing = trim((string) env('SYNOLOGY_CHAT_OUTGOING_TOKEN', ''));
+            $legacyOutgoing = trim((string) env('SYNOLOGY_CHAT_OUTGOING_TOKEN', ''), "\"' ");
             if ($legacyOutgoing !== '') {
                 $tokens[] = $legacyOutgoing;
             }
         }
 
         if (str_ends_with($path, '/slash')) {
-            $legacySlash = trim((string) env('SYNOLOGY_CHAT_SLASH_TOKEN', ''));
+            $legacySlash = trim((string) env('SYNOLOGY_CHAT_SLASH_TOKEN', ''), "\"' ");
             if ($legacySlash !== '') {
                 $tokens[] = $legacySlash;
             }
