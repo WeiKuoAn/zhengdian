@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\ChatWebhookRequest;
 use App\Services\ChatWebhookService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 use RuntimeException;
 use Throwable;
@@ -33,6 +34,12 @@ class ChatWebhookController extends Controller
     protected function handle(ChatWebhookRequest $request, string $eventType): JsonResponse
     {
         try {
+            Log::info('chat_webhook_request_received', [
+                'event_type' => $eventType,
+                'path' => $request->path(),
+                'ip' => $request->ip(),
+            ]);
+
             if ($request->all() === []) {
                 throw ValidationException::withMessages(['payload' => 'Payload cannot be empty']);
             }
@@ -44,6 +51,12 @@ class ChatWebhookController extends Controller
                 $event->update([
                     'status' => 'ignored',
                     'error_message' => $verify['reason'],
+                ]);
+
+                Log::warning('chat_webhook_request_ignored', [
+                    'event_id' => $event->id,
+                    'event_type' => $eventType,
+                    'reason' => $verify['reason'],
                 ]);
 
                 return response()->json([
@@ -64,8 +77,19 @@ class ChatWebhookController extends Controller
 
             if ($this->isSynologyTokenPayload($request)) {
                 $replyText = (string) ($result['message'] ?? 'Webhook received');
+                Log::info('chat_webhook_synology_response', [
+                    'event_id' => $event->id,
+                    'event_type' => $eventType,
+                    'reply_text' => $replyText,
+                ]);
                 return response()->json(['text' => $replyText], 200);
             }
+
+            Log::info('chat_webhook_request_processed', [
+                'event_id' => $event->id,
+                'event_type' => $eventType,
+                'status' => $event->fresh()->status,
+            ]);
 
             return response()->json([
                 'success' => (bool) ($result['success'] ?? true),
@@ -76,6 +100,10 @@ class ChatWebhookController extends Controller
                 ),
             ], (int) ($result['http_status'] ?? 200));
         } catch (ValidationException $exception) {
+            Log::warning('chat_webhook_validation_failed', [
+                'event_type' => $eventType,
+                'errors' => $exception->errors(),
+            ]);
             return response()->json([
                 'success' => false,
                 'message' => $exception->getMessage() ?: 'Invalid payload format',
@@ -89,6 +117,12 @@ class ChatWebhookController extends Controller
                     'error_message' => $exception->getMessage(),
                 ]);
             }
+
+            Log::error('chat_webhook_exception', [
+                'event_type' => $eventType,
+                'event_id' => $event->id ?? null,
+                'message' => $exception->getMessage(),
+            ]);
 
             return response()->json([
                 'success' => false,

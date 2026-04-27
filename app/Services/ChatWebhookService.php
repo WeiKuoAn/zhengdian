@@ -8,6 +8,7 @@ use App\Models\Task;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 
@@ -16,14 +17,31 @@ class ChatWebhookService
     public function verifyRequest(Request $request): array
     {
         if (!$this->verifyIp($request)) {
+            Log::warning('chat_webhook_verify_failed', [
+                'reason' => 'IP not allowed',
+                'ip' => $request->ip(),
+                'path' => $request->path(),
+            ]);
             return ['verified' => false, 'reason' => 'IP not allowed'];
         }
 
-        if (!$this->verifyToken($request)) {
+        $tokenCheck = $this->verifyTokenDetailed($request);
+        if (!$tokenCheck['verified']) {
+            Log::warning('chat_webhook_verify_failed', [
+                'reason' => 'Invalid webhook token',
+                'path' => $request->path(),
+                'provided' => $tokenCheck['provided_masked'],
+                'expected' => $tokenCheck['expected_masked'],
+                'payload' => $this->maskSensitivePayload($this->extractPayload($request)),
+            ]);
             return ['verified' => false, 'reason' => 'Invalid webhook token'];
         }
 
         if (!$this->verifySignature($request)) {
+            Log::warning('chat_webhook_verify_failed', [
+                'reason' => 'Invalid webhook signature',
+                'path' => $request->path(),
+            ]);
             return ['verified' => false, 'reason' => 'Invalid webhook signature'];
         }
 
@@ -108,12 +126,23 @@ class ChatWebhookService
 
         $body = $response->json();
         if ($response->successful() && is_array($body) && ($body['success'] ?? false) === true) {
+            Log::info('chat_webhook_inbound_push_success', [
+                'target' => $host,
+                'text_preview' => Str::limit($text, 60),
+            ]);
             return [
                 'success' => true,
                 'message' => '已送出到 Synology Chat',
                 'data' => $body,
             ];
         }
+
+        Log::error('chat_webhook_inbound_push_failed', [
+            'target' => $host,
+            'http_status' => $response->status(),
+            'response' => $body,
+            'text_preview' => Str::limit($text, 60),
+        ]);
 
         return [
             'success' => false,
@@ -298,30 +327,7 @@ class ChatWebhookService
 
     protected function verifyToken(Request $request): bool
     {
-        $expectedTokens = $this->resolveExpectedTokensByRequest($request);
-        if (empty($expectedTokens)) {
-            return true;
-        }
-
-        $payload = $this->extractPayload($request);
-        $headerToken = trim((string) $request->header('X-Webhook-Token', ''), "\"' ");
-        $bearerToken = trim((string) $request->bearerToken(), "\"' ");
-        $payloadToken = trim((string) (($payload['_token'] ?? $payload['token'] ?? $request->query('token') ?? '')), "\"' ");
-
-        $providedTokens = array_values(array_filter([$headerToken, $bearerToken, $payloadToken], static fn ($v) => $v !== ''));
-        if (empty($providedTokens)) {
-            return false;
-        }
-
-        foreach ($expectedTokens as $expected) {
-            foreach ($providedTokens as $provided) {
-                if (hash_equals($expected, $provided)) {
-                    return true;
-                }
-            }
-        }
-
-        return false;
+        return $this->verifyTokenDetailed($request)['verified'];
     }
 
     protected function resolveExpectedTokensByRequest(Request $request): array
@@ -429,6 +435,73 @@ class ChatWebhookService
             if (is_array($decoded)) {
                 unset($payload['payload']);
                 $payload = array_merge($payload, $decoded);
+            }
+        }
+
+        return $payload;
+    }
+
+    protected function verifyTokenDetailed(Request $request): array
+    {
+        $expectedTokens = $this->resolveExpectedTokensByRequest($request);
+        if (empty($expectedTokens)) {
+            return [
+                'verified' => true,
+                'provided_masked' => [],
+                'expected_masked' => [],
+            ];
+        }
+
+        $payload = $this->extractPayload($request);
+        $headerToken = trim((string) $request->header('X-Webhook-Token', ''), "\"' ");
+        $bearerToken = trim((string) $request->bearerToken(), "\"' ");
+        $payloadToken = trim((string) (($payload['_token'] ?? $payload['token'] ?? $request->query('token') ?? '')), "\"' ");
+
+        $providedTokens = array_values(array_filter([$headerToken, $bearerToken, $payloadToken], static fn ($v) => $v !== ''));
+        if (empty($providedTokens)) {
+            return [
+                'verified' => false,
+                'provided_masked' => [],
+                'expected_masked' => array_map(fn ($v) => $this->maskToken($v), $expectedTokens),
+            ];
+        }
+
+        foreach ($expectedTokens as $expected) {
+            foreach ($providedTokens as $provided) {
+                if (hash_equals($expected, $provided)) {
+                    return [
+                        'verified' => true,
+                        'provided_masked' => array_map(fn ($v) => $this->maskToken($v), $providedTokens),
+                        'expected_masked' => array_map(fn ($v) => $this->maskToken($v), $expectedTokens),
+                    ];
+                }
+            }
+        }
+
+        return [
+            'verified' => false,
+            'provided_masked' => array_map(fn ($v) => $this->maskToken($v), $providedTokens),
+            'expected_masked' => array_map(fn ($v) => $this->maskToken($v), $expectedTokens),
+        ];
+    }
+
+    protected function maskToken(string $token): string
+    {
+        if ($token === '') {
+            return '';
+        }
+        if (strlen($token) <= 8) {
+            return str_repeat('*', strlen($token));
+        }
+
+        return substr($token, 0, 4) . str_repeat('*', max(strlen($token) - 8, 0)) . substr($token, -4);
+    }
+
+    protected function maskSensitivePayload(array $payload): array
+    {
+        foreach (['_token', 'token', 'authorization'] as $key) {
+            if (isset($payload[$key]) && is_string($payload[$key])) {
+                $payload[$key] = $this->maskToken($payload[$key]);
             }
         }
 
