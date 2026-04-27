@@ -56,10 +56,11 @@ class ChatWebhookService
     {
         $payload = $this->extractPayload($request);
         $echoText = trim((string) ($payload['text'] ?? $payload['message'] ?? ''));
+        $replyText = $echoText === '測試' ? '測試給我' : ($echoText !== '' ? "收到訊息：{$echoText}" : '收到訊息');
 
         return $this->markProcessed($event, 'processed', null, [
             'success' => true,
-            'message' => $echoText !== '' ? "收到訊息：{$echoText}" : '收到訊息',
+            'message' => $replyText,
             'data' => [
                 'echo_text' => $echoText,
             ],
@@ -344,12 +345,22 @@ class ChatWebhookService
             if ($legacyOutgoing !== '') {
                 $tokens[] = $legacyOutgoing;
             }
+            // 相容錯置：有些環境會把 slash token 填到 outgoing
+            $legacySlash = trim((string) config('chat_webhook.synology_slash_token', ''), "\"' ");
+            if ($legacySlash !== '') {
+                $tokens[] = $legacySlash;
+            }
         }
 
         if (str_ends_with($path, '/slash')) {
             $legacySlash = trim((string) config('chat_webhook.synology_slash_token', ''), "\"' ");
             if ($legacySlash !== '') {
                 $tokens[] = $legacySlash;
+            }
+            // 相容錯置：有些環境會把 outgoing token 填到 slash
+            $legacyOutgoing = trim((string) config('chat_webhook.synology_outgoing_token', ''), "\"' ");
+            if ($legacyOutgoing !== '') {
+                $tokens[] = $legacyOutgoing;
             }
         }
 
