@@ -3,6 +3,10 @@
 return [
     'provider' => env('CHAT_WEBHOOK_PROVIDER', 'synology_chat'),
     'verify_token' => env('CHAT_WEBHOOK_VERIFY_TOKEN', ''),
+    'synology_host' => env('SYNOLOGY_CHAT_HOST', ''),
+    'synology_token' => env('SYNOLOGY_CHAT_TOKEN', ''),
+    'synology_outgoing_token' => env('SYNOLOGY_CHAT_OUTGOING_TOKEN', ''),
+    'synology_slash_token' => env('SYNOLOGY_CHAT_SLASH_TOKEN', ''),
     'allowed_ips' => array_values(array_filter(array_map(
         static fn ($ip) => trim($ip),
         explode(',', (string) env('CHAT_WEBHOOK_ALLOWED_IPS', ''))

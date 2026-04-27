@@ -77,8 +77,8 @@ class ChatWebhookService
 
     public function sendIncomingToSynology(string $text): array
     {
-        $host = rtrim((string) env('SYNOLOGY_CHAT_HOST', ''), '/');
-        $token = trim((string) env('SYNOLOGY_CHAT_TOKEN', ''), "\"' ");
+        $host = rtrim((string) config('chat_webhook.synology_host', ''), '/');
+        $token = trim((string) config('chat_webhook.synology_token', ''), "\"' ");
 
         if ($host === '' || $token === '') {
             return [
@@ -332,22 +332,22 @@ class ChatWebhookService
             $tokens[] = $baseToken;
         }
 
-        // 相容既有 .env 變數（SYNOLOGY_CHAT_*）
-        $legacyCommon = trim((string) env('SYNOLOGY_CHAT_TOKEN', ''), "\"' ");
+        // 相容既有 Synology token 設定（透過 config 載入，避免 config:cache 失效）
+        $legacyCommon = trim((string) config('chat_webhook.synology_token', ''), "\"' ");
         if ($legacyCommon !== '') {
             $tokens[] = $legacyCommon;
         }
 
         $path = (string) $request->path();
         if (str_ends_with($path, '/outgoing')) {
-            $legacyOutgoing = trim((string) env('SYNOLOGY_CHAT_OUTGOING_TOKEN', ''), "\"' ");
+            $legacyOutgoing = trim((string) config('chat_webhook.synology_outgoing_token', ''), "\"' ");
             if ($legacyOutgoing !== '') {
                 $tokens[] = $legacyOutgoing;
             }
         }
 
         if (str_ends_with($path, '/slash')) {
-            $legacySlash = trim((string) env('SYNOLOGY_CHAT_SLASH_TOKEN', ''), "\"' ");
+            $legacySlash = trim((string) config('chat_webhook.synology_slash_token', ''), "\"' ");
             if ($legacySlash !== '') {
                 $tokens[] = $legacySlash;
             }
