@@ -99,6 +99,15 @@ class ChatWebhookController extends Controller
 
     protected function isSynologyTokenPayload(ChatWebhookRequest $request): bool
     {
-        return $request->has('_token') || $request->has('token');
+        if ($request->has('_token') || $request->has('token')) {
+            return true;
+        }
+
+        if ($request->has('payload') && is_string($request->input('payload'))) {
+            $decoded = json_decode((string) $request->input('payload'), true);
+            return is_array($decoded) && (isset($decoded['_token']) || isset($decoded['token']));
+        }
+
+        return false;
     }
 }

@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\ChatWebhookEvent;
+use App\Models\CustData;
 use App\Models\Task;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -31,7 +32,7 @@ class ChatWebhookService
 
     public function logEvent(Request $request, string $eventType, array $verifyResult): ChatWebhookEvent
     {
-        $payload = $request->all();
+        $payload = $this->extractPayload($request);
         $text = (string) ($payload['text'] ?? $payload['message'] ?? '');
         $command = (string) ($payload['command'] ?? $this->extractCommand($text));
 
@@ -53,7 +54,8 @@ class ChatWebhookService
 
     public function handleOutgoing(ChatWebhookEvent $event, Request $request): array
     {
-        $echoText = trim((string) ($request->input('text') ?? $request->input('message') ?? ''));
+        $payload = $this->extractPayload($request);
+        $echoText = trim((string) ($payload['text'] ?? $payload['message'] ?? ''));
 
         return $this->markProcessed($event, 'processed', null, [
             'success' => true,
@@ -66,9 +68,10 @@ class ChatWebhookService
 
     public function handleInbound(ChatWebhookEvent $event, Request $request): array
     {
+        $payload = $this->extractPayload($request);
         return $this->markProcessed($event, 'processed', null, [
             'received' => true,
-            'channel_id' => $request->input('channel_id'),
+            'channel_id' => $payload['channel_id'] ?? $request->input('channel_id'),
         ]);
     }
 
@@ -120,8 +123,14 @@ class ChatWebhookService
 
     public function handleSlash(ChatWebhookEvent $event, Request $request): array
     {
-        $rawText = trim((string) ($request->input('text') ?? $request->input('message') ?? ''));
-        $commandText = trim((string) ($request->input('command') ?? $rawText));
+        $payload = $this->extractPayload($request);
+        $rawText = trim((string) ($payload['text'] ?? $payload['message'] ?? ''));
+        $commandRaw = trim((string) ($payload['command'] ?? ''));
+
+        // Synology slash 常見格式：command 與 text 分開送，這裡合併成完整命令
+        $commandText = $commandRaw !== ''
+            ? trim($commandRaw . ' ' . $rawText)
+            : $rawText;
 
         if ($commandText === '') {
             return $this->markProcessed($event, 'ignored', null, [
@@ -141,6 +150,20 @@ class ChatWebhookService
     {
         $parts = preg_split('/\s+/', trim($commandText)) ?: [];
         $normalized = implode(' ', array_map(static fn ($part) => strtolower($part), $parts));
+
+        if (preg_match('/^\/?help(?:\s+(.+))?$/i', trim($commandText), $matches)) {
+            $registrationNo = trim((string) ($matches[1] ?? ''));
+            if ($registrationNo !== '') {
+                return $this->findCompanyIntroByRegistrationNo($registrationNo);
+            }
+
+            return [
+                'success' => true,
+                'message' => "可用指令：/help {統編}、/task done {id}、/task show {id}",
+                'data' => ['commands' => ['/help {統編}', '/task done {id}', '/task show {id}']],
+                'http_status' => 200,
+            ];
+        }
 
         if ($normalized === '/help' || $normalized === 'help') {
             return [
@@ -163,6 +186,40 @@ class ChatWebhookService
             'success' => false,
             'message' => 'Unsupported command format. Try /help',
             'http_status' => 422,
+        ];
+    }
+
+    protected function findCompanyIntroByRegistrationNo(string $registrationNo): array
+    {
+        $company = CustData::query()
+            ->where('registration_no', $registrationNo)
+            ->first(['registration_no', 'introduce']);
+
+        if (!$company) {
+            return [
+                'success' => false,
+                'message' => "查無統編 {$registrationNo} 的客戶資料",
+                'http_status' => 422,
+            ];
+        }
+
+        $intro = trim((string) ($company->introduce ?? ''));
+        if ($intro === '') {
+            return [
+                'success' => true,
+                'message' => "統編 {$registrationNo} 已建檔，但尚未填寫公司簡介",
+                'http_status' => 200,
+            ];
+        }
+
+        return [
+            'success' => true,
+            'message' => "統編 {$registrationNo} 公司簡介：{$intro}",
+            'data' => [
+                'registration_no' => $registrationNo,
+                'introduce' => $intro,
+            ],
+            'http_status' => 200,
         ];
     }
 
@@ -245,9 +302,10 @@ class ChatWebhookService
             return true;
         }
 
+        $payload = $this->extractPayload($request);
         $headerToken = trim((string) $request->header('X-Webhook-Token', ''));
         $bearerToken = trim((string) $request->bearerToken());
-        $payloadToken = trim((string) ($request->input('_token') ?? $request->input('token') ?? ''));
+        $payloadToken = trim((string) (($payload['_token'] ?? $payload['token'] ?? '')));
 
         $providedTokens = array_values(array_filter([$headerToken, $bearerToken, $payloadToken], static fn ($v) => $v !== ''));
         if (empty($providedTokens)) {
@@ -346,5 +404,23 @@ class ChatWebhookService
         }
 
         return Str::startsWith($text, '/') ? Str::before($text, ' ') : '';
+    }
+
+    /**
+     * Synology 可能送 x-www-form-urlencoded payload={"text":"..."}，這裡統一展開。
+     */
+    protected function extractPayload(Request $request): array
+    {
+        $payload = $request->all();
+
+        if (isset($payload['payload']) && is_string($payload['payload'])) {
+            $decoded = json_decode($payload['payload'], true);
+            if (is_array($decoded)) {
+                unset($payload['payload']);
+                $payload = array_merge($payload, $decoded);
+            }
+        }
+
+        return $payload;
     }
 }
