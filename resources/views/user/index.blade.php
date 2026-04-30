@@ -12,18 +12,27 @@
                     <div class="card-body">
                         <div class="row mb-2">
                             <div class="col-sm-4">
-                                <a href="{{ route('user.create') }}">
-                                    <button type="button" class="btn btn-danger waves-effect waves-light"><i
-                                            class="mdi mdi-plus-circle me-1"></i> 新增用戶</button>
-                                </a>
+                                <div class="mt-2 mt-sm-0">
+                                    <form method="GET" action="{{ route('users') }}"
+                                        class="d-inline-flex align-items-center flex-nowrap">
+                                        <label for="status_filter" class="me-2 mb-0 text-nowrap">狀態篩選</label>
+                                        <select id="status_filter" name="status_filter" class="form-select form-select-sm"
+                                            style="min-width: 90px;"
+                                            onchange="this.form.submit()">
+                                            <option value="all" {{ ($statusFilter ?? 'enabled') === 'all' ? 'selected' : '' }}>全部</option>
+                                            <option value="enabled" {{ ($statusFilter ?? 'enabled') === 'enabled' ? 'selected' : '' }}>啟用</option>
+                                            <option value="disabled" {{ ($statusFilter ?? 'enabled') === 'disabled' ? 'selected' : '' }}>停用</option>
+                                        </select>
+                                    </form>
+                                </div>
                             </div>
                             <div class="col-sm-8">
-                                {{-- <div class="text-sm-end mt-2 mt-sm-0">
-                                    <button type="button" class="btn btn-success mb-2 me-1"><i
-                                            class="mdi mdi-cog"></i></button>
-                                    <button type="button" class="btn btn-light mb-2 me-1">Import</button>
-                                    <button type="button" class="btn btn-light mb-2">Export</button>
-                                </div> --}}
+                                <div class="text-sm-end mt-2 mt-sm-0">
+                                    <a href="{{ route('user.create') }}">
+                                        <button type="button" class="btn btn-danger waves-effect waves-light"><i
+                                                class="mdi mdi-plus-circle me-1"></i> 新增用戶</button>
+                                    </a>
+                                </div>
                             </div><!-- end col-->
                         </div>
 
@@ -87,8 +96,9 @@
                                                                 href="{{ route('user.edit', $data->id) }}"><i
                                                                     class="mdi mdi-pencil me-2 text-muted font-18 vertical-middle"></i>編輯</a>
                                                             {{-- <a class="dropdown-item" href="#"><i class="mdi mdi-delete me-2 text-muted font-18 vertical-middle"></i>刪除</a> --}}
-                                                            <a class="dropdown-item" href="#"><i
-                                                                    class="mdi mdi-clipboard-text-search me-2 font-18 text-muted vertical-middle"></i>查看派工</a>
+                                                            <a class="dropdown-item"
+                                                                href="{{ route('person.task.calendar.user', $data->id) }}"><i
+                                                                    class="mdi mdi-calendar-month-outline me-2 font-18 text-muted vertical-middle"></i>查看派工行事曆</a>
                                                         </div>
                                                     @endif
                                                 </div>

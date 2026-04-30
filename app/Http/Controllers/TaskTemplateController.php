@@ -12,13 +12,36 @@ class TaskTemplateController extends Controller
     public function getTaskTemplate(Request $request)
     {
         $check_status_id = $request->input('check_status_id');
-        $task_template_ids = TaskTemplate::where('check_status_id', $check_status_id)->orderby('seq', 'asc')->get();
+        $task_template_ids = TaskTemplate::with('check_status_data')
+            ->where('check_status_id', $check_status_id)
+            ->get()
+            ->sort(function ($a, $b) {
+                $aStageSeq = (string) optional($a->check_status_data)->seq;
+                $bStageSeq = (string) optional($b->check_status_data)->seq;
+                $stageCompare = strnatcmp($aStageSeq, $bStageSeq);
+                if ($stageCompare !== 0) {
+                    return $stageCompare;
+                }
+                return strnatcmp((string) ($a->seq ?? ''), (string) ($b->seq ?? ''));
+            })
+            ->values();
         return response()->json($task_template_ids);
     }
 
     public function index(Request $request)
     {
-        $datas = TaskTemplate::orderby('seq', 'asc')->get();
+        $datas = TaskTemplate::with(['check_status_parent_data', 'check_status_data'])
+            ->get()
+            ->sort(function ($a, $b) {
+                $aStageSeq = (string) optional($a->check_status_data)->seq;
+                $bStageSeq = (string) optional($b->check_status_data)->seq;
+                $stageCompare = strnatcmp($aStageSeq, $bStageSeq);
+                if ($stageCompare !== 0) {
+                    return $stageCompare;
+                }
+                return strnatcmp((string) ($a->seq ?? ''), (string) ($b->seq ?? ''));
+            })
+            ->values();
         return view('task_template.index')->with('datas', $datas);
     }
 
@@ -46,6 +69,8 @@ class TaskTemplateController extends Controller
         $data->check_status_parent_id = $request->check_status_parent_id;
         $data->check_status_id = $request->check_status_id;
         $data->description = $request->description;
+        $hours = (float) ($request->input('duration_hours', 0) ?? 0);
+        $data->duration_hours = max(0, $hours);
         $data->created_by = Auth::user()->id;
         $data->save();
         return redirect()->route('TaskTemplate');
@@ -91,6 +116,8 @@ class TaskTemplateController extends Controller
         $data->check_status_parent_id = $request->check_status_parent_id;
         $data->check_status_id = $request->check_status_id;
         $data->description = $request->description;
+        $hours = (float) ($request->input('duration_hours', 0) ?? 0);
+        $data->duration_hours = max(0, $hours);
         $data->created_by = Auth::user()->id;
         $data->save();
         return redirect()->route('TaskTemplate');

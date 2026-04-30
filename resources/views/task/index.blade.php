@@ -108,12 +108,20 @@
                                             <td>{{ $datas->firstItem() + $key }} </td>
                                             <td width="20%">
                                                 @if (isset($data->project_data))
-                                                    {{ $data->project_data->user_data->name }}{{ $data->project_data->name }}
+                                                    {{ optional($data->project_data->user_data)->name }}{{ $data->project_data->name }}
+                                                @elseif(!empty($data->name))
+                                                    {{ $data->name }}
+                                                @else
+                                                    —
                                                 @endif
                                             </td>
                                             <td>
                                                 @if (isset($data->task_template_data))
                                                     {{ $data->task_template_data->name }}
+                                                @elseif(!empty($data->name))
+                                                    {{ $data->name }}
+                                                @else
+                                                    —
                                                 @endif
                                             </td>
                                             <td>
@@ -128,13 +136,15 @@
                                                 @endif
                                             </td>
                                             <td>
-                                                @foreach ($data->items as $item)
-                                                    <span class="badge bg-primary p-1 mb-1">{{ $item->user_data->name }}
+                                                @forelse ($data->items as $item)
+                                                    <span class="badge bg-primary p-1 mb-1">{{ optional($item->user_data)->name ?? '未指定' }}
                                                         @if (isset($item->context))
                                                             （{{ $item->context }}）
                                                         @endif
                                                     </span><br>
-                                                @endforeach
+                                                @empty
+                                                    —
+                                                @endforelse
                                             </td>
                                             <td>
                                                 {{-- @if ($data->status == 0)

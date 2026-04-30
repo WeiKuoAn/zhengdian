@@ -13,7 +13,8 @@ class CustProject extends Model
 
     protected $fillable = ['user_id', 'year', 'type',
         'status', 'name', 'check_limlit', 'check_status',
-        'send_date', 'send_number', 'appendix_status', 'upload_link', 'download_link', 'attached_link'];
+        'send_date', 'send_number', 'appendix_status', 'upload_link', 'download_link', 'attached_link',
+        'calendar_uuid'];
 
     public function user_data()
     {

@@ -77,7 +77,7 @@
                                             <td>{{ $key + 1 }}</td>
                                             <td width="20%">
                                                 @if (isset($data->project_data))
-                                                    {{ $data->project_data->user_data->name }}{{ $data->project_data->name }}
+                                                    {{ optional($data->project_data->user_data)->name }}{{ $data->project_data->name }}
                                                 @endif
                                             </td>
                                             <td>
@@ -129,7 +129,7 @@
                                                 </div>
                                             </td>
                                             <td>{{ $data->estimated_end }}</td>
-                                            <td>{{ $data->user_data->name }}</td>
+                                            <td>{{ optional($data->user_data)->name }}</td>
                                             <td><a href="{{ route('task.check', $data->id) }}" class="action-icon">
                                                 <i class="mdi mdi-eye"></i></a></td>
                                         </tr>

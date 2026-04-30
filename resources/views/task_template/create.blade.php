@@ -43,6 +43,12 @@
                                     <label class="form-label">描述</label>
                                     <input type="text" class="form-control" name="description" value="" >
                                 </div>
+                                <div class="mb-3">
+                                    <label class="form-label">執行時數</label>
+                                    <input type="number" class="form-control" name="duration_hours" value="0"
+                                        min="0" step="0.5">
+                                    <div class="form-text">可自行輸入時數；排程作業會以 8 小時 = 1 天換算執行天數。</div>
+                                </div>
                                 <div class="mb-1">
                                     <label for="project-priority" class="form-label">狀態<span
                                             class="text-danger">*</span></label>

@@ -108,6 +108,12 @@
                         {{-- <span class="badge bg-success rounded-pill ms-auto">4</span> --}}
                     </a>
                 </li>
+                <li class="menu-item">
+                    <a href="{{ route('person.task.calendar') }}" class="menu-link">
+                        <span class="menu-icon"><i data-feather="calendar"></i></span>
+                        <span class="menu-text"> 個人行事曆 </span>
+                    </a>
+                </li>
 
                 <li class="menu-item">
                     <a class="menu-link" href="#sidebarCrm" data-bs-toggle="collapse">
@@ -330,8 +336,8 @@
                                             class="menu-text">用戶列表</span></a>
                                 </li>
                                 <li class="menu-item">
-                                    <a class="menu-link" href="{{ route('users') }}"
-                                        class="{{ request()->is('users') ? 'active' : '' }}"><span
+                                    <a class="menu-link" href="{{ route('user.groups') }}"
+                                        class="{{ request()->is('user/groups') ? 'active' : '' }}"><span
                                             class="menu-text">群組列表</span></a>
                                 </li>
                                 <li class="menu-item">

@@ -80,6 +80,7 @@ export default defineConfig({
                 'resources/js/pages/dashboard-4.init.js',
                 'resources/js/pages/ecommerce-dashboard.init.js',
                 'resources/js/pages/calendar.init.js',
+                'resources/js/pages/calendar.public.js',
                 'resources/js/pages/form-fileuploads.init.js',
                 'resources/js/pages/add-product.init.js',
                 'resources/js/pages/customers.init.js',

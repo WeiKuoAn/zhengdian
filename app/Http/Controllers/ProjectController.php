@@ -763,64 +763,265 @@ class ProjectController extends Controller
 
     public function plan(string $id, Request $request)
     {
-        // 查詢對應的專案
-        $data = CustProject::where('id', $id)->first();
+        $data = CustProject::with('user_data')->where('id', $id)->firstOrFail();
+        $loginUser = Auth::user();
+        $loginUserId = (int) Auth::id();
+        $isLevelTwo = (int) ($loginUser->level ?? 0) === 2;
 
-        // 取得所有的 TaskTemplate
-        $task_templates = TaskTemplate::all();
+        $task_templates = TaskTemplate::with('check_status_data')
+            ->get()
+            ->sort(function ($a, $b) {
+                $aStageSeq = (string) optional($a->check_status_data)->seq;
+                $bStageSeq = (string) optional($b->check_status_data)->seq;
 
-        // 取得對應的 project_milestones
+                // 先依「專案階段設定」的排序（支援 1-2、1-10 這種自然排序）
+                $stageCompare = strnatcmp($aStageSeq, $bStageSeq);
+                if ($stageCompare !== 0) {
+                    return $stageCompare;
+                }
+
+                // 同階段下再依任務模板自身排序
+                return strnatcmp((string) $a->seq, (string) $b->seq);
+            })
+            ->values();
+
         $project_milestones = ProjectMilestones::where('project_id', $id)->get()->keyBy('milestone_type');
 
-        // 將兩者結合
-        $task_datas = $task_templates->map(function ($task) use ($project_milestones) {
+        $users = User::where('status', 1)->where('group_id', 1)->orderBy('name')->get();
+
+        $task_datas = $task_templates->map(function ($task) use ($project_milestones, $loginUserId) {
             $milestone = $project_milestones->get($task->id);
+            $linkedTaskId = $milestone ? ($milestone->linked_task_id ?? null) : null;
+            $linkedTask = $linkedTaskId ? Task::with('items.user_data')->find($linkedTaskId) : null;
+            $myTaskItem = $linkedTask ? $linkedTask->items->firstWhere('user_id', $loginUserId) : null;
+
+            $executorRows = [['user_id' => '', 'context' => '']];
+            if ($linkedTask && $linkedTask->items->isNotEmpty()) {
+                $executorRows = [];
+                foreach ($linkedTask->items as $item) {
+                    $executorRows[] = [
+                        'item_id' => $item->id,
+                        'user_id' => $item->user_id,
+                        'user_name' => optional($item->user_data)->name,
+                        'context' => $item->context ?? '',
+                        'status_value' => (string) $item->status,
+                        'status_text' => $item->status(),
+                    ];
+                }
+            }
+
+            // 實際完成時間以「最後一位派工人員」的完成日期為準（例如 3 位時抓第 3 位）。
+            $formalDateFromAssignee = null;
+            if ($linkedTask && $linkedTask->items->isNotEmpty()) {
+                $lastAssigneeItem = $linkedTask->items->sortBy('id')->last();
+                $lastEndTime = optional($lastAssigneeItem)->end_time;
+                $lastStatus = (int) (optional($lastAssigneeItem)->status ?? 0);
+                if (!empty($lastEndTime) && $lastStatus === 9) {
+                    $formalDateFromAssignee = Carbon::parse($lastEndTime)->format('Y-m-d');
+                }
+            }
+
+            $durationHours = (float) ($task->duration_hours ?? (($task->duration_days ?? 0) * 8));
+            $gapDaysDisplay = $durationHours <= 0 ? 0 : ($durationHours / 8);
+            $gapDays = $gapDaysDisplay <= 0 ? 0 : (int) ceil($gapDaysDisplay);
 
             return (object) [
                 'id' => $task->id,
                 'name' => $task->name,
+                'description' => $task->description ?? '',
                 'check_status_data' => $task->check_status_data,
-                'milestone_date' => $milestone->milestone_date ?? null,
-                'order_date' => $milestone->order_date ?? null,
-                'formal_date' => $milestone->formal_date ?? null,
+                'milestone_date' => $milestone ? ($milestone->milestone_date ?? null) : null,
+                'order_date' => $milestone ? ($milestone->order_date ?? null) : null,
+                'formal_date' => $formalDateFromAssignee ?? ($milestone ? ($milestone->formal_date ?? null) : null),
+                'linked_task_id' => $linkedTaskId,
+                'dispatch_status_text' => $linkedTask ? $linkedTask->status() : '未建立派工',
+                'dispatch_status_value' => $linkedTask->status ?? null,
+                'executor_rows' => $executorRows,
+                'dispatch_comments' => $myTaskItem->context ?? ($linkedTask->comments ?? ''),
+                'my_task_item_id' => $myTaskItem->id ?? null,
+                'my_task_item_status' => isset($myTaskItem->status) ? (int) $myTaskItem->status : null,
+                'can_report_completion' => $myTaskItem !== null,
+                'gap_days' => $gapDays,
+                'gap_days_display' => $gapDaysDisplay,
             ];
         });
 
-        // 返回專案詳情頁面或視圖
+        $planGapDays = $task_datas->map(fn ($row) => (int) ($row->gap_days ?? 0))->values()->all();
+
         return view('project.plan', [
             'data' => $data,
             'request' => $request,
             'task_datas' => $task_datas,
+            'users' => $users,
+            'plan_gap_days' => $planGapDays,
+            'is_level_two' => $isLevelTwo,
         ]);
     }
 
-
     public function plan_update(string $id, Request $request)
     {
-        // 確保請求中包含所需的陣列，若未提供則設置為空陣列
+        if ((int) (Auth::user()->level ?? 0) === 2) {
+            return redirect()
+                ->route('project.plan', $id)
+                ->with('error', '您目前是唯讀權限，無法修改排程內容。');
+        }
+
         $milestone_types = $request->milestone_types ?? [];
         $milestone_dates = $request->milestone_dates ?? [];
         $formal_dates = $request->formal_dates ?? [];
         $order_dates = $request->order_dates ?? [];
+        $linked_task_ids = $request->linked_task_ids ?? [];
 
-        // 刪除屬於該 $id 的所有紀錄
-        ProjectMilestones::where('project_id', $id)->delete();
+        $project = CustProject::with('user_data')->where('id', $id)->firstOrFail();
 
-        // 新增資料
         foreach ($milestone_types as $index => $milestone_type) {
-            ProjectMilestones::create([
-                'project_id' => $id,
-                'milestone_type' => $milestone_type,
-                'order_date' => $order_dates[$index] ?? null,
-                'milestone_date' => $milestone_dates[$index] ?? null,
-                'formal_date' => $formal_dates[$index] ?? null,
-                'formal_date' => $formal_dates[$index] ?? null,
-                'category_id' => '1',
+            if ($milestone_type === null || $milestone_type === '') {
+                continue;
+            }
+
+            $template = TaskTemplate::find($milestone_type);
+            $existing = ProjectMilestones::where('project_id', $id)
+                ->where('milestone_type', $milestone_type)
+                ->first();
+
+            $priorLinkedId = isset($linked_task_ids[$index]) && $linked_task_ids[$index] !== ''
+                ? (int) $linked_task_ids[$index]
+                : ($existing ? ($existing->linked_task_id ?? null) : null);
+
+            $formalDateValue = $formal_dates[$index] ?? null;
+            if ($priorLinkedId) {
+                $linkedTaskForFormal = Task::with('items')->find($priorLinkedId);
+                if ($linkedTaskForFormal && $linkedTaskForFormal->items->isNotEmpty()) {
+                    $lastAssigneeItem = $linkedTaskForFormal->items->sortBy('id')->last();
+                    $lastEndTime = optional($lastAssigneeItem)->end_time;
+                    $lastStatus = (int) (optional($lastAssigneeItem)->status ?? 0);
+                    if (!empty($lastEndTime) && $lastStatus === 9) {
+                        $formalDateValue = Carbon::parse($lastEndTime)->format('Y-m-d');
+                    }
+                }
+            }
+
+            $milestoneRow = ProjectMilestones::updateOrCreate(
+                ['project_id' => $id, 'milestone_type' => $milestone_type],
+                [
+                    'order_date' => $order_dates[$index] ?? null,
+                    'milestone_date' => $milestone_dates[$index] ?? null,
+                    'formal_date' => $formalDateValue,
+                    'category_id' => $existing ? ($existing->category_id ?? '1') : '1',
+                    'linked_task_id' => $priorLinkedId,
+                ]
+            );
+
+            $userRows = array_values(array_filter(
+                (array) $request->input('executor_user_ids.'.$index, []),
+                fn ($v) => $v !== null && $v !== ''
+            ));
+            $contextRows = array_values((array) $request->input('executor_contexts.'.$index, []));
+
+            if ($template && count($userRows) > 0) {
+                $newTaskId = $this->syncPlanDispatchTask(
+                    $project,
+                    $template,
+                    $milestoneRow->linked_task_id,
+                    $userRows,
+                    $contextRows,
+                    $milestone_dates[$index] ?? null,
+                    $order_dates[$index] ?? null
+                );
+                if ($newTaskId !== null) {
+                    $milestoneRow->linked_task_id = $newTaskId;
+
+                    // 若此次更新後已有人員完成時間，實際完成時間仍以最後一位派工人員為準。
+                    $linkedTaskAfterSync = Task::with('items')->find($newTaskId);
+                    if ($linkedTaskAfterSync && $linkedTaskAfterSync->items->isNotEmpty()) {
+                        $lastAssigneeItem = $linkedTaskAfterSync->items->sortBy('id')->last();
+                        $lastEndTime = optional($lastAssigneeItem)->end_time;
+                        $lastStatus = (int) (optional($lastAssigneeItem)->status ?? 0);
+                        if (!empty($lastEndTime) && $lastStatus === 9) {
+                            $milestoneRow->formal_date = Carbon::parse($lastEndTime)->format('Y-m-d');
+                        }
+                    }
+                    $milestoneRow->save();
+                }
+            }
+        }
+
+        if (count($milestone_types) > 0) {
+            $typesInForm = collect($milestone_types)->filter()->values();
+            ProjectMilestones::where('project_id', $id)
+                ->whereNotIn('milestone_type', $typesInForm->all())
+                ->delete();
+        }
+
+        return redirect()->route('project.plan', $id)->with('success', '排程已儲存');
+    }
+
+    /**
+     * 由排程作業建立／更新派工（含多位執行人員）。
+     */
+    protected function syncPlanDispatchTask(
+        CustProject $project,
+        TaskTemplate $template,
+        $linkedTaskId,
+        array $userIds,
+        array $contexts,
+        ?string $milestoneDateStr,
+        ?string $orderDateStr
+    ): ?int {
+        $userIds = array_values(array_filter($userIds, fn ($v) => $v !== null && $v !== ''));
+        if (count($userIds) === 0) {
+            return $linkedTaskId ? (int) $linkedTaskId : null;
+        }
+
+        // 沒有日期時仍要能儲存派工，避免「有指派但存不進去」。
+        $dateStr = $milestoneDateStr ?: $orderDateStr ?: now()->format('Y-m-d');
+
+        while (count($contexts) < count($userIds)) {
+            $contexts[] = '';
+        }
+
+        $projectLabel = ($project->user_data->name ?? '').($project->name ?? '');
+        $taskName = '【'.$projectLabel.'】'.$template->name;
+
+        $comments = implode("\n", array_map(
+            fn ($c) => trim((string) $c),
+            array_slice($contexts, 0, count($userIds))
+        ));
+
+        $task = null;
+        if ($linkedTaskId) {
+            $task = Task::find($linkedTaskId);
+        }
+        if (! $task) {
+            $task = new Task;
+        }
+
+        $task->type = 'group';
+        $task->name = $taskName;
+        $task->project_id = $project->id;
+        $task->template_id = $template->id;
+        $task->check_status_id = $template->check_status_id;
+        $task->created_by = Auth::id();
+        $task->estimated_end = $dateStr.' 17:00:00';
+        $task->priority = 2;
+        if (! $task->exists) {
+            $task->status = '1';
+        }
+        $task->comments = $comments;
+        $task->save();
+
+        TaskItem::where('task_id', $task->id)->delete();
+        foreach ($userIds as $index => $user_id) {
+            TaskItem::create([
+                'user_id' => $user_id,
+                'context' => $contexts[$index] ?? '',
+                'task_id' => $task->id,
+                'status' => '0',
+                'start_time' => Carbon::now()->locale('zh-tw'),
             ]);
         }
 
-        // 返回成功訊息
-        return redirect()->route('project.plan', $id)->with('success', '派工新增成功！');
+        return (int) $task->id;
     }
 
 

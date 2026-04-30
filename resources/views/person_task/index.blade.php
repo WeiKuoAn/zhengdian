@@ -454,8 +454,15 @@
 
 @section('script')
     @vite(['resources/js/pages/kanban.init.js'])
+    <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
     <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            if (window.feather && typeof window.feather.replace === 'function') {
+                window.feather.replace();
+            }
+        });
+
         let currentTaskId = null;
 
         function openTaskModal(taskId) {
@@ -495,7 +502,7 @@
                         2: 'implement',
                         8: 'completed'
                     };
-                    conlose.log(data);
+                    console.log(data);
                     document.getElementById('taskStatus').value = statusMap[data.status] || 'not-started';
                     document.getElementById('end_date').value = data.end_date || '';
                     document.getElementById('end_time').value = data.end_time || '';

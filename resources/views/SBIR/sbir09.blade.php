@@ -27,14 +27,9 @@
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a href="{{ route('project.task', $project->id) }}" aria-expanded="false" class="nav-link">
-                                    派工作業
-                                </a>
-                            </li>
-                            <li class="nav-item">
                                 <a href="{{ route('project.plan', $project->id) }}" aria-expanded="false"
                                     class="nav-link">
-                                    排程作業
+                                    派工排程作業
                                 </a>
                             </li>
                             <li class="nav-item">
@@ -74,6 +69,12 @@
                             <li class="nav-item">
                                 <a href="{{ route('project.accounting', $project->id) }}" aria-expanded="true" class="nav-link ">
                                     經費報表
+                                </a>
+                            </li>
+                            
+                            <li class="nav-item">
+                                <a href="{{ route('projectMilestones.calendar', ['project_id' => $project->id]) }}" aria-expanded="false" class="nav-link">
+                                    專案行事曆
                                 </a>
                             </li>
                             <li class="nav-item">

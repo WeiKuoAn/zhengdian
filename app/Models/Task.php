@@ -49,6 +49,7 @@ class Task extends Model
     public function status()
     {
         $status = [ '' => '無', '1' => '送出派工', '2' => '已接收' , '3' => '執行中', '8' => '人員已完成，待確認', '9' => '已完成'];
-        return $status[$this->status];
+        $statusValue = (string) $this->getAttribute('status');
+        return $status[$statusValue] ?? '未知狀態';
     }
 }

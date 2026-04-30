@@ -11,7 +11,8 @@ class CheckStatus extends Model
         'parent_id',
         'name',
         'status',
-        'seq'
+        'seq',
+        'duration_days',
     ];
 
     public function check_data()

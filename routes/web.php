@@ -50,6 +50,7 @@ Route::middleware(['auth'])->group(function () {
 
     /* 用戶管理 */
     Route::get('users', [UserController::class, 'index'])->name('users');
+    Route::get('user/groups', [UserController::class, 'groups'])->name('user.groups');
     Route::get('user/create', [UserController::class, 'create'])->name('user.create');
     Route::post('user/create', [UserController::class, 'store'])->name('user.create.data');
     Route::get('user/edit/{id}', [UserController::class, 'edit'])->name('user.edit');
@@ -293,11 +294,14 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/job/edit/{id}', [JobController::class, 'update'])->name('job.edit.data');
 
     Route::get('/person/task', [PersonTaskController::class, 'index'])->middleware(['auth'])->name('person.task');
+    Route::get('/person/task/calendar', [PersonTaskController::class, 'calendar'])->middleware(['auth'])->name('person.task.calendar');
+    Route::get('/api/person/task/calendar-events', [PersonTaskController::class, 'calendarEvents'])->middleware(['auth'])->name('person.task.calendar.events');
+    Route::get('/person/task/calendar/{userId}', [PersonTaskController::class, 'userCalendar'])->middleware(['auth'])->name('person.task.calendar.user');
+    Route::get('/api/person/task/calendar-events/{userId}', [PersonTaskController::class, 'userCalendarEvents'])->middleware(['auth'])->name('person.task.calendar.user.events');
     Route::get('/person/task/create', [PersonTaskController::class, 'create'])->name('person.task.create');
     Route::post('/person/task/create', [PersonTaskController::class, 'store'])->name('person.task.create.data');
     Route::get('/person/task/edit/{id}', [PersonTaskController::class, 'show'])->name('person.task.edit');
     Route::post('/person/task/edit/{id}', [PersonTaskController::class, 'update'])->name('person.task.edit.data');
-    Route::get('/person/task/edit/{id}', [TaskController::class, 'edit']);
     Route::get('/person/task/get-task-comments/{taskId}', [PersonTaskController::class, 'getTaskComments']);
 
     // 行事曆類別
@@ -356,3 +360,6 @@ Route::get('', function () {
     Auth::logout();
     return view('auth.login');
 });
+
+Route::get('public/project-calendar/{uuid}', [ProjectMilestonesController::class, 'publicCalendar'])->name('projectMilestones.publicCalendar');
+Route::get('public/api/calendar/events/{uuid}', [CalendarController::class, 'getPublicEvents'])->name('calendar.public.events');

@@ -1,4 +1,4 @@
-@extends('layouts.vertical', ['title' => 'Calendar'])
+@extends('layouts.vertical', ['title' => '行事曆'])
 
 @section('css')
     @vite(['node_modules/fullcalendar/main.min.css'])
@@ -8,7 +8,7 @@
     <!-- Start Content-->
     <div class="container-fluid">
 
-        @include('layouts.shared.page-title' , ['title' => 'Calendar','subtitle' => 'Apps'])
+        @include('layouts.shared.page-title' , ['title' => '行事曆','subtitle' => '排程管理'])
 
         <div class="row">
             <div class="col-12">
@@ -16,50 +16,7 @@
                 <div class="card">
                     <div class="card-body">
                         <div class="row">
-                            <div class="col-lg-3">
-                                <button class="btn btn-lg font-16 btn-primary w-100" id="btn-new-event"><i class="mdi mdi-plus-circle-outline"></i> Create New Event</button>
-
-                                <div id="external-events">
-                                    <br>
-                                    <p class="text-muted">Drag and drop your event or click in the calendar</p>
-                                    <div class="external-event bg-success" data-class="bg-success">
-                                        <i class="mdi mdi-checkbox-blank-circle me-2 vertical-middle"></i>New Theme Release
-                                    </div>
-                                    <div class="external-event bg-info" data-class="bg-info">
-                                        <i class="mdi mdi-checkbox-blank-circle me-2 vertical-middle"></i>My Event
-                                    </div>
-                                    <div class="external-event bg-warning" data-class="bg-warning">
-                                        <i class="mdi mdi-checkbox-blank-circle me-2 vertical-middle"></i>Meet manager
-                                    </div>
-                                    <div class="external-event bg-danger" data-class="bg-danger">
-                                        <i class="mdi mdi-checkbox-blank-circle me-2 vertical-middle"></i>Create New theme
-                                    </div>
-                                </div>
-
-
-                                <div class="mt-5 d-none d-xl-block">
-                                    <h5 class="text-center">How It Works ?</h5>
-
-                                    <ul class="ps-3">
-                                        <li class="text-muted mb-3">
-                                            It has survived not only five centuries, but also the leap into electronic
-                                            typesetting, remaining essentially unchanged.
-                                        </li>
-                                        <li class="text-muted mb-3">
-                                            Richard McClintock, a Latin professor at Hampden-Sydney College in Virginia,
-                                            looked up one of the more obscure Latin words, consectetur, from a Lorem Ipsum
-                                            passage.
-                                        </li>
-                                        <li class="text-muted mb-3">
-                                            It has survived not only five centuries, but also the leap into electronic
-                                            typesetting, remaining essentially unchanged.
-                                        </li>
-                                    </ul>
-                                </div>
-
-                            </div> <!-- end col-->
-
-                            <div class="col-lg-9">
+                            <div class="col-12">
                                 <div id="calendar"></div>
                             </div> <!-- end col -->
 
@@ -73,40 +30,40 @@
                         <div class="modal-content">
                             <div class="modal-header py-3 px-4 border-bottom-0 d-block">
                                 <button type="button" class="btn-close float-end" data-bs-dismiss="modal" aria-label="Close"></button>
-                                <h5 class="modal-title" id="modal-title">Event</h5>
+                                <h5 class="modal-title" id="modal-title">行事曆事件</h5>
                             </div>
                             <div class="modal-body px-4 pb-4 pt-0">
                                 <form class="needs-validation" name="event-form" id="form-event" novalidate>
                                     <div class="row">
                                         <div class="col-12">
                                             <div class="mb-3">
-                                                <label class="form-label">Event Name</label>
-                                                <input class="form-control" placeholder="Insert Event Name" type="text" name="title" id="event-title" required />
-                                                <div class="invalid-feedback">Please provide a valid event name</div>
+                                                <label class="form-label">行事曆名稱</label>
+                                                <input class="form-control" placeholder="請輸入事件名稱" type="text" name="title" id="event-title" required />
+                                                <div class="invalid-feedback">請輸入行事曆名稱</div>
                                             </div>
                                         </div>
                                         <div class="col-12">
                                             <div class="mb-3">
-                                                <label class="form-label">Category</label>
+                                                <label class="form-label">行事曆類別</label>
                                                 <select class="form-select" name="category" id="event-category" required>
-                                                    <option value="bg-danger" selected>Danger</option>
-                                                    <option value="bg-success">Success</option>
-                                                    <option value="bg-primary">Primary</option>
-                                                    <option value="bg-info">Info</option>
-                                                    <option value="bg-dark">Dark</option>
-                                                    <option value="bg-warning">Warning</option>
+                                                    <option value="bg-danger" selected>紅色</option>
+                                                    <option value="bg-success">綠色</option>
+                                                    <option value="bg-primary">藍色</option>
+                                                    <option value="bg-info">青色</option>
+                                                    <option value="bg-dark">深色</option>
+                                                    <option value="bg-warning">黃色</option>
                                                 </select>
-                                                <div class="invalid-feedback">Please select a valid event category</div>
+                                                <div class="invalid-feedback">請選擇事件類別</div>
                                             </div>
                                         </div>
                                     </div>
                                     <div class="row mt-2">
                                         <div class="col-md-6 col-4">
-                                            <button type="button" class="btn btn-danger" id="btn-delete-event">Delete</button>
+                                            <button type="button" class="btn btn-danger" id="btn-delete-event">刪除</button>
                                         </div>
                                         <div class="col-md-6 col-8 text-end">
-                                            <button type="button" class="btn btn-light me-1" data-bs-dismiss="modal">Close</button>
-                                            <button type="submit" class="btn btn-success" id="btn-save-event">Save</button>
+                                            <button type="button" class="btn btn-light me-1" data-bs-dismiss="modal">關閉</button>
+                                            <button type="submit" class="btn btn-success" id="btn-save-event">儲存</button>
                                         </div>
                                     </div>
                                 </form>

@@ -7,6 +7,8 @@ use App\Models\ProjectMilestones;
 use App\Models\CheckStatus;
 use App\Models\User;
 use App\Models\CalendarCategory;
+use App\Models\CustProject;
+use Illuminate\Support\Str;
 
 class ProjectMilestonesController extends Controller
 {
@@ -26,11 +28,27 @@ class ProjectMilestonesController extends Controller
         return response()->json($events);
     }
 
-    public function calendar()
+    public function calendar(Request $request)
     {
         $calendar_categorys = CalendarCategory::where('status', 'up')->get();
-        $datas = ProjectMilestones::all();
-        return view('project_milestones.calendar', compact('datas' , 'calendar_categorys'));
+        $projectId = $request->integer('project_id');
+        $project = null;
+
+        if (!empty($projectId)) {
+            $project = CustProject::with('user_data')->findOrFail($projectId);
+            if (empty($project->calendar_uuid)) {
+                $project->calendar_uuid = (string) Str::uuid();
+                $project->save();
+            }
+        }
+
+        return view('project_milestones.calendar', compact('calendar_categorys', 'projectId', 'project'));
+    }
+
+    public function publicCalendar(string $uuid)
+    {
+        $project = CustProject::with('user_data')->where('calendar_uuid', $uuid)->firstOrFail();
+        return view('project_milestones.public_calendar', compact('project'));
     }
 
     public function project_search(Request $request)

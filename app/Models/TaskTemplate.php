@@ -12,6 +12,9 @@ class TaskTemplate extends Model
         'check_status_id',
         'name',
         'description',
+        'duration_days',
+        'duration_hours',
+        'status',
         'seq',
         'created_by'
     ];

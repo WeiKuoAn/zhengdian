@@ -34,7 +34,12 @@ class TaskController extends Controller
             'status' => $task->status,
             'items' => $task->items->map(function ($item) {
                 return [
+                    'id' => $item->id,
                     'user_id' => $item->user_id,
+                    'user_name' => optional($item->user_data)->name,
+                    'status' => (int) $item->status,
+                    'status_text' => $item->status(),
+                    'end_time' => $item->end_time,
                     'context' => $item->context ?? '', // 如果 context 為 null，設置為空字串
                 ];
             }),
@@ -56,6 +61,7 @@ class TaskController extends Controller
             'in-progress' => 1, // 進行中
             'implement' => 2,   // 執行中
             'completed' => 8,   // 已完成
+            'confirmed' => 9,   // 主管確認完成
         ];
 
         if (array_key_exists($validated['status'], $statusMapping)) {
@@ -102,10 +108,16 @@ class TaskController extends Controller
             } elseif (in_array(2, $allStatuses)) {
                 // 存在 status = 2 的任務項目，則進入「執行中」
                 $newTaskStatus = 3;
+            } elseif (count(array_unique($allStatuses)) === 1 && $allStatuses[0] == 9) {
+                // **所有** taskItems 的 status 都是 9，則整體為「已完成」
+                $newTaskStatus = 9;
+                Task::where('id', $taskId)->update(['actual_end' => Carbon::now()]);
             } elseif (count(array_unique($allStatuses)) === 1 && $allStatuses[0] == 8) {
                 // **所有** taskItems 的 status 都是 8，則進入「人員已完成，待確認」狀態
                 $newTaskStatus = 8;
-                Task::where('id', $taskId)->update(['actual_end' => Carbon::now()]);
+            } elseif (count(array_diff($allStatuses, [8, 9])) === 0 && in_array(8, $allStatuses)) {
+                // 若為 8/9 混合，尚有待確認，維持「待確認」
+                $newTaskStatus = 8;
             } else {
                 // 其他狀況則維持「送出派工」
                 $newTaskStatus = 1;
@@ -130,7 +142,10 @@ class TaskController extends Controller
     {
         $task_templates = TaskTemplate::get();
         $users = User::where('status', 1)->where('group_id', 1)->get();
-        $datas = Task::query();
+        $datas = Task::query()
+            ->with(['project_data.user_data', 'task_template_data', 'items.user_data'])
+            ->whereNotNull('project_id')
+            ->whereNotNull('template_id');
 
         // 如果提供了 task_template_id，過濾數據
         $task_template_id = $request->input('task_template_id');
@@ -164,12 +179,14 @@ class TaskController extends Controller
             ->where('name', 'like', '%' . $project_name . '%')
             ->pluck('id'); // 獲取符合條件的用戶 ID 列表
             $projectIds = CustProject::where('name', 'like', '%' . $project_name . '%')->orWhereIn('user_id',$userIds)->pluck('id'); // 獲取符合條件的用戶 ID 列表
-
-            $datas->whereIn('project_id', $projectIds); // 篩選出符合用戶 ID 的專案
+            $datas->where(function ($query) use ($projectIds, $project_name) {
+                $query->whereIn('project_id', $projectIds)
+                    ->orWhere('name', 'like', '%' . $project_name . '%');
+            });
         }
 
-        // 排序優先級，然後按預計結束時間排序，並分頁顯示50筆
-        $datas = $datas->orderBy('priority', 'asc')->orderBy('estimated_end', 'asc')->paginate(50);
+        // 依預計完成時間最新到最舊排序，並分頁顯示50筆
+        $datas = $datas->orderBy('estimated_end', 'desc')->paginate(50);
         return view('task.index')->with('datas', $datas)->with('request', $request)->with('task_templates', $task_templates)->with('users', $users);
     }
 

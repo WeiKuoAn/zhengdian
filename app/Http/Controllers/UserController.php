@@ -14,11 +14,33 @@ class UserController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
         $groups = UserGroup::whereNotIn('id', [2])->get();
-        $datas = User::whereNotIn('group_id', [2])->orderby('level', 'asc')->get();
-        return view('user.index')->with('datas', $datas)->with('groups', $groups);
+        $statusFilter = $request->input('status_filter', 'enabled');
+
+        $datasQuery = User::whereNotIn('group_id', [2]);
+        if ($statusFilter === 'enabled') {
+            $datasQuery->where(function ($q) {
+                $q->where('status', '0')
+                  ->orWhereNull('status');
+            });
+        } elseif ($statusFilter === 'disabled') {
+            $datasQuery->whereNotNull('status')->where('status', '!=', '0');
+        }
+
+        $datas = $datasQuery->orderby('level', 'asc')->get();
+
+        return view('user.index')
+            ->with('datas', $datas)
+            ->with('groups', $groups)
+            ->with('statusFilter', $statusFilter);
+    }
+
+    public function groups()
+    {
+        $datas = UserGroup::whereNotIn('id', [2])->orderBy('id', 'asc')->get();
+        return view('user.groups')->with('datas', $datas);
     }
 
     /**

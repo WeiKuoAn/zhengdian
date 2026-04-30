@@ -29,6 +29,7 @@
                                         <th scope="col">專案狀態</th>
                                         <th scope="col">專案階段</th>
                                         <th scope="col">派工項目</th>
+                                        <th scope="col">執行時數</th>
                                         <th scope="col">操作</th>
                                     </tr>
                                 </thead>
@@ -39,6 +40,7 @@
                                             <td>{{ $data->check_status_parent_data->name }}</td>
                                             <td>{{ $data->check_status_data->name }}</td>
                                             <td>{{ $data->name }}</td>
+                                            <td>{{ $data->duration_hours !== null ? rtrim(rtrim(number_format((float) $data->duration_hours, 2, '.', ''), '0'), '.') . ' 小時' : '—' }}</td>
                                             <td>
                                                 <a href="{{ route('TaskTemplate.edit', $data->id) }}" class="action-icon"> <i
                                                         class="mdi mdi-square-edit-outline"></i></a>

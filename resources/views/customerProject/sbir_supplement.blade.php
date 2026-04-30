@@ -519,13 +519,13 @@
                                                                     @endif
                                                                     <span class="question-number" style="{{ $item->is_urgent && !$item->is_confirmed ? 'color: #dc3545 !important;' : '' }}">Q{{ $index + 1 }}</span>
                                                                     <span class="question-title">{{ $item->question }}</span>
-                                                                </div>
+                                                            </div>
                                                                 <div class="status-badges">
-                                                                    @if ($item->is_urgent)
+                                                                @if ($item->is_urgent)
                                                                         <span class="badge bg-danger">緊急</span>
-                                                                    @else
+                                                                @else
                                                                         <span class="badge bg-secondary">一般</span>
-                                                                    @endif
+                                                                @endif
                                                                     <small class="text-muted ms-2">{{ $item->date }}</small>
                                                                 </div>
                                                             </div>
@@ -554,7 +554,7 @@
                                                                               rows="2" 
                                                                               readonly 
                                                                               style="background-color: #f9fafb; border-radius: 1rem; border: 2px solid #e5e7eb; padding: 0.75rem;">{{ $item->note }}</textarea>
-                                                                </div>
+                                                        </div>
                                                             @endif
                                                         </div>
                                                     </div>

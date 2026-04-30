@@ -62,6 +62,95 @@ class PersonTaskController extends Controller
         ]);
     }
 
+    public function calendar()
+    {
+        $user = Auth::user();
+        return view('person_task.calendar', [
+            'calendarUserId' => $user->id,
+            'calendarUserName' => $user->name,
+            'calendarTitle' => '個人行事曆',
+            'calendarSubtitle' => '個人待辦',
+        ]);
+    }
+
+    public function calendarEvents()
+    {
+        return response()->json($this->buildCalendarEvents((int) Auth::id()));
+    }
+
+    public function userCalendar($userId)
+    {
+        $user = User::findOrFail($userId);
+        return view('person_task.calendar', [
+            'calendarUserId' => (int) $user->id,
+            'calendarUserName' => $user->name,
+            'calendarTitle' => '派工行事曆',
+            'calendarSubtitle' => '用戶管理',
+        ]);
+    }
+
+    public function userCalendarEvents($userId)
+    {
+        return response()->json($this->buildCalendarEvents((int) $userId));
+    }
+
+    private function buildCalendarEvents(int $userId)
+    {
+        $events = TaskItem::with(['task_data.project_data.user_data', 'task_data.task_template_data'])
+            ->where('user_id', $userId)
+            ->whereHas('task_data', function ($query) {
+                $query->whereNotNull('estimated_end');
+            })
+            ->get()
+            ->map(function ($item) {
+                $task = $item->task_data;
+                $projectName = $task?->project_data?->name ?? '未指定專案';
+                $templateName = $task?->task_template_data?->name ?? '未指定任務';
+                $context = trim((string) ($item->context ?? ''));
+                $dispatchTask = $templateName;
+
+                $detailLines = [];
+                $detailLines[] = '任務名稱：' . $templateName;
+                if ($context !== '') {
+                    $detailLines[] = '派工內容：' . $context;
+                }
+                if (!empty($task?->comments)) {
+                    $detailLines[] = '任務描述：' . $task->comments;
+                }
+                if (!empty($item->end_time)) {
+                    $detailLines[] = '完成時間：' . Carbon::parse($item->end_time)->format('Y-m-d H:i');
+                }
+
+                $statusClass = match ((string) ($item->status ?? '0')) {
+                    '9' => 'bg-success',
+                    '8' => 'bg-warning',
+                    '2' => 'bg-info',
+                    default => 'bg-primary',
+                };
+
+                $estimatedDate = null;
+                if (!empty($task?->estimated_end)) {
+                    $estimatedDate = Carbon::parse($task->estimated_end)->format('Y-m-d');
+                }
+
+                return [
+                    'id' => $item->id,
+                    'title' => $projectName,
+                    'start' => $estimatedDate,
+                    'allDay' => true,
+                    'className' => $statusClass,
+                    'extendedProps' => [
+                        'project_name' => $projectName,
+                        'dispatch_task' => $dispatchTask,
+                        'detail' => implode("\n", $detailLines),
+                    ],
+                ];
+            })
+            ->values();
+
+        return $events;
+    }
+
     public function getTaskComments($taskId)
     {
         $task = TaskItem::join('task', 'task_item.task_id', '=', 'task.id')
@@ -139,16 +228,18 @@ class PersonTaskController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show(TaskItem $task)
+    public function show($id)
     {
+        $task = TaskItem::findOrFail($id);
+
         // 檢查是否存在 end_time，並分離日期和時間部分
-        $endTime = $task->end_time ? Carbon::parse($task->end_time) : null;
+        $endTime = $task->getAttribute('end_time') ? Carbon::parse($task->getAttribute('end_time')) : null;
 
         return response()->json([
-            'status' => $task->status,
+            'status' => (int) ($task->getAttribute('status') ?? 0),
             'end_date' => $endTime ? $endTime->format('Y-m-d') : null, // 提取日期部分
             'end_time' => $endTime ? $endTime->format('H:i') : null,   // 提取時間部分
-            'execution_time' => $task->execution_time, // 執行時間
+            'execution_time' => $task->getAttribute('done_time'), // 執行時間
         ]);
     }
 

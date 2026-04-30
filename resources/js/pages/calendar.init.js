@@ -12,7 +12,7 @@ import timeGridPlugin from '@fullcalendar/timegrid';
 import listPlugin from '@fullcalendar/list';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import { Modal } from "bootstrap";
-import bootstrapPlugin from '@fullcalendar/bootstrap';
+import zhTwLocale from '@fullcalendar/core/locales/zh-tw';
 
 !function ($) {
     "use strict";
@@ -21,6 +21,9 @@ import bootstrapPlugin from '@fullcalendar/bootstrap';
         this.$body = $("body");
         this.$modal = $('#event-modal');
         this.$calendar = $('#calendar');
+        const projectIdRaw = this.$calendar.data('project-id');
+        this.projectId = projectIdRaw ? parseInt(projectIdRaw, 10) : null;
+        this.hoverOnly = String(this.$calendar.data('hover-only') || '') === '1';
         this.$formEvent = $("#form-event");
         this.$btnNewEvent = $("#btn-new-event");
         this.$btnDeleteEvent = $("#btn-delete-event");
@@ -41,6 +44,7 @@ import bootstrapPlugin from '@fullcalendar/bootstrap';
         $.ajax({
             url: "/api/calendar/events",
             method: "GET",
+            data: this.projectId ? { project_id: this.projectId } : {},
             success: function (response) {
                 let events = response.map(event => ({
                     id: event.id,
@@ -63,6 +67,9 @@ import bootstrapPlugin from '@fullcalendar/bootstrap';
         this.$formEvent.removeClass("was-validated");
 
         this.$newEventData = null;
+        if (this.hoverOnly) {
+            return;
+        }
         this.$btnDeleteEvent.show();
         this.$modalTitle.text('編輯行事曆事件');
         this.$modal.show();
@@ -89,6 +96,9 @@ import bootstrapPlugin from '@fullcalendar/bootstrap';
         this.$newEventData = info;
         this.$btnDeleteEvent.hide();
         this.$modalTitle.text('新增行事曆事件');
+        if (this.hoverOnly) {
+            return;
+        }
 
         this.$modal.show();
         this.$calendarObj.unselect();
@@ -106,9 +116,17 @@ import bootstrapPlugin from '@fullcalendar/bootstrap';
         var $this = this;
 
         this.$calendarObj = new Calendar(this.$calendar[0], {
-            plugins: [dayGridPlugin, bootstrapPlugin, interactionPlugin, listPlugin, timeGridPlugin],
+            plugins: [dayGridPlugin, interactionPlugin, listPlugin, timeGridPlugin],
+            locale: zhTwLocale,
             initialView: 'dayGridMonth',
-            themeSystem: 'bootstrap',
+            displayEventTime: false,
+            buttonText: {
+                today: '今天',
+                month: '月',
+                week: '週',
+                day: '日',
+                list: '列表'
+            },
             headerToolbar: {
                 left: 'prev,next today',
                 center: 'title',
@@ -128,20 +146,58 @@ import bootstrapPlugin from '@fullcalendar/bootstrap';
             },
             eventDrop: function (info) {
                 updateEvent(info.event);
+            },
+            eventDidMount: function (info) {
+                const detail = info.event.extendedProps.detail || info.event.title || '';
+                info.el.setAttribute('title', detail);
+            },
+            eventContent: function (arg) {
+                const projectName = arg.event.extendedProps.project_name || '';
+                const taskName = arg.event.extendedProps.task_name || arg.event.title || '';
+                const wrap = document.createElement('div');
+
+                const projectLine = document.createElement('span');
+                projectLine.style.display = 'block';
+                projectLine.style.lineHeight = '1.2';
+                projectLine.style.whiteSpace = 'nowrap';
+                projectLine.style.overflow = 'hidden';
+                projectLine.style.textOverflow = 'ellipsis';
+                projectLine.textContent = projectName;
+
+                const taskLine = document.createElement('span');
+                taskLine.style.display = 'block';
+                taskLine.style.lineHeight = '1.2';
+                taskLine.style.whiteSpace = 'nowrap';
+                taskLine.style.overflow = 'hidden';
+                taskLine.style.textOverflow = 'ellipsis';
+                taskLine.textContent = taskName;
+
+                wrap.appendChild(projectLine);
+                wrap.appendChild(taskLine);
+                return { domNodes: [wrap] };
             }
         });
+
+        if (this.hoverOnly) {
+            this.$calendarObj.setOption('editable', false);
+            this.$calendarObj.setOption('selectable', false);
+            this.$calendarObj.setOption('eventStartEditable', false);
+            this.$calendarObj.setOption('eventDurationEditable', false);
+        }
 
         this.$calendarObj.render();
     };
 
     // 新增 / 更新事件
     function saveEvent(eventId = null, start = null) {
+        const app = $.CalendarApp;
         var eventData = {
             id: eventId,
             title: $("#event-title").val(),
             start: start ? start : $("#event-start").val(),
             end: $("#event-end").val() ? $("#event-end").val() : null,
-            className: $("#event-category").val()
+            className: $("#event-category").val(),
+            project_id: app && app.projectId ? app.projectId : null
         };
 
         $.ajax({
@@ -183,9 +239,11 @@ import bootstrapPlugin from '@fullcalendar/bootstrap';
 
     // 刪除事件
     function deleteEvent(eventId) {
+        const app = $.CalendarApp;
         $.ajax({
             url: "/api/calendar/events/" + eventId,
             method: "DELETE",
+            data: app && app.projectId ? { project_id: app.projectId } : {},
             success: function () {
                 $("#event-modal").modal("hide");
                 location.reload();
