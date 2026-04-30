@@ -125,8 +125,32 @@ class ChatWebhookService
             'token' => $token,
         ]);
 
+        Log::info('synology_payload_debug', [
+            'url' => $url,
+            'payload' => json_encode($payload, JSON_UNESCAPED_UNICODE),
+            'user_ids' => $payload['user_ids'] ?? [],
+        ]);
+
         $response = Http::asForm()->post($url, [
             'payload' => json_encode($payload, JSON_UNESCAPED_UNICODE),
+        ]);
+
+        // TEMPORARY TEST - remove after debugging
+        $testPayload = [
+            'text' => '執行人員：<@魏國安>，這是測試訊息',
+            'user_ids' => [40],
+        ];
+        Http::asForm()->post($url, [
+            'payload' => json_encode($testPayload, JSON_UNESCAPED_UNICODE),
+        ]);
+
+        // TEMPORARY TEST 2
+        $testPayload2 = [
+            'text' => '執行人員：魏國安，這是測試訊息2',
+            'user_ids' => [40],
+        ];
+        Http::asForm()->post($url, [
+            'payload' => json_encode($testPayload2, JSON_UNESCAPED_UNICODE),
         ]);
 
         $body = $response->json();
