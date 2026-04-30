@@ -122,7 +122,7 @@ class ChatWebhookService
 
         $url = $host . '/webapi/entry.cgi?' . http_build_query([
             'api' => 'SYNO.Chat.External',
-            'method' => 'incoming',
+            'method' => !empty($userIds) ? 'chatbot' : 'incoming',
             'version' => '2',
             'token' => $token,
         ]);
