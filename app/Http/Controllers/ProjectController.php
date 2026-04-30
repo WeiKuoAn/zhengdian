@@ -45,13 +45,20 @@ class ProjectController extends Controller
         string $taskName,
         string $scheduledDate,
         string $dispatchContent,
-        array $executorNames
+        array $executors
     ): void {
-        $mentions = collect($executorNames)
-            ->filter()
-            ->unique()
+        $mentionText = collect($executors)
+            ->filter(fn ($row) => !empty($row['name']))
+            ->unique('id')
             ->values()
-            ->map(fn ($name) => '@' . $name)
+            ->map(function ($row) {
+                $name = (string) $row['name'];
+                $userId = $row['id'] ?? null;
+                if (!empty($userId)) {
+                    return '[@' . $name . '](' . route('person.task.calendar.user', $userId) . ')';
+                }
+                return '@' . $name;
+            })
             ->implode('、');
 
         $text = implode("\n", [
@@ -59,7 +66,7 @@ class ProjectController extends Controller
             '表定時間：' . $scheduledDate,
             '專案名稱：' . ($project->name ?? ''),
             '派工內容：' . $dispatchContent,
-            '執行人員：' . ($mentions !== '' ? $mentions : '未指定'),
+            '執行人員：' . ($mentionText !== '' ? $mentionText : '未指定'),
         ]);
 
         $result = app(ChatWebhookService::class)->sendIncomingToSynology($text);
@@ -1025,10 +1032,11 @@ class ProjectController extends Controller
         $projectLabel = ($project->user_data->name ?? '').($project->name ?? '');
         $taskName = '【'.$projectLabel.'】'.$template->name;
 
-        $comments = implode("\n", array_map(
+        $cleanContexts = array_values(array_filter(array_map(
             fn ($c) => trim((string) $c),
             array_slice($contexts, 0, count($userIds))
-        ));
+        )));
+        $comments = implode("\n", $cleanContexts);
 
         $task = null;
         if ($linkedTaskId) {
@@ -1053,11 +1061,11 @@ class ProjectController extends Controller
         $task->save();
 
         TaskItem::where('task_id', $task->id)->delete();
-        $executorNames = [];
+        $executors = [];
         foreach ($userIds as $index => $user_id) {
             $user = User::find($user_id);
             if ($user && !empty($user->name)) {
-                $executorNames[] = $user->name;
+                $executors[] = ['id' => $user->id, 'name' => $user->name];
             }
             TaskItem::create([
                 'user_id' => $user_id,
@@ -1068,12 +1076,13 @@ class ProjectController extends Controller
             ]);
         }
 
+        $dispatchContent = $comments !== '' ? $comments : ((string) ($template->description ?? $template->name));
         $this->sendDispatchWebhookMessage(
             $project,
             $taskName,
             $dateStr,
-            $comments,
-            $executorNames
+            $dispatchContent,
+            $executors
         );
 
         return (int) $task->id;
@@ -1112,11 +1121,11 @@ class ProjectController extends Controller
 
         // 抓取儲存後的 task_id
         $task_id = $data->id;
-        $executorNames = [];
+        $executors = [];
         foreach ($user_ids as $index => $user_id) {
             $user = User::find($user_id);
             if ($user && !empty($user->name)) {
-                $executorNames[] = $user->name;
+                $executors[] = ['id' => $user->id, 'name' => $user->name];
             }
             // 儲存資料到資料庫或其他操作
             TaskItem::create([
@@ -1131,12 +1140,17 @@ class ProjectController extends Controller
         $project = CustProject::find($id);
         if ($project) {
             $scheduledDate = $request->estimated_end_date ?: Carbon::now()->format('Y-m-d');
+            $template = TaskTemplate::find($request->template_id);
+            $dispatchContent = trim((string) ($request->comments ?? ''));
+            if ($dispatchContent === '') {
+                $dispatchContent = (string) ($template->description ?? $template->name ?? $data->name);
+            }
             $this->sendDispatchWebhookMessage(
                 $project,
                 (string) $data->name,
                 $scheduledDate,
-                (string) ($request->comments ?? ''),
-                $executorNames
+                $dispatchContent,
+                $executors
             );
         }
         return redirect()->route('project.task', $id)->with('success', '派工新增成功！');
@@ -1180,11 +1194,11 @@ class ProjectController extends Controller
         $user_ids = $request->input('user_ids');
         $contexts = $request->input('contexts');
 
-        $executorNames = [];
+        $executors = [];
         foreach ($user_ids as $index => $user_id) {
             $user = User::find($user_id);
             if ($user && !empty($user->name)) {
-                $executorNames[] = $user->name;
+                $executors[] = ['id' => $user->id, 'name' => $user->name];
             }
             TaskItem::create([
                 'user_id' => $user_id,
@@ -1197,12 +1211,17 @@ class ProjectController extends Controller
         $project = CustProject::find($request->project_id);
         if ($project) {
             $scheduledDate = $request->estimated_end_date ?: Carbon::now()->format('Y-m-d');
+            $template = TaskTemplate::find($request->template_id);
+            $dispatchContent = trim((string) ($request->comments ?? ''));
+            if ($dispatchContent === '') {
+                $dispatchContent = (string) ($template->description ?? $template->name ?? $data->name);
+            }
             $this->sendDispatchWebhookMessage(
                 $project,
                 (string) $data->name,
                 $scheduledDate,
-                (string) ($request->comments ?? ''),
-                $executorNames
+                $dispatchContent,
+                $executors
             );
         }
 
