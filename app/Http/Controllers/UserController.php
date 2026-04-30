@@ -62,6 +62,7 @@ class UserController extends Controller
         // 创建用户
         $user = User::create([
             'name' => $request->name,
+            'synology_user_id' => $request->synology_user_id,
             'email' => $request->email,
             'job_id' => $request->job_id,
             'password' => Hash::make($request->password),
@@ -139,6 +140,7 @@ class UserController extends Controller
         $data->group_id = $request->group_id;
         $data->job_id = $request->job_id;
         $data->status = $request->status;
+        $data->synology_user_id = $request->synology_user_id;
         $data->save();
         return redirect()->route('users');
     }

@@ -31,6 +31,11 @@
                                         <input type="text" class="form-control" id="AddNew-Username" name="email">
                                     </div>
                                     <div class="mb-3">
+                                        <label class="form-label" for="synology-user-id">Synology Chat ID</label>
+                                        <input type="number" min="1" class="form-control" id="synology-user-id"
+                                            name="synology_user_id">
+                                    </div>
+                                    <div class="mb-3">
                                         <label class="form-label" for="AddNew-Email">密碼</label>
                                         <input type="text" class="form-control" id="AddNew-Email" name="password">
                                     </div>

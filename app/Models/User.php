@@ -18,6 +18,7 @@ class User extends Authenticatable
      */
     protected $fillable = [
         'name',
+        'synology_user_id',
         'email',
         'password',
         'level',

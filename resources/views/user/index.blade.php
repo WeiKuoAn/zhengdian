@@ -45,6 +45,7 @@
                                         <th scope="col" width="30%">帳號</th>
                                         <th scope="col">群組</th>
                                         <th scope="col">職稱</th>
+                                        <th scope="col">Synology Chat ID</th>
                                         <th scope="col">等級</th>
                                         <th scope="col">權限</th>
                                         <th scope="col" style="width: 200px;">動作</th>
@@ -66,6 +67,7 @@
                                                     {{ $data->job_data->name }}
                                                 @endif
                                             </td>
+                                            <td>{{ $data->synology_user_id ?? '-' }}</td>
                                             <td>
                                                 <span class="badge badge-soft-success font-size-14">
                                                     @if ($data->level == 0)

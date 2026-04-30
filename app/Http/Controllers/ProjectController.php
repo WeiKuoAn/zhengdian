@@ -87,7 +87,13 @@ class ProjectController extends Controller
             ->values()
             ->map(function ($row) {
                 $name = (string) $row['name'];
-                return '<@' . $name . '>';
+                $chatUserId = \App\Models\User::where('name', $name)
+                    ->whereNotNull('synology_user_id')
+                    ->value('synology_user_id');
+
+                return $chatUserId
+                    ? '<@' . $chatUserId . '|' . $name . '>'
+                    : $name;
             })
             ->implode('、');
 

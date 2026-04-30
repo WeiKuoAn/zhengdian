@@ -27,6 +27,11 @@
                                         <input type="text" class="form-control" id="AddNew-Username" name="name" value="{{ $data->name }}">
                                     </div>
                                     <div class="mb-3">
+                                        <label class="form-label" for="synology-user-id">Synology Chat ID</label>
+                                        <input type="number" min="1" class="form-control" id="synology-user-id"
+                                            name="synology_user_id" value="{{ $data->synology_user_id }}">
+                                    </div>
+                                    <div class="mb-3">
                                         <label class="form-label">群組</label>
                                         <select class="form-select" name="group_id">
                                             @foreach ($groups as $group)
