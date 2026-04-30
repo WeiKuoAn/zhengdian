@@ -113,12 +113,14 @@ class ChatWebhookService
             ];
         }
 
-        $url = $host . '/webapi/entry.cgi';
-        $response = Http::asForm()->post($url, [
+        $url = $host . '/webapi/entry.cgi?' . http_build_query([
             'api' => 'SYNO.Chat.External',
             'method' => 'incoming',
             'version' => '2',
             'token' => $token,
+        ]);
+
+        $response = Http::asForm()->post($url, [
             'payload' => json_encode([
                 'text' => $text,
             ], JSON_UNESCAPED_UNICODE),
