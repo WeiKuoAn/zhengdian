@@ -95,10 +95,20 @@
                                                             <a class="dropdown-item"
                                                                 href="{{ route('user.edit', $data->id) }}"><i
                                                                     class="mdi mdi-pencil me-2 text-muted font-18 vertical-middle"></i>編輯</a>
-                                                            {{-- <a class="dropdown-item" href="#"><i class="mdi mdi-delete me-2 text-muted font-18 vertical-middle"></i>刪除</a> --}}
                                                             <a class="dropdown-item"
                                                                 href="{{ route('person.task.calendar.user', $data->id) }}"><i
                                                                     class="mdi mdi-calendar-month-outline me-2 font-18 text-muted vertical-middle"></i>查看派工行事曆</a>
+                                                            @if ((int) Auth::user()->level === 0)
+                                                                <form action="{{ route('user.del.data', $data->id) }}"
+                                                                    method="POST"
+                                                                    onsubmit="return confirm('確定要刪除此帳號嗎？此動作無法復原。');">
+                                                                    @csrf
+                                                                    <button type="submit" class="dropdown-item text-danger">
+                                                                        <i
+                                                                            class="mdi mdi-delete me-2 font-18 vertical-middle"></i>刪除
+                                                                    </button>
+                                                                </form>
+                                                            @endif
                                                         </div>
                                                     @endif
                                                 </div>

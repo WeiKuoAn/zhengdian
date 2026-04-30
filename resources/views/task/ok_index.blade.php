@@ -74,7 +74,7 @@
                                 <tbody>
                                     @foreach ($datas as $key => $data)
                                         <tr>
-                                            <td>{{ $key + 1 }}</td>
+                                            <td>{{ ($datas->currentPage() - 1) * $datas->perPage() + $key + 1 }}</td>
                                             <td width="20%">
                                                 @if (isset($data->project_data))
                                                     {{ optional($data->project_data->user_data)->name }}{{ $data->project_data->name }}
@@ -136,6 +136,9 @@
                                     @endforeach
                                 </tbody>
                             </table>
+                        </div>
+                        <div class="mt-3 d-flex justify-content-end">
+                            {{ $datas->links() }}
                         </div>
                     </div> <!-- end card-body-->
                 </div> <!-- end card-->

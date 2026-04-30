@@ -55,6 +55,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('user/create', [UserController::class, 'store'])->name('user.create.data');
     Route::get('user/edit/{id}', [UserController::class, 'edit'])->name('user.edit');
     Route::post('user/edit/{id}', [UserController::class, 'update'])->name('user.edit.data');
+    Route::post('user/del/{id}', [UserController::class, 'destroy'])->name('user.del.data');
 
     /* 客戶管理 */
     Route::middleware(['auth'])->group(function () {

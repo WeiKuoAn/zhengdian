@@ -8,6 +8,7 @@ use App\Models\UserGroup;
 use App\Models\Job;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Http\RedirectResponse;
 
 class UserController extends Controller
 {
@@ -145,8 +146,24 @@ class UserController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(string $id): RedirectResponse
     {
-        //
+        $currentUser = Auth::user();
+        if ((int) ($currentUser->level ?? -1) !== 0) {
+            abort(403, '只有超級管理者可以刪除帳號');
+        }
+
+        if ((int) $currentUser->id === (int) $id) {
+            return redirect()->route('users')->with('error', '不可刪除目前登入中的帳號');
+        }
+
+        $targetUser = User::findOrFail($id);
+        if ((int) ($targetUser->level ?? -1) === 0) {
+            return redirect()->route('users')->with('error', '不可刪除超級管理者帳號');
+        }
+
+        $targetUser->delete();
+
+        return redirect()->route('users')->with('success', '帳號已刪除');
     }
 }

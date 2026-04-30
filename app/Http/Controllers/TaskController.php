@@ -433,7 +433,12 @@ class TaskController extends Controller
 
 
         // 排序優先級，然後按預計結束時間排序
-        $datas = $datas->where('status', '9')->orderBy('priority', 'asc')->orderBy('estimated_end', 'asc')->get();
+        $datas = $datas->with(['project_data.user_data', 'task_template_data', 'items.user_data', 'user_data'])
+            ->where('status', '9')
+            ->orderBy('priority', 'asc')
+            ->orderBy('estimated_end', 'asc')
+            ->paginate(50)
+            ->appends($request->query());
         return view('task.ok_index')->with('datas', $datas)->with('request', $request)->with('task_templates', $task_templates)->with('users', $users);
     }
 

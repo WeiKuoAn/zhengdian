@@ -2,7 +2,7 @@
 
 @section('content')
     <div class="container-fluid">
-        @include('layouts.shared.page-title', ['title' => '用戶管理', 'subtitle' => '群組列表'])
+        @include('layouts.shared.page-title', ['title' => '群組管理', 'subtitle' => '群組管理'])
 
         <div class="row">
             <div class="col-12">
@@ -24,7 +24,7 @@
                                             <td>{{ $key + 1 }}</td>
                                             <td>{{ $data->name }}</td>
                                             <td>
-                                                @if (($data->status ?? 'up') === 'up')
+                                                @if (in_array((string) ($data->status ?? '0'), ['up', '0', 'enabled'], true))
                                                     <span class="badge bg-success">啟用</span>
                                                 @else
                                                     <span class="badge bg-danger">停用</span>

@@ -338,7 +338,7 @@
                                 <li class="menu-item">
                                     <a class="menu-link" href="{{ route('user.groups') }}"
                                         class="{{ request()->is('user/groups') ? 'active' : '' }}"><span
-                                            class="menu-text">群組列表</span></a>
+                                            class="menu-text">群組管理</span></a>
                                 </li>
                                 <li class="menu-item">
                                     <a class="menu-link" href="{{ route('user.create') }}"
