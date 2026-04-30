@@ -40,6 +40,40 @@ use App\Services\ChatWebhookService;
 
 class ProjectController extends Controller
 {
+    protected function normalizeExecutorRows(array $executors): array
+    {
+        return collect($executors)
+            ->map(function ($row) {
+                return [
+                    'id' => (int) ($row['id'] ?? 0),
+                    'name' => trim((string) ($row['name'] ?? '')),
+                ];
+            })
+            ->filter(fn ($row) => $row['id'] > 0 || $row['name'] !== '')
+            ->sortBy([
+                ['id', 'asc'],
+                ['name', 'asc'],
+            ])
+            ->values()
+            ->all();
+    }
+
+    protected function shouldSendDispatchWebhook(
+        ?string $oldDate,
+        ?string $oldContent,
+        array $oldExecutors,
+        ?string $newDate,
+        ?string $newContent,
+        array $newExecutors
+    ): bool {
+        $normalizeDate = static fn ($date) => trim((string) $date);
+        $normalizeContent = static fn ($content) => trim((string) $content);
+
+        return $normalizeDate($oldDate) !== $normalizeDate($newDate)
+            || $normalizeContent($oldContent) !== $normalizeContent($newContent)
+            || $this->normalizeExecutorRows($oldExecutors) !== $this->normalizeExecutorRows($newExecutors);
+    }
+
     protected function sendDispatchWebhookMessage(
         CustProject $project,
         string $taskName,
@@ -53,11 +87,7 @@ class ProjectController extends Controller
             ->values()
             ->map(function ($row) {
                 $name = (string) $row['name'];
-                $userId = $row['id'] ?? null;
-                if (!empty($userId)) {
-                    return '[@' . $name . '](' . route('person.task.calendar.user', $userId) . ')';
-                }
-                return '@' . $name;
+                return '<@' . $name . '>';
             })
             ->implode('、');
 
@@ -1046,6 +1076,19 @@ class ProjectController extends Controller
             $task = new Task;
         }
 
+        $oldExecutors = [];
+        $oldDate = null;
+        $oldContent = null;
+        if ($task->exists) {
+            $task->loadMissing('items.user_data');
+            $oldDate = !empty($task->estimated_end) ? Carbon::parse($task->estimated_end)->format('Y-m-d') : null;
+            $oldContent = (string) ($task->comments ?? '');
+            $oldExecutors = $task->items->map(fn ($item) => [
+                'id' => (int) $item->user_id,
+                'name' => (string) (optional($item->user_data)->name ?? ''),
+            ])->all();
+        }
+
         $task->type = 'group';
         $task->name = $taskName;
         $task->project_id = $project->id;
@@ -1076,14 +1119,27 @@ class ProjectController extends Controller
             ]);
         }
 
-        $dispatchContent = $comments !== '' ? $comments : ((string) ($template->description ?? $template->name));
-        $this->sendDispatchWebhookMessage(
-            $project,
-            $taskName,
-            $dateStr,
-            $dispatchContent,
-            $executors
-        );
+        $shouldSend = !$task->wasRecentlyCreated && $task->exists
+            ? $this->shouldSendDispatchWebhook(
+                $oldDate,
+                $oldContent,
+                $oldExecutors,
+                $dateStr,
+                $comments,
+                $executors
+            )
+            : true;
+
+        if ($shouldSend) {
+            $dispatchContent = $comments !== '' ? $comments : ((string) ($template->description ?? $template->name));
+            $this->sendDispatchWebhookMessage(
+                $project,
+                $taskName,
+                $dateStr,
+                $dispatchContent,
+                $executors
+            );
+        }
 
         return (int) $task->id;
     }
@@ -1159,6 +1215,14 @@ class ProjectController extends Controller
     public function task_update(string $id, Request $request)
     {
         $data = Task::findOrFail($id);
+        $data->loadMissing('items.user_data');
+        $oldDate = !empty($data->estimated_end) ? Carbon::parse($data->estimated_end)->format('Y-m-d') : null;
+        $oldContent = (string) ($data->comments ?? '');
+        $oldExecutors = $data->items->map(fn ($item) => [
+            'id' => (int) $item->user_id,
+            'name' => (string) (optional($item->user_data)->name ?? ''),
+        ])->all();
+
         $data->project_id = $request->project_id;
         $data->type = 'group';
         $data->name = $request->name;
@@ -1216,13 +1280,23 @@ class ProjectController extends Controller
             if ($dispatchContent === '') {
                 $dispatchContent = (string) ($template->description ?? $template->name ?? $data->name);
             }
-            $this->sendDispatchWebhookMessage(
-                $project,
-                (string) $data->name,
+            $shouldSend = $this->shouldSendDispatchWebhook(
+                $oldDate,
+                $oldContent,
+                $oldExecutors,
                 $scheduledDate,
-                $dispatchContent,
+                (string) ($request->comments ?? ''),
                 $executors
             );
+            if ($shouldSend) {
+                $this->sendDispatchWebhookMessage(
+                    $project,
+                    (string) $data->name,
+                    $scheduledDate,
+                    $dispatchContent,
+                    $executors
+                );
+            }
         }
 
         return redirect()->route('project.task', $request->project_id)->with('success', '派工新增成功！');
