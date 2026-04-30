@@ -92,7 +92,7 @@ class ProjectController extends Controller
                     ->value('synology_user_id');
 
                 return [
-                    'mention' => $chatUserId ? '<@' . $chatUserId . '>' : $name,
+                    'mention' => '@' . $name,
                     'chat_id' => $chatUserId,
                 ];
             });
