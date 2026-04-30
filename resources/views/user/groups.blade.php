@@ -24,7 +24,7 @@
                                             <td>{{ $key + 1 }}</td>
                                             <td>{{ $data->name }}</td>
                                             <td>
-                                                @if (in_array((string) ($data->status ?? '0'), ['up', '0', 'enabled'], true))
+                                                @if (in_array((string) ($data->status ?? '0'), ['up', '0', '1', 'enabled'], true))
                                                     <span class="badge bg-success">啟用</span>
                                                 @else
                                                     <span class="badge bg-danger">停用</span>
