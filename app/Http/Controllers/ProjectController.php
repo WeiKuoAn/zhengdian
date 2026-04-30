@@ -33,10 +33,45 @@ use App\Models\ManufactureThreeIncome;
 use App\Models\ManufactureAvoid;
 use App\Models\ManufactureIso;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
 use App\Models\MeetData;
+use App\Services\ChatWebhookService;
 
 class ProjectController extends Controller
 {
+    protected function sendDispatchWebhookMessage(
+        CustProject $project,
+        string $taskName,
+        string $scheduledDate,
+        string $dispatchContent,
+        array $executorNames
+    ): void {
+        $mentions = collect($executorNames)
+            ->filter()
+            ->unique()
+            ->values()
+            ->map(fn ($name) => '@' . $name)
+            ->implode('、');
+
+        $text = implode("\n", [
+            '專案網址：' . route('project.plan', $project->id),
+            '表定時間：' . $scheduledDate,
+            '專案名稱：' . ($project->name ?? ''),
+            '派工內容：' . $dispatchContent,
+            '執行人員：' . ($mentions !== '' ? $mentions : '未指定'),
+        ]);
+
+        $result = app(ChatWebhookService::class)->sendIncomingToSynology($text);
+        if (!($result['success'] ?? false)) {
+            Log::warning('dispatch_webhook_send_failed', [
+                'project_id' => $project->id,
+                'task_name' => $taskName,
+                'message' => $result['message'] ?? 'unknown error',
+            ]);
+        }
+    }
+
     public function getCustomerAccount($id)
     {
         $customer = user::find($id);
@@ -871,6 +906,7 @@ class ProjectController extends Controller
         $formal_dates = $request->formal_dates ?? [];
         $order_dates = $request->order_dates ?? [];
         $linked_task_ids = $request->linked_task_ids ?? [];
+        $hasLinkedTaskColumn = Schema::hasColumn('project_milestones', 'linked_task_id');
 
         $project = CustProject::with('user_data')->where('id', $id)->firstOrFail();
 
@@ -901,15 +937,19 @@ class ProjectController extends Controller
                 }
             }
 
+            $payload = [
+                'order_date' => $order_dates[$index] ?? null,
+                'milestone_date' => $milestone_dates[$index] ?? null,
+                'formal_date' => $formalDateValue,
+                'category_id' => $existing ? ($existing->category_id ?? '1') : '1',
+            ];
+            if ($hasLinkedTaskColumn) {
+                $payload['linked_task_id'] = $priorLinkedId;
+            }
+
             $milestoneRow = ProjectMilestones::updateOrCreate(
                 ['project_id' => $id, 'milestone_type' => $milestone_type],
-                [
-                    'order_date' => $order_dates[$index] ?? null,
-                    'milestone_date' => $milestone_dates[$index] ?? null,
-                    'formal_date' => $formalDateValue,
-                    'category_id' => $existing ? ($existing->category_id ?? '1') : '1',
-                    'linked_task_id' => $priorLinkedId,
-                ]
+                $payload
             );
 
             $userRows = array_values(array_filter(
@@ -929,7 +969,9 @@ class ProjectController extends Controller
                     $order_dates[$index] ?? null
                 );
                 if ($newTaskId !== null) {
-                    $milestoneRow->linked_task_id = $newTaskId;
+                    if ($hasLinkedTaskColumn) {
+                        $milestoneRow->linked_task_id = $newTaskId;
+                    }
 
                     // 若此次更新後已有人員完成時間，實際完成時間仍以最後一位派工人員為準。
                     $linkedTaskAfterSync = Task::with('items')->find($newTaskId);
@@ -1011,7 +1053,12 @@ class ProjectController extends Controller
         $task->save();
 
         TaskItem::where('task_id', $task->id)->delete();
+        $executorNames = [];
         foreach ($userIds as $index => $user_id) {
+            $user = User::find($user_id);
+            if ($user && !empty($user->name)) {
+                $executorNames[] = $user->name;
+            }
             TaskItem::create([
                 'user_id' => $user_id,
                 'context' => $contexts[$index] ?? '',
@@ -1020,6 +1067,14 @@ class ProjectController extends Controller
                 'start_time' => Carbon::now()->locale('zh-tw'),
             ]);
         }
+
+        $this->sendDispatchWebhookMessage(
+            $project,
+            $taskName,
+            $dateStr,
+            $comments,
+            $executorNames
+        );
 
         return (int) $task->id;
     }
@@ -1057,7 +1112,12 @@ class ProjectController extends Controller
 
         // 抓取儲存後的 task_id
         $task_id = $data->id;
+        $executorNames = [];
         foreach ($user_ids as $index => $user_id) {
+            $user = User::find($user_id);
+            if ($user && !empty($user->name)) {
+                $executorNames[] = $user->name;
+            }
             // 儲存資料到資料庫或其他操作
             TaskItem::create([
                 'user_id' => $user_id,
@@ -1066,6 +1126,18 @@ class ProjectController extends Controller
                 'status' => '0',
                 'start_time' => Carbon::now()->locale('zh-tw'),
             ]);
+        }
+
+        $project = CustProject::find($id);
+        if ($project) {
+            $scheduledDate = $request->estimated_end_date ?: Carbon::now()->format('Y-m-d');
+            $this->sendDispatchWebhookMessage(
+                $project,
+                (string) $data->name,
+                $scheduledDate,
+                (string) ($request->comments ?? ''),
+                $executorNames
+            );
         }
         return redirect()->route('project.task', $id)->with('success', '派工新增成功！');
     }
@@ -1108,13 +1180,30 @@ class ProjectController extends Controller
         $user_ids = $request->input('user_ids');
         $contexts = $request->input('contexts');
 
+        $executorNames = [];
         foreach ($user_ids as $index => $user_id) {
+            $user = User::find($user_id);
+            if ($user && !empty($user->name)) {
+                $executorNames[] = $user->name;
+            }
             TaskItem::create([
                 'user_id' => $user_id,
                 'context' => $contexts[$index],
                 'task_id' => $id,
                 'status' => $taskItemStatus, // 確保新建的 TaskItem 也同步狀態
             ]);
+        }
+
+        $project = CustProject::find($request->project_id);
+        if ($project) {
+            $scheduledDate = $request->estimated_end_date ?: Carbon::now()->format('Y-m-d');
+            $this->sendDispatchWebhookMessage(
+                $project,
+                (string) $data->name,
+                $scheduledDate,
+                (string) ($request->comments ?? ''),
+                $executorNames
+            );
         }
 
         return redirect()->route('project.task', $request->project_id)->with('success', '派工新增成功！');
