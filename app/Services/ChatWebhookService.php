@@ -94,7 +94,7 @@ class ChatWebhookService
         ]);
     }
 
-    public function sendIncomingToSynology(string $text): array
+    public function sendIncomingToSynology(string $text, array $userIds = []): array
     {
         $host = rtrim((string) config('chat_webhook.synology_host', ''), '/');
         $token = trim((string) config('chat_webhook.synology_token', ''), "\"' ");
@@ -113,6 +113,11 @@ class ChatWebhookService
             ];
         }
 
+        $payload = ['text' => $text];
+        if (!empty($userIds)) {
+            $payload['user_ids'] = array_values(array_map('intval', $userIds));
+        }
+
         $url = $host . '/webapi/entry.cgi?' . http_build_query([
             'api' => 'SYNO.Chat.External',
             'method' => 'incoming',
@@ -121,9 +126,7 @@ class ChatWebhookService
         ]);
 
         $response = Http::asForm()->post($url, [
-            'payload' => json_encode([
-                'text' => $text,
-            ], JSON_UNESCAPED_UNICODE),
+            'payload' => json_encode($payload, JSON_UNESCAPED_UNICODE),
         ]);
 
         $body = $response->json();

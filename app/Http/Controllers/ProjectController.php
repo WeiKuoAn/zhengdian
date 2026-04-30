@@ -81,7 +81,7 @@ class ProjectController extends Controller
         string $dispatchContent,
         array $executors
     ): void {
-        $mentionText = collect($executors)
+        $executorData = collect($executors)
             ->filter(fn ($row) => !empty($row['name']))
             ->unique('id')
             ->values()
@@ -91,11 +91,14 @@ class ProjectController extends Controller
                     ->whereNotNull('synology_user_id')
                     ->value('synology_user_id');
 
-                return $chatUserId
-                    ? '<@' . $chatUserId . '|' . $name . '>'
-                    : $name;
-            })
-            ->implode('、');
+                return [
+                    'mention' => $chatUserId ? '<@' . $chatUserId . '>' : $name,
+                    'chat_id' => $chatUserId,
+                ];
+            });
+
+        $mentionText = $executorData->pluck('mention')->implode('、');
+        $userIds = $executorData->pluck('chat_id')->filter()->values()->toArray();
 
         $text = implode("\n", [
             '專案網址：' . route('project.plan', $project->id),
@@ -105,7 +108,7 @@ class ProjectController extends Controller
             '執行人員：' . ($mentionText !== '' ? $mentionText : '未指定'),
         ]);
 
-        $result = app(ChatWebhookService::class)->sendIncomingToSynology($text);
+        $result = app(ChatWebhookService::class)->sendIncomingToSynology($text, $userIds);
         if (!($result['success'] ?? false)) {
             Log::warning('dispatch_webhook_send_failed', [
                 'project_id' => $project->id,
