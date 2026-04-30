@@ -97,12 +97,14 @@ class ChatWebhookService
     public function sendIncomingToSynology(string $text, array $userIds = []): array
     {
         $host = rtrim((string) config('chat_webhook.synology_host', ''), '/');
-        $token = trim((string) config('chat_webhook.synology_token', ''), "\"' ");
+        $token = !empty($userIds)
+            ? trim((string) config('chat_webhook.synology_bot_token', ''), "\"' ")
+            : trim((string) config('chat_webhook.synology_token', ''), "\"' ");
 
         if ($host === '' || $token === '') {
             return [
                 'success' => false,
-                'message' => 'SYNOLOGY_CHAT_HOST 或 SYNOLOGY_CHAT_TOKEN 未設定',
+                'message' => 'Synology Chat host 或 token 未設定',
             ];
         }
 
@@ -125,40 +127,18 @@ class ChatWebhookService
             'token' => $token,
         ]);
 
-        Log::info('synology_payload_debug', [
-            'url' => $url,
+        Log::info('synology_chat_send', [
+            'token_type' => !empty($userIds) ? 'bot' : 'incoming_webhook',
+            'user_ids' => $userIds,
             'payload' => json_encode($payload, JSON_UNESCAPED_UNICODE),
-            'user_ids' => $payload['user_ids'] ?? [],
         ]);
 
         $response = Http::asForm()->post($url, [
             'payload' => json_encode($payload, JSON_UNESCAPED_UNICODE),
         ]);
 
-        // TEMPORARY TEST - remove after debugging
-        $testPayload = [
-            'text' => '執行人員：<@魏國安>，這是測試訊息',
-            'user_ids' => [40],
-        ];
-        Http::asForm()->post($url, [
-            'payload' => json_encode($testPayload, JSON_UNESCAPED_UNICODE),
-        ]);
-
-        // TEMPORARY TEST 2
-        $testPayload2 = [
-            'text' => '執行人員：魏國安，這是測試訊息2',
-            'user_ids' => [40],
-        ];
-        Http::asForm()->post($url, [
-            'payload' => json_encode($testPayload2, JSON_UNESCAPED_UNICODE),
-        ]);
-
         $body = $response->json();
         if ($response->successful() && is_array($body) && ($body['success'] ?? false) === true) {
-            Log::info('chat_webhook_inbound_push_success', [
-                'target' => $host,
-                'text_preview' => Str::limit($text, 60),
-            ]);
             return [
                 'success' => true,
                 'message' => '已送出到 Synology Chat',
@@ -166,11 +146,9 @@ class ChatWebhookService
             ];
         }
 
-        Log::error('chat_webhook_inbound_push_failed', [
-            'target' => $host,
+        Log::error('synology_chat_send_failed', [
             'http_status' => $response->status(),
             'response' => $body,
-            'text_preview' => Str::limit($text, 60),
         ]);
 
         return [
