@@ -22,21 +22,25 @@ return new class extends Migration
 
         DB::statement("SET SESSION sql_mode = '{$safeSqlMode}'");
 
-        if (!Schema::hasColumn('task_templates', 'duration_days')) {
-            Schema::table('task_templates', function (Blueprint $table) {
-                $table->unsignedInteger('duration_days')->nullable();
-            });
+        try {
+            if (!Schema::hasColumn('task_templates', 'duration_days')) {
+                Schema::table('task_templates', function (Blueprint $table) {
+                    $table->unsignedInteger('duration_days')->nullable();
+                });
+            }
+
+            // 只有在來源欄位存在時才回填，避免不同環境 schema 不一致導致 migration 失敗。
+            if (Schema::hasColumn('check_status', 'duration_days')) {
+                DB::statement("
+                    UPDATE task_templates tt
+                    JOIN check_status cs ON cs.id = tt.check_status_id
+                    SET tt.duration_days = cs.duration_days
+                    WHERE tt.duration_days IS NULL
+                ");
+            }
+        } finally {
+            DB::statement("SET SESSION sql_mode = '{$originalSqlMode}'");
         }
-
-        // 將既有「專案階段」的執行天數搬移到對應派工項目。
-        DB::statement("
-            UPDATE task_templates tt
-            JOIN check_status cs ON cs.id = tt.check_status_id
-            SET tt.duration_days = cs.duration_days
-            WHERE tt.duration_days IS NULL
-        ");
-
-        DB::statement("SET SESSION sql_mode = '{$originalSqlMode}'");
     }
 
     /**
