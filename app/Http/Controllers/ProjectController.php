@@ -100,13 +100,17 @@ class ProjectController extends Controller
         $mentionText = $executorData->pluck('mention')->implode('、');
         $userIds = $executorData->pluck('chat_id')->filter()->values()->toArray();
 
-        $text = implode("\n", [
+        $textLines = [];
+        if ($mentionText !== '') {
+            $textLines[] = $mentionText;
+        }
+        $textLines = array_merge($textLines, [
             '專案網址：' . route('project.plan', $project->id),
             '表定時間：' . $scheduledDate,
             '專案名稱：' . ($project->name ?? ''),
             '派工內容：' . $dispatchContent,
-            '執行人員：' . ($mentionText !== '' ? $mentionText : '未指定'),
         ]);
+        $text = implode("\n", $textLines);
 
         $result = app(ChatWebhookService::class)->sendIncomingToSynology($text, $userIds);
         if (!($result['success'] ?? false)) {
