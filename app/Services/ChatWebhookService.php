@@ -97,12 +97,12 @@ class ChatWebhookService
     public function sendIncomingToSynology(string $text, array $userIds = []): array
     {
         $host = rtrim((string) config('chat_webhook.synology_host', ''), '/');
-        $token = trim((string) config('chat_webhook.synology_token', ''), "\"' ");
+        $token = trim((string) config('chat_webhook.synology_bot_token', ''), "\"' ");
 
         if ($host === '' || $token === '') {
             return [
                 'success' => false,
-                'message' => 'Synology Chat host 或 inbound token 未設定',
+                'message' => 'Synology Chat host 或 bot token 未設定',
             ];
         }
 
@@ -117,7 +117,7 @@ class ChatWebhookService
 
         $url = $host . '/webapi/entry.cgi?' . http_build_query([
             'api' => 'SYNO.Chat.External',
-            'method' => 'incoming',
+            'method' => 'chatbot',
             'version' => '2',
             'token' => $token,
         ]);
