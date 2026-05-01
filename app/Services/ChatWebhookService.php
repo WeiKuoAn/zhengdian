@@ -115,6 +115,27 @@ class ChatWebhookService
 
         $payload = ['text' => $text];
 
+        $channelId = trim((string) config('chat_webhook.synology_dispatch_channel_id', ''));
+        if ($channelId !== '') {
+            // Synology Chat chatbot 發「頻道訊息」需帶 channel_id（否則 API 無目標、訊息不會出現）
+            $payload['channel_id'] = $channelId;
+        }
+
+        if (!empty($userIds)) {
+            $payload['user_ids'] = array_values(array_map('intval', $userIds));
+        }
+
+        if ($channelId === '' && empty($payload['user_ids'] ?? [])) {
+            Log::error('synology_chat_send_failed', [
+                'reason' => 'chatbot 需 channel_id（頻道）或 user_ids（私訊）：私訊請為每位執行人填 synology_user_id；發頻道才需 SYNOLOGY_CHAT_DISPATCH_CHANNEL_ID',
+            ]);
+
+            return [
+                'success' => false,
+                'message' => 'Synology Chat chatbot 未設定發送目標：私訊請為執行人填寫 synology_user_id；若要發頻道再設定 SYNOLOGY_CHAT_DISPATCH_CHANNEL_ID',
+            ];
+        }
+
         $url = $host . '/webapi/entry.cgi?' . http_build_query([
             'api' => 'SYNO.Chat.External',
             'method' => 'chatbot',
@@ -123,6 +144,7 @@ class ChatWebhookService
         ]);
 
         Log::info('synology_chat_send', [
+            'channel_id' => $channelId !== '' ? $channelId : null,
             'user_ids' => $userIds,
             'payload' => json_encode($payload, JSON_UNESCAPED_UNICODE),
         ]);
@@ -132,6 +154,12 @@ class ChatWebhookService
         ]);
 
         $body = $response->json();
+        if ($body === null && $response->body() !== '') {
+            Log::warning('synology_chat_send_non_json', [
+                'http_status' => $response->status(),
+                'body_preview' => Str::limit($response->body(), 500),
+            ]);
+        }
         if ($response->successful() && is_array($body) && ($body['success'] ?? false) === true) {
             return [
                 'success' => true,
@@ -140,14 +168,28 @@ class ChatWebhookService
             ];
         }
 
-        Log::error('synology_chat_send_failed', [
-            'http_status' => $response->status(),
-            'response' => $body,
-        ]);
+        $synoCode = is_array($body) ? (int) data_get($body, 'error.code', 0) : 0;
+        if ($synoCode === 800) {
+            Log::error('synology_chat_send_failed', [
+                'http_status' => $response->status(),
+                'response' => $body,
+                'hint' => 'code 800 = no target：POST 的 payload 須含 channel_id（頻道）或 user_ids（私訊）。私訊請確認 user_ids 已帶入且為 Synology Chat 使用者 ID；勿只用瀏覽器 GET 測試。',
+            ]);
+        } else {
+            Log::error('synology_chat_send_failed', [
+                'http_status' => $response->status(),
+                'response' => $body,
+            ]);
+        }
+
+        $failMessage = 'Synology Chat 回傳失敗';
+        if ($synoCode === 800) {
+            $failMessage .= '（無發送目標：私訊請確認執行人 synology_user_id；發頻道請設定 SYNOLOGY_CHAT_DISPATCH_CHANNEL_ID）';
+        }
 
         return [
             'success' => false,
-            'message' => 'Synology Chat 回傳失敗',
+            'message' => $failMessage,
             'data' => $body,
         ];
     }
