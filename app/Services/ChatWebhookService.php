@@ -5,6 +5,8 @@ namespace App\Services;
 use App\Models\ChatWebhookEvent;
 use App\Models\CustData;
 use App\Models\Task;
+use App\Models\TaskItem;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Http;
@@ -232,8 +234,8 @@ class ChatWebhookService
 
             return [
                 'success' => true,
-                'message' => "可用指令：/help {統編}、/task done {id}、/task show {id}",
-                'data' => ['commands' => ['/help {統編}', '/task done {id}', '/task show {id}']],
+                'message' => "可用指令：/search 姓名、/help {統編}、/task done {id}、/task show {id}",
+                'data' => ['commands' => ['/search 姓名', '/help {統編}', '/task done {id}', '/task show {id}']],
                 'http_status' => 200,
             ];
         }
@@ -255,10 +257,90 @@ class ChatWebhookService
             return $this->showTask((int) $matches[1]);
         }
 
+        if (preg_match('/^\/?search\s*(.*)$/u', trim($commandText), $matches)) {
+            $name = trim((string) ($matches[1] ?? ''));
+
+            return $this->searchTasksForUserName($name);
+        }
+
         return [
             'success' => false,
             'message' => 'Unsupported command format. Try /help',
             'http_status' => 422,
+        ];
+    }
+
+    /**
+     * /search 姓名：列出該使用者「未完成」派工（排除 task.status=已完成），依專案分組排版。
+     */
+    protected function searchTasksForUserName(string $name): array
+    {
+        if ($name === '') {
+            return [
+                'success' => true,
+                'message' => '請輸入：/search 使用者姓名',
+                'http_status' => 200,
+            ];
+        }
+
+        $user = User::query()->where('name', $name)->first();
+        if ($user === null) {
+            return [
+                'success' => true,
+                'message' => '找不到姓名為「' . $name . '」的使用者。',
+                'http_status' => 200,
+            ];
+        }
+
+        $items = TaskItem::query()
+            ->where('user_id', $user->id)
+            ->whereHas('task_data', function ($q) {
+                $q->whereNotIn('status', ['9', 9]);
+            })
+            ->with([
+                'task_data.project_data.user_data',
+                'task_data.task_template_data',
+            ])
+            ->orderBy('task_id')
+            ->get();
+
+        if ($items->isEmpty()) {
+            return [
+                'success' => true,
+                'message' => '「' . $name . '」目前沒有未完成的工作項目。',
+                'http_status' => 200,
+            ];
+        }
+
+        $lines = [];
+        $byProject = $items->groupBy(function ($item) {
+            return (int) (optional($item->task_data)->project_id ?? 0);
+        });
+
+        foreach ($byProject->sortKeys() as $projectItems) {
+            $first = $projectItems->first();
+            $task0 = $first?->task_data;
+            $proj = $task0?->project_data;
+            $prefix = (string) (optional($proj?->user_data)->name ?? '');
+            $projectLabel = $prefix . ($proj?->name ?? '未命名專案');
+
+            $lines[] = '【' . $projectLabel . '】';
+
+            foreach ($projectItems->unique('task_id') as $item) {
+                $task = $item->task_data;
+                if ($task === null) {
+                    continue;
+                }
+                $taskLabel = (string) (optional($task->task_template_data)->name ?? $task->name ?? '工作項目');
+                $statusText = $task->status();
+                $lines[] = '　-' . $taskLabel . '（' . $statusText . '）';
+            }
+        }
+
+        return [
+            'success' => true,
+            'message' => implode("\n", $lines),
+            'http_status' => 200,
         ];
     }
 
@@ -405,6 +487,10 @@ class ChatWebhookService
             $legacySlash = trim((string) config('chat_webhook.synology_slash_token', ''), "\"' ");
             if ($legacySlash !== '') {
                 $tokens[] = $legacySlash;
+            }
+            $searchSlash = trim((string) config('chat_webhook.synology_search_slash_token', ''), "\"' ");
+            if ($searchSlash !== '') {
+                $tokens[] = $searchSlash;
             }
             // 相容錯置：有些環境會把 outgoing token 填到 slash
             $legacyOutgoing = trim((string) config('chat_webhook.synology_outgoing_token', ''), "\"' ");
