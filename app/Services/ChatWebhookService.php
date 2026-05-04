@@ -312,11 +312,11 @@ class ChatWebhookService
             ];
         }
 
-        $lines = [];
         $byProject = $items->groupBy(function ($item) {
             return (int) (optional($item->task_data)->project_id ?? 0);
         });
 
+        $blocks = [];
         foreach ($byProject->sortKeys() as $projectItems) {
             $first = $projectItems->first();
             $task0 = $first?->task_data;
@@ -324,6 +324,7 @@ class ChatWebhookService
             $prefix = (string) (optional($proj?->user_data)->name ?? '');
             $projectLabel = $prefix . ($proj?->name ?? '未命名專案');
 
+            $lines = [];
             $lines[] = '【' . $projectLabel . '】';
 
             foreach ($projectItems->unique('task_id') as $item) {
@@ -333,13 +334,26 @@ class ChatWebhookService
                 }
                 $taskLabel = (string) (optional($task->task_template_data)->name ?? $task->name ?? '工作項目');
                 $statusText = $task->status();
-                $lines[] = '　-' . $taskLabel . '（' . $statusText . '）';
+                $scheduledRaw = $task->getAttribute('estimated_end');
+                $scheduledText = '';
+                if ($scheduledRaw !== null && $scheduledRaw !== '') {
+                    try {
+                        $scheduledText = Carbon::parse($scheduledRaw)->format('Y-m-d');
+                    } catch (\Throwable $e) {
+                        $scheduledText = (string) $scheduledRaw;
+                    }
+                } else {
+                    $scheduledText = '—';
+                }
+                $lines[] = '　-' . $taskLabel . '（' . $statusText . '） / 表定時間：' . $scheduledText;
             }
+
+            $blocks[] = implode("\n", $lines);
         }
 
         return [
             'success' => true,
-            'message' => implode("\n", $lines),
+            'message' => implode("\n\n", $blocks),
             'http_status' => 200,
         ];
     }
