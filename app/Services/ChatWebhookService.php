@@ -307,7 +307,7 @@ class ChatWebhookService
         if ($items->isEmpty()) {
             return [
                 'success' => true,
-                'message' => '「' . $name . '」目前沒有未完成的工作項目。',
+                'message' => $this->searchDispatchQueryPreamble($name) . '目前無未完成的派工',
                 'http_status' => 200,
             ];
         }
@@ -353,9 +353,15 @@ class ChatWebhookService
 
         return [
             'success' => true,
-            'message' => '派工列表：' . route('task') . "\n\n" . implode("\n\n", $blocks),
+            'message' => $this->searchDispatchQueryPreamble($name) . implode("\n\n", $blocks),
             'http_status' => 200,
         ];
+    }
+
+    /** /search 回覆前綴：派工列表連結 + 查詢對象說明 */
+    protected function searchDispatchQueryPreamble(string $name): string
+    {
+        return "派工列表：https://zhengdian.com.tw/task\n\n以下是【{$name}】的派工查詢：\n\n";
     }
 
     protected function findCompanyIntroByRegistrationNo(string $registrationNo): array
