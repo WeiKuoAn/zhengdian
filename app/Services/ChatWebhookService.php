@@ -353,7 +353,7 @@ class ChatWebhookService
 
         return [
             'success' => true,
-            'message' => implode("\n\n", $blocks),
+            'message' => '派工列表：' . route('task') . "\n\n" . implode("\n\n", $blocks),
             'http_status' => 200,
         ];
     }
