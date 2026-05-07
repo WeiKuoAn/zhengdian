@@ -90,6 +90,10 @@ class SendDispatchReminders extends Command
 
             $projectName = $this->buildProjectName($task);
             $taskName = (string) (optional($task->task_template_data)->name ?? $task->name ?? '工作項目');
+            $projectId = (int) ($task->project_id ?? 0);
+            $projectPlanUrl = $projectId > 0
+                ? ('https://zhengdian.com.tw/project/plan/' . $projectId)
+                : 'https://zhengdian.com.tw/task';
 
             $userIds = $this->buildRecipientUserIds($task->items);
             $bucketKey = implode(',', $userIds);
@@ -102,9 +106,10 @@ class SendDispatchReminders extends Command
                 }
             }
             $buckets[$bucketKey]['entries'][] = [
+                'project_id' => $projectId,
                 'project_name' => $projectName,
                 'task_name' => $taskName,
-                'task_url' => 'https://zhengdian.com.tw/task',
+                'project_plan_url' => $projectPlanUrl,
             ];
         }
 
@@ -373,13 +378,41 @@ class SendDispatchReminders extends Command
         $mentionLine = implode(' ', array_map(fn ($name) => '@' . $name, $mentionNames));
         $title = '【派工接收提醒】';
         $footer = '提醒：派工後 1 小時內請接收，未接收將每小時提醒一次。';
-        $entryBlocks = array_map(function (array $entry) {
-            return implode("\n", [
-                '專案名稱：' . ($entry['project_name'] ?? ''),
-                '工作項目：' . ($entry['task_name'] ?? ''),
-                '派工列表：' . ($entry['task_url'] ?? 'https://zhengdian.com.tw/task'),
+        $projectGroups = [];
+        foreach ($entries as $entry) {
+            $projectName = (string) ($entry['project_name'] ?? '');
+            $projectUrl = (string) ($entry['project_plan_url'] ?? 'https://zhengdian.com.tw/task');
+            $projectKey = $projectName . '|' . $projectUrl;
+            if (!isset($projectGroups[$projectKey])) {
+                $projectGroups[$projectKey] = [
+                    'project_name' => $projectName,
+                    'project_plan_url' => $projectUrl,
+                    'tasks' => [],
+                ];
+            }
+            $taskName = trim((string) ($entry['task_name'] ?? ''));
+            if ($taskName !== '') {
+                $projectGroups[$projectKey]['tasks'][] = $taskName;
+            }
+        }
+
+        $entryBlocks = [];
+        foreach ($projectGroups as $group) {
+            $taskLines = [];
+            foreach (array_values($group['tasks']) as $index => $taskName) {
+                $taskLines[] = '　' . ($index + 1) . '.' . $taskName;
+            }
+            if (empty($taskLines)) {
+                $taskLines[] = '　1.未命名工作項目';
+            }
+
+            $entryBlocks[] = implode("\n", [
+                '專案名稱：' . $group['project_name'],
+                '工作項目：',
+                implode("\n", $taskLines),
+                '派工排程連結：' . $group['project_plan_url'],
             ]);
-        }, $entries);
+        }
 
         $chunks = [];
         $currentBlocks = [];
