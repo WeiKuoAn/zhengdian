@@ -446,7 +446,8 @@ class SendDispatchReminders extends Command
             $parts[] = $mentionLine;
         }
         $parts[] = $title;
-        $parts[] = implode("\n\n", $entryBlocks);
+        $parts[] = implode("\n--------------------\n\n", $entryBlocks);
+        $parts[] = '';
         $parts[] = $footer;
 
         return implode("\n", $parts);
