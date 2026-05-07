@@ -21,6 +21,7 @@ class SendDispatchReminders extends Command
     protected $description = 'Send dispatch acceptance and due reminder messages';
 
     protected int $fixedNotifyUserId = 40;
+    protected string $dispatchReminderStartDate = '2026-04-01 00:00:00';
 
     protected ?DispatchReminderSetting $setting = null;
 
@@ -47,10 +48,12 @@ class SendDispatchReminders extends Command
     protected function sendAcceptanceReminders(ChatWebhookService $chat, Carbon $now): int
     {
         $interval = max((int) $this->settingValue('accept_interval_minutes', (int) config('dispatch_reminder.accept_interval_minutes', 60)), 1);
+        $lowerBound = Carbon::parse($this->dispatchReminderStartDate);
 
         $items = TaskItem::query()
             ->where('status', '0')
             ->whereNotNull('start_time')
+            ->where('start_time', '>=', $lowerBound)
             ->with([
                 'user_data',
                 'task_data.project_data.user_data',
@@ -105,8 +108,7 @@ class SendDispatchReminders extends Command
         }
 
         foreach ($buckets as $bucket) {
-            $combinedMessage = implode("\n\n", $bucket['messages']);
-            if ($this->sendReminderMessageToUserIds($chat, $combinedMessage, $bucket['user_ids'], 'accept')) {
+            if ($this->sendCombinedMessages($chat, $bucket['messages'], $bucket['user_ids'], 'accept')) {
                 $sent += count($bucket['messages']);
             }
         }
@@ -118,10 +120,12 @@ class SendDispatchReminders extends Command
     {
         $before = max((int) $this->settingValue('due_before_minutes', (int) config('dispatch_reminder.due_before_minutes', 120)), 1);
         $overdueInterval = max((int) $this->settingValue('overdue_interval_minutes', (int) config('dispatch_reminder.overdue_interval_minutes', 120)), 1);
+        $lowerBound = Carbon::parse($this->dispatchReminderStartDate);
 
         $tasks = Task::query()
             ->whereNotIn('status', ['8', '9', 8, 9])
             ->whereNotNull('estimated_end')
+            ->where('estimated_end', '>=', $lowerBound)
             ->with(['project_data.user_data', 'task_template_data', 'items.user_data'])
             ->get();
 
@@ -197,15 +201,13 @@ class SendDispatchReminders extends Command
         }
 
         foreach ($dueBuckets as $bucket) {
-            $combinedMessage = implode("\n\n", $bucket['messages']);
-            if ($this->sendReminderMessageToUserIds($chat, $combinedMessage, $bucket['user_ids'], 'due')) {
+            if ($this->sendCombinedMessages($chat, $bucket['messages'], $bucket['user_ids'], 'due')) {
                 $sent += count($bucket['messages']);
             }
         }
 
         foreach ($overdueBuckets as $bucket) {
-            $combinedMessage = implode("\n\n", $bucket['messages']);
-            if ($this->sendReminderMessageToUserIds($chat, $combinedMessage, $bucket['user_ids'], 'overdue')) {
+            if ($this->sendCombinedMessages($chat, $bucket['messages'], $bucket['user_ids'], 'overdue')) {
                 $sent += count($bucket['messages']);
             }
         }
@@ -245,6 +247,13 @@ class SendDispatchReminders extends Command
     ): bool {
         $result = $chat->sendIncomingToSynology($text, $userIds);
         $this->logWebhookEvent($reminderType, $text, $userIds, $result, null, null);
+        if (!($result['success'] ?? false) && $this->extractSynologyErrorCode($result) === 407) {
+            $fallbackUserIds = array_values(array_unique(array_filter([$this->fixedNotifyUserId])));
+            if ($fallbackUserIds !== $userIds && !empty($fallbackUserIds)) {
+                $result = $chat->sendIncomingToSynology($text, $fallbackUserIds);
+                $this->logWebhookEvent($reminderType, $text, $fallbackUserIds, $result, null, null);
+            }
+        }
         if (!($result['success'] ?? false)) {
             Log::warning('dispatch_reminder_send_failed', [
                 'message' => $result['message'] ?? 'unknown',
@@ -254,6 +263,58 @@ class SendDispatchReminders extends Command
         }
 
         return true;
+    }
+
+    protected function sendCombinedMessages(
+        ChatWebhookService $chat,
+        array $messages,
+        array $userIds,
+        string $reminderType
+    ): bool {
+        $chunks = $this->splitMessagesByLength($messages, 2800);
+        foreach ($chunks as $chunkText) {
+            if (!$this->sendReminderMessageToUserIds($chat, $chunkText, $userIds, $reminderType)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    protected function splitMessagesByLength(array $messages, int $maxLen): array
+    {
+        $chunks = [];
+        $current = '';
+        foreach ($messages as $message) {
+            $message = trim((string) $message);
+            if ($message === '') {
+                continue;
+            }
+            if ($current === '') {
+                $current = $message;
+                continue;
+            }
+
+            $candidate = $current . "\n\n" . $message;
+            if (mb_strlen($candidate) <= $maxLen) {
+                $current = $candidate;
+                continue;
+            }
+
+            $chunks[] = $current;
+            $current = $message;
+        }
+
+        if ($current !== '') {
+            $chunks[] = $current;
+        }
+
+        return $chunks;
+    }
+
+    protected function extractSynologyErrorCode(array $result): int
+    {
+        return (int) data_get($result, 'data.error.code', 0);
     }
 
     protected function buildRecipientUserIds(Collection $items): array
