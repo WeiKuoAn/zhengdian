@@ -60,6 +60,7 @@ class SendDispatchReminders extends Command
             ->get();
 
         $sent = 0;
+        $buckets = [];
         foreach ($items as $item) {
             $dispatchAt = $this->asCarbon($item->start_time);
             if ($dispatchAt === null) {
@@ -95,8 +96,18 @@ class SendDispatchReminders extends Command
                 'cutoff_time' => '',
             ]);
 
-            if ($this->sendReminderMessage($chat, $message, $task->items, 'accept', $task, $item)) {
-                $sent++;
+            $userIds = $this->buildRecipientUserIds($task->items);
+            $bucketKey = implode(',', $userIds);
+            if (!isset($buckets[$bucketKey])) {
+                $buckets[$bucketKey] = ['user_ids' => $userIds, 'messages' => []];
+            }
+            $buckets[$bucketKey]['messages'][] = $message;
+        }
+
+        foreach ($buckets as $bucket) {
+            $combinedMessage = implode("\n\n", $bucket['messages']);
+            if ($this->sendReminderMessageToUserIds($chat, $combinedMessage, $bucket['user_ids'], 'accept')) {
+                $sent += count($bucket['messages']);
             }
         }
 
@@ -115,6 +126,8 @@ class SendDispatchReminders extends Command
             ->get();
 
         $sent = 0;
+        $dueBuckets = [];
+        $overdueBuckets = [];
         foreach ($tasks as $task) {
             $dueAt = $this->asCarbon($task->estimated_end);
             if ($dueAt === null) {
@@ -137,9 +150,12 @@ class SendDispatchReminders extends Command
                         'due_time' => $dueAt->format('Y-m-d H:i'),
                         'cutoff_time' => '',
                     ]);
-                    if ($this->sendReminderMessage($chat, $message, $task->items, 'due', $task, null)) {
-                        $sent++;
+                    $userIds = $this->buildRecipientUserIds($task->items);
+                    $bucketKey = implode(',', $userIds);
+                    if (!isset($dueBuckets[$bucketKey])) {
+                        $dueBuckets[$bucketKey] = ['user_ids' => $userIds, 'messages' => []];
                     }
+                    $dueBuckets[$bucketKey]['messages'][] = $message;
                 }
             }
 
@@ -172,8 +188,25 @@ class SendDispatchReminders extends Command
                 'cutoff_time' => $cutoff->format('H:i'),
             ]);
 
-            if ($this->sendReminderMessage($chat, $message, $task->items, 'overdue', $task, null)) {
-                $sent++;
+            $userIds = $this->buildRecipientUserIds($task->items);
+            $bucketKey = implode(',', $userIds);
+            if (!isset($overdueBuckets[$bucketKey])) {
+                $overdueBuckets[$bucketKey] = ['user_ids' => $userIds, 'messages' => []];
+            }
+            $overdueBuckets[$bucketKey]['messages'][] = $message;
+        }
+
+        foreach ($dueBuckets as $bucket) {
+            $combinedMessage = implode("\n\n", $bucket['messages']);
+            if ($this->sendReminderMessageToUserIds($chat, $combinedMessage, $bucket['user_ids'], 'due')) {
+                $sent += count($bucket['messages']);
+            }
+        }
+
+        foreach ($overdueBuckets as $bucket) {
+            $combinedMessage = implode("\n\n", $bucket['messages']);
+            if ($this->sendReminderMessageToUserIds($chat, $combinedMessage, $bucket['user_ids'], 'overdue')) {
+                $sent += count($bucket['messages']);
             }
         }
 
@@ -189,13 +222,7 @@ class SendDispatchReminders extends Command
         ?TaskItem $item = null
     ): bool
     {
-        $userIds = $items
-            ->map(fn ($item) => (int) (optional($item->user_data)->synology_user_id ?? 0))
-            ->filter(fn ($id) => $id > 0)
-            ->push($this->fixedNotifyUserId)
-            ->unique()
-            ->values()
-            ->all();
+        $userIds = $this->buildRecipientUserIds($items);
 
         $result = $chat->sendIncomingToSynology($text, $userIds);
         $this->logWebhookEvent($reminderType, $text, $userIds, $result, $task, $item);
@@ -208,6 +235,36 @@ class SendDispatchReminders extends Command
         }
 
         return true;
+    }
+
+    protected function sendReminderMessageToUserIds(
+        ChatWebhookService $chat,
+        string $text,
+        array $userIds,
+        string $reminderType
+    ): bool {
+        $result = $chat->sendIncomingToSynology($text, $userIds);
+        $this->logWebhookEvent($reminderType, $text, $userIds, $result, null, null);
+        if (!($result['success'] ?? false)) {
+            Log::warning('dispatch_reminder_send_failed', [
+                'message' => $result['message'] ?? 'unknown',
+                'result' => $result,
+            ]);
+            return false;
+        }
+
+        return true;
+    }
+
+    protected function buildRecipientUserIds(Collection $items): array
+    {
+        return $items
+            ->map(fn ($item) => (int) (optional($item->user_data)->synology_user_id ?? 0))
+            ->filter(fn ($id) => $id > 0)
+            ->push($this->fixedNotifyUserId)
+            ->unique()
+            ->values()
+            ->all();
     }
 
     protected function buildMentionText(Collection $items): string
