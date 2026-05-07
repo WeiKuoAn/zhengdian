@@ -132,6 +132,10 @@ class SendDispatchReminders extends Command
             ->whereNotIn('status', ['8', '9', 8, 9])
             ->whereNotNull('estimated_end')
             ->where('estimated_end', '>=', $lowerBound)
+            // 繳交/遲交提醒只針對「已接收」後的派工，避免與未接收提醒重複。
+            ->whereHas('items', function ($q) {
+                $q->whereIn('status', ['1', '2', 1, 2]);
+            })
             ->with(['project_data.user_data', 'task_template_data', 'items.user_data'])
             ->get();
 
