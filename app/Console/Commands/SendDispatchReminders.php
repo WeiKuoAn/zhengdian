@@ -7,6 +7,7 @@ use App\Models\DispatchReminderSetting;
 use App\Models\ChatWebhookEvent;
 use App\Models\Task;
 use App\Models\TaskItem;
+use App\Models\User;
 use App\Services\ChatWebhookService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Carbon;
@@ -24,6 +25,7 @@ class SendDispatchReminders extends Command
     protected string $dispatchReminderStartDate = '2026-04-01 00:00:00';
 
     protected ?DispatchReminderSetting $setting = null;
+    protected ?string $fixedNotifyUserName = null;
 
     public function handle(ChatWebhookService $chat): int
     {
@@ -86,30 +88,29 @@ class SendDispatchReminders extends Command
                 continue;
             }
 
-            $mentions = $this->buildMentionText($task->items);
             $projectName = $this->buildProjectName($task);
             $taskName = (string) (optional($task->task_template_data)->name ?? $task->name ?? '工作項目');
-
-            $message = $this->renderTemplate('accept_template', [
-                'mentions' => $mentions,
-                'project_name' => $projectName,
-                'task_name' => $taskName,
-                'task_url' => 'https://zhengdian.com.tw/task',
-                'due_time' => '',
-                'cutoff_time' => '',
-            ]);
 
             $userIds = $this->buildRecipientUserIds($task->items);
             $bucketKey = implode(',', $userIds);
             if (!isset($buckets[$bucketKey])) {
-                $buckets[$bucketKey] = ['user_ids' => $userIds, 'messages' => []];
+                $buckets[$bucketKey] = ['user_ids' => $userIds, 'entries' => [], 'mentions' => []];
             }
-            $buckets[$bucketKey]['messages'][] = $message;
+            foreach ($this->buildMentionNames($task->items) as $mentionName) {
+                if (!in_array($mentionName, $buckets[$bucketKey]['mentions'], true)) {
+                    $buckets[$bucketKey]['mentions'][] = $mentionName;
+                }
+            }
+            $buckets[$bucketKey]['entries'][] = [
+                'project_name' => $projectName,
+                'task_name' => $taskName,
+                'task_url' => 'https://zhengdian.com.tw/task',
+            ];
         }
 
         foreach ($buckets as $bucket) {
-            if ($this->sendCombinedMessages($chat, $bucket['messages'], $bucket['user_ids'], 'accept')) {
-                $sent += count($bucket['messages']);
+            if ($this->sendCombinedAcceptanceMessages($chat, $bucket['entries'], $bucket['mentions'], $bucket['user_ids'])) {
+                $sent += count($bucket['entries']);
             }
         }
 
@@ -326,6 +327,96 @@ class SendDispatchReminders extends Command
             ->unique()
             ->values()
             ->all();
+    }
+
+    protected function buildMentionNames(Collection $items): array
+    {
+        $names = $items
+            ->map(fn ($item) => trim((string) (optional($item->user_data)->name ?? '')))
+            ->filter(fn ($name) => $name !== '')
+            ->unique()
+            ->values()
+            ->all();
+
+        $fixedName = $this->resolveFixedNotifyUserName();
+        if ($fixedName !== null && !in_array($fixedName, $names, true)) {
+            $names[] = $fixedName;
+        }
+
+        return $names;
+    }
+
+    protected function resolveFixedNotifyUserName(): ?string
+    {
+        if ($this->fixedNotifyUserName !== null) {
+            return $this->fixedNotifyUserName;
+        }
+
+        $name = trim((string) User::query()
+            ->where('synology_user_id', $this->fixedNotifyUserId)
+            ->value('name'));
+
+        $this->fixedNotifyUserName = $name !== '' ? $name : null;
+        return $this->fixedNotifyUserName;
+    }
+
+    protected function sendCombinedAcceptanceMessages(
+        ChatWebhookService $chat,
+        array $entries,
+        array $mentionNames,
+        array $userIds
+    ): bool {
+        if (empty($entries)) {
+            return true;
+        }
+
+        $mentionLine = implode(' ', array_map(fn ($name) => '@' . $name, $mentionNames));
+        $title = '【派工接收提醒】';
+        $footer = '提醒：派工後 1 小時內請接收，未接收將每小時提醒一次。';
+        $entryBlocks = array_map(function (array $entry) {
+            return implode("\n", [
+                '專案名稱：' . ($entry['project_name'] ?? ''),
+                '工作項目：' . ($entry['task_name'] ?? ''),
+                '派工列表：' . ($entry['task_url'] ?? 'https://zhengdian.com.tw/task'),
+            ]);
+        }, $entries);
+
+        $chunks = [];
+        $currentBlocks = [];
+        foreach ($entryBlocks as $block) {
+            $testBlocks = array_merge($currentBlocks, [$block]);
+            $testMessage = $this->buildAcceptanceChunkMessage($mentionLine, $title, $testBlocks, $footer);
+            if (mb_strlen($testMessage) > 2800 && !empty($currentBlocks)) {
+                $chunks[] = $this->buildAcceptanceChunkMessage($mentionLine, $title, $currentBlocks, $footer);
+                $currentBlocks = [$block];
+                continue;
+            }
+            $currentBlocks = $testBlocks;
+        }
+        if (!empty($currentBlocks)) {
+            $chunks[] = $this->buildAcceptanceChunkMessage($mentionLine, $title, $currentBlocks, $footer);
+        }
+
+        foreach ($chunks as $chunk) {
+            if (!$this->sendReminderMessageToUserIds($chat, $chunk, $userIds, 'accept')) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    protected function buildAcceptanceChunkMessage(string $mentionLine, string $title, array $entryBlocks, string $footer): string
+    {
+        $parts = [];
+        if (trim($mentionLine) !== '') {
+            $parts[] = $mentionLine;
+        }
+        $parts[] = $title;
+        $parts[] = implode("\n\n", $entryBlocks);
+        $parts[] = $footer;
+
+        return implode("\n", $parts);
     }
 
     protected function buildMentionText(Collection $items): string
