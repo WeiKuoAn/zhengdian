@@ -149,23 +149,27 @@ class SendDispatchReminders extends Command
             if ($now->greaterThanOrEqualTo($preAt) && $this->isWithinNotifyWindow($preAt)) {
                 $preKey = 'due-pre:' . $task->id . ':' . $preAt->format('YmdHi');
                 if ($this->claimReminder($preKey, 'due_pre', $task->id, null, $preAt)) {
-                    $mentions = $this->buildMentionText($task->items);
                     $projectName = $this->buildProjectName($task);
                     $taskName = (string) (optional($task->task_template_data)->name ?? $task->name ?? '工作項目');
-                    $message = $this->renderTemplate('due_template', [
-                        'mentions' => $mentions,
-                        'project_name' => $projectName,
-                        'task_name' => $taskName,
-                        'task_url' => 'https://zhengdian.com.tw/task',
-                        'due_time' => $dueAt->format('Y-m-d H:i'),
-                        'cutoff_time' => '',
-                    ]);
+                    $projectId = (int) ($task->project_id ?? 0);
+                    $projectPlanUrl = $projectId > 0
+                        ? ('https://zhengdian.com.tw/project/plan/' . $projectId)
+                        : 'https://zhengdian.com.tw/task';
                     $userIds = $this->buildRecipientUserIds($task->items);
                     $bucketKey = implode(',', $userIds);
                     if (!isset($dueBuckets[$bucketKey])) {
-                        $dueBuckets[$bucketKey] = ['user_ids' => $userIds, 'messages' => []];
+                        $dueBuckets[$bucketKey] = ['user_ids' => $userIds, 'entries' => [], 'mentions' => []];
                     }
-                    $dueBuckets[$bucketKey]['messages'][] = $message;
+                    foreach ($this->buildMentionNames($task->items) as $mentionName) {
+                        if (!in_array($mentionName, $dueBuckets[$bucketKey]['mentions'], true)) {
+                            $dueBuckets[$bucketKey]['mentions'][] = $mentionName;
+                        }
+                    }
+                    $dueBuckets[$bucketKey]['entries'][] = [
+                        'project_name' => $projectName,
+                        'task_name' => $taskName,
+                        'project_plan_url' => $projectPlanUrl,
+                    ];
                 }
             }
 
@@ -186,35 +190,56 @@ class SendDispatchReminders extends Command
                 continue;
             }
 
-            $mentions = $this->buildMentionText($task->items);
             $projectName = $this->buildProjectName($task);
             $taskName = (string) (optional($task->task_template_data)->name ?? $task->name ?? '工作項目');
-            $message = $this->renderTemplate('overdue_template', [
-                'mentions' => $mentions,
-                'project_name' => $projectName,
-                'task_name' => $taskName,
-                'task_url' => 'https://zhengdian.com.tw/task',
-                'due_time' => $dueAt->format('Y-m-d H:i'),
-                'cutoff_time' => $cutoff->format('H:i'),
-            ]);
+            $projectId = (int) ($task->project_id ?? 0);
+            $projectPlanUrl = $projectId > 0
+                ? ('https://zhengdian.com.tw/project/plan/' . $projectId)
+                : 'https://zhengdian.com.tw/task';
 
             $userIds = $this->buildRecipientUserIds($task->items);
             $bucketKey = implode(',', $userIds);
             if (!isset($overdueBuckets[$bucketKey])) {
-                $overdueBuckets[$bucketKey] = ['user_ids' => $userIds, 'messages' => []];
+                $overdueBuckets[$bucketKey] = ['user_ids' => $userIds, 'entries' => [], 'mentions' => []];
             }
-            $overdueBuckets[$bucketKey]['messages'][] = $message;
+            foreach ($this->buildMentionNames($task->items) as $mentionName) {
+                if (!in_array($mentionName, $overdueBuckets[$bucketKey]['mentions'], true)) {
+                    $overdueBuckets[$bucketKey]['mentions'][] = $mentionName;
+                }
+            }
+            $overdueBuckets[$bucketKey]['entries'][] = [
+                'project_name' => $projectName,
+                'task_name' => $taskName,
+                'project_plan_url' => $projectPlanUrl,
+            ];
         }
 
         foreach ($dueBuckets as $bucket) {
-            if ($this->sendCombinedMessages($chat, $bucket['messages'], $bucket['user_ids'], 'due')) {
-                $sent += count($bucket['messages']);
+            if ($this->sendCombinedProjectMessages(
+                $chat,
+                $bucket['entries'],
+                $bucket['mentions'],
+                $bucket['user_ids'],
+                'due',
+                '【繳交提醒】',
+                '提醒：此工作項目即將到期。'
+            )) {
+                $sent += count($bucket['entries']);
             }
         }
 
         foreach ($overdueBuckets as $bucket) {
-            if ($this->sendCombinedMessages($chat, $bucket['messages'], $bucket['user_ids'], 'overdue')) {
-                $sent += count($bucket['messages']);
+            $cutoffText = (string) $this->settingValue('overdue_cutoff_time', (string) config('dispatch_reminder.overdue_cutoff_time', '18:00'));
+            if ($this->sendCombinedProjectMessages(
+                $chat,
+                $bucket['entries'],
+                $bucket['mentions'],
+                $bucket['user_ids'],
+                'overdue',
+                '【遲交提醒】',
+                '提醒：目前已逾期，將每 2 小時提醒一次（超過 ' . $cutoffText . ' 不再提醒）。'
+            )) {
+                $sent += count($bucket['entries']);
             }
         }
 
@@ -371,13 +396,31 @@ class SendDispatchReminders extends Command
         array $mentionNames,
         array $userIds
     ): bool {
+        return $this->sendCombinedProjectMessages(
+            $chat,
+            $entries,
+            $mentionNames,
+            $userIds,
+            'accept',
+            '【派工接收提醒】',
+            '提醒：派工後 1 小時內請接收，未接收將每小時提醒一次。'
+        );
+    }
+
+    protected function sendCombinedProjectMessages(
+        ChatWebhookService $chat,
+        array $entries,
+        array $mentionNames,
+        array $userIds,
+        string $reminderType,
+        string $title,
+        string $footer
+    ): bool {
         if (empty($entries)) {
             return true;
         }
 
         $mentionLine = implode(' ', array_map(fn ($name) => '@' . $name, $mentionNames));
-        $title = '【派工接收提醒】';
-        $footer = '提醒：派工後 1 小時內請接收，未接收將每小時提醒一次。';
         $projectGroups = [];
         foreach ($entries as $entry) {
             $projectName = (string) ($entry['project_name'] ?? '');
@@ -431,7 +474,7 @@ class SendDispatchReminders extends Command
         }
 
         foreach ($chunks as $chunk) {
-            if (!$this->sendReminderMessageToUserIds($chat, $chunk, $userIds, 'accept')) {
+            if (!$this->sendReminderMessageToUserIds($chat, $chunk, $userIds, $reminderType)) {
                 return false;
             }
         }
