@@ -9,11 +9,47 @@ use App\Models\TaskTemplate;
 use App\Models\User;
 use App\Models\CheckStatus;
 use App\Models\CustProject;
+use App\Models\ProjectMilestones;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Schema;
 use Carbon\Carbon;
 
 class TaskController extends Controller
 {
+    protected function syncMilestoneLinkedTask(Task $task, ?int $oldProjectId = null, ?int $oldTemplateId = null): void
+    {
+        if (!Schema::hasColumn('project_milestones', 'linked_task_id')) {
+            return;
+        }
+
+        $projectId = (int) ($task->project_id ?? 0);
+        $templateId = (int) ($task->template_id ?? 0);
+        if ($projectId <= 0 || $templateId <= 0) {
+            return;
+        }
+
+        // 若任務變更了專案或模板，先清理舊里程碑對應，避免殘留錯誤關聯。
+        if (($oldProjectId && $oldProjectId !== $projectId) || ($oldTemplateId && $oldTemplateId !== $templateId)) {
+            ProjectMilestones::query()
+                ->where('project_id', $oldProjectId ?: $projectId)
+                ->where('milestone_type', $oldTemplateId ?: $templateId)
+                ->where('linked_task_id', $task->id)
+                ->update(['linked_task_id' => null]);
+        }
+
+        $row = ProjectMilestones::query()
+            ->firstOrNew([
+                'project_id' => $projectId,
+                'milestone_type' => $templateId,
+            ]);
+
+        if (empty($row->category_id)) {
+            $row->category_id = '1';
+        }
+        $row->linked_task_id = $task->id;
+        $row->save();
+    }
+
     public function getTaskDetails($id)
     {
         $task = Task::with('items.user_data')->find($id);
@@ -224,6 +260,7 @@ class TaskController extends Controller
         $data->status = $request->status;
         $data->comments = $request->comments;
         $data->save();
+        $this->syncMilestoneLinkedTask($data);
 
         $user_ids = $request->input('user_ids');
         $contexts = $request->input('contexts');
@@ -281,6 +318,8 @@ class TaskController extends Controller
     public function update(Request $request, $id)
     {
         $data = Task::findOrFail($id);
+        $oldProjectId = (int) ($data->project_id ?? 0);
+        $oldTemplateId = (int) ($data->template_id ?? 0);
         $data->type = 'group';
         $data->name = $request->name;
         $data->project_id = $request->project_id;
@@ -292,6 +331,7 @@ class TaskController extends Controller
         $data->status = $request->status;
         $data->comments = $request->comments;
         $data->save();
+        $this->syncMilestoneLinkedTask($data, $oldProjectId, $oldTemplateId);
 
         // 定義 Task 狀態對應到 TaskItem 狀態的映射
         $statusMapping = [
@@ -499,6 +539,7 @@ class TaskController extends Controller
         $data->status = $request->status;
         $data->comments = $request->comments;
         $data->save();
+        $this->syncMilestoneLinkedTask($data);
 
         $user_ids = $request->input('user_ids');
         $contexts = $request->input('contexts');
