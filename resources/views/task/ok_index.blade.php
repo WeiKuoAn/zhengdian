@@ -98,7 +98,8 @@
                                             </td>
                                             <td>
                                                 @foreach ($data->items as $item)
-                                                    <span class="badge bg-primary p-1 mb-1">{{ $item->user_data->name }}
+                                                    @php($itemUserName = optional($item->user_data)->name ?? '未指定人員')
+                                                    <span class="badge bg-primary p-1 mb-1">{{ $itemUserName }}
                                                         @if (isset($item->context))
                                                             （{{ $item->context }}）
                                                         @endif
@@ -123,7 +124,7 @@
                                                     <button type="button" class="btn btn-white"
                                                         data-bs-container="#tooltip-container" data-bs-toggle="tooltip"
                                                         data-bs-placement="top"
-                                                        title="@foreach ($data->items as $item) {{ $item->user_data->name }}（{{ $item->status() }}）、 @endforeach">
+                                                        title="@foreach ($data->items as $item) {{ optional($item->user_data)->name ?? '未指定人員' }}（{{ $item->status() }}）、 @endforeach">
                                                         {{ $data->status() }}
                                                     </button>
                                                 </div>

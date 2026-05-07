@@ -12,11 +12,19 @@ use Illuminate\Http\RedirectResponse;
 
 class UserController extends Controller
 {
+    protected function ensureSuperAdmin(): void
+    {
+        if ((int) (Auth::user()->level ?? 2) !== 0) {
+            abort(403, '只有超級管理者可以使用用戶管理');
+        }
+    }
+
     /**
      * Display a listing of the resource.
      */
     public function index(Request $request)
     {
+        $this->ensureSuperAdmin();
         $groups = UserGroup::whereNotIn('id', [2])->get();
         $statusFilter = $request->input('status_filter', 'enabled');
 
@@ -40,6 +48,7 @@ class UserController extends Controller
 
     public function groups()
     {
+        $this->ensureSuperAdmin();
         $datas = UserGroup::whereNotIn('id', [2])->orderBy('id', 'asc')->get();
         return view('user.groups')->with('datas', $datas);
     }
@@ -49,6 +58,7 @@ class UserController extends Controller
      */
     public function create()
     {
+        $this->ensureSuperAdmin();
         $jobs = Job::where('status', 'up')->get();
         $groups = UserGroup::whereNotIn('id', [2])->get();
         return view('user.create')->with('groups', $groups)->with('jobs', $jobs);
@@ -59,6 +69,7 @@ class UserController extends Controller
      */
     public function store(Request $request)
     {
+        $this->ensureSuperAdmin();
         // 创建用户
         $user = User::create([
             'name' => $request->name,
@@ -122,6 +133,7 @@ class UserController extends Controller
      */
     public function edit(string $id)
     {
+        $this->ensureSuperAdmin();
         $groups = UserGroup::whereNotIn('id', [2])->get();
         $jobs = Job::where('status', 'up')->get();
         $data = User::where('id', $id)->first();
@@ -133,6 +145,7 @@ class UserController extends Controller
      */
     public function update(Request $request, string $id)
     {
+        $this->ensureSuperAdmin();
 
         $data = User::where('id', $id)->first();
         $data->name = $request->name;
@@ -150,10 +163,8 @@ class UserController extends Controller
      */
     public function destroy(string $id): RedirectResponse
     {
+        $this->ensureSuperAdmin();
         $currentUser = Auth::user();
-        if ((int) ($currentUser->level ?? -1) !== 0) {
-            abort(403, '只有超級管理者可以刪除帳號');
-        }
 
         if ((int) $currentUser->id === (int) $id) {
             return redirect()->route('users')->with('error', '不可刪除目前登入中的帳號');

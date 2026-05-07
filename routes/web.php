@@ -9,6 +9,7 @@ use App\Http\Controllers\ContractStatusController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\CustomerProjectController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\DispatchReminderSettingController;
 use App\Http\Controllers\JobController;
 use App\Http\Controllers\MeetDataController;
 use App\Http\Controllers\PersonTaskController;
@@ -44,6 +45,9 @@ Route::middleware(['auth'])->group(function () {
     Route::get('home', [DashboardController::class, 'loginSuccess'])->name('index');
     Route::get('app/chat', [ChatWebhookDashboardController::class, 'index'])->name('app.chat');
     Route::post('app/chat/test', [ChatWebhookDashboardController::class, 'testSend'])->name('app.chat.test');
+    Route::get('dispatch-reminder-settings', [DispatchReminderSettingController::class, 'index'])->name('dispatch-reminder-settings');
+    Route::post('dispatch-reminder-settings', [DispatchReminderSettingController::class, 'update'])->name('dispatch-reminder-settings.update');
+    Route::post('dispatch-reminder-settings/test', [DispatchReminderSettingController::class, 'sendTest'])->name('dispatch-reminder-settings.test');
 
     /**/
     Route::get('/get-customer-account/{id}', [ProjectController::class, 'getCustomerAccount']);

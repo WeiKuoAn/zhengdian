@@ -465,8 +465,32 @@ class CustomerController extends Controller
     /**
      * Remove the specified resource from storage.
      */
+    public function delete(string $id)
+    {
+        if ((int) (Auth::user()->level ?? 2) !== 0) {
+            return redirect()->route('customers')->with('error', '只有超級管理者可以刪除客戶');
+        }
+
+        $data = User::where('id', $id)->first();
+        return view('customer.del')->with('data', $data);
+    }
+
     public function destroy(string $id)
     {
-        //
+        if ((int) (Auth::user()->level ?? 2) !== 0) {
+            return redirect()->route('customers')->with('error', '只有超級管理者可以刪除客戶');
+        }
+
+        $user = User::where('id', $id)->first();
+        if (!$user) {
+            return redirect()->route('customers')->with('error', '客戶不存在');
+        }
+
+        // 刪除對應的客戶資料與專案
+        CustData::where('user_id', $user->id)->delete();
+        CustProject::where('user_id', $user->id)->delete();
+        $user->delete();
+
+        return redirect()->route('customers')->with('success', '客戶已刪除');
     }
 }

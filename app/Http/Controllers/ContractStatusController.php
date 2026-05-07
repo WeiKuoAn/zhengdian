@@ -3,11 +3,19 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use App\Models\ContractStatus;
 use App\Models\CheckStatus;
 
 class ContractStatusController extends Controller
 {
+    protected function ensureSuperAdminDelete(): void
+    {
+        if ((int) (Auth::user()->level ?? 2) !== 0) {
+            abort(403, '只有超級管理者可以刪除此模組資料');
+        }
+    }
+
     public function index(Request $request)
     {
         $datas = CheckStatus::orderby('seq', 'asc')->whereNull('parent_id')->get();
@@ -90,12 +98,14 @@ class ContractStatusController extends Controller
      */
     public function delete($id)
     {
+        $this->ensureSuperAdminDelete();
         $data = CheckStatus::where('id', $id)->first();
         return view('contract_status.del')->with('data', $data);
     }
 
     public function destroy($id)
     {
+        $this->ensureSuperAdminDelete();
         $data = CheckStatus::where('id', $id);
         $data->delete();
         return redirect()->route('contractStatus');

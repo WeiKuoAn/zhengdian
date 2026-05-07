@@ -12,6 +12,13 @@ use Illuminate\Support\Str;
 
 class ProjectMilestonesController extends Controller
 {
+    protected function ensureCanEdit(): void
+    {
+        if ((int) (auth()->user()->level ?? 2) === 2) {
+            abort(403, '一般使用者無法編輯排程');
+        }
+    }
+
     public function projectMilestones(Request $request)
     {
         $datas = ProjectMilestones::get(); // 替換為實際數據獲取邏輯
@@ -91,6 +98,7 @@ class ProjectMilestonesController extends Controller
 
     public function create()
     {
+        $this->ensureCanEdit();
         $check_statuss = CheckStatus::where('parent_id', null)->where('status','up')->get();
         $cust_datas = User::where('group_id', 2)->where('status', 1)->get();
         $task_datas = \App\Models\TaskTemplate::orderBy('seq', 'asc')->get();
@@ -100,6 +108,7 @@ class ProjectMilestonesController extends Controller
 
     public function store(Request $request)
     {
+        $this->ensureCanEdit();
         foreach ($request->milestone_types as $index => $milestone_type) {
             // 儲存資料到資料庫或其他操作
             ProjectMilestones::create([
@@ -117,6 +126,7 @@ class ProjectMilestonesController extends Controller
 
     public function show($id)
     {
+        $this->ensureCanEdit();
         $data = ProjectMilestones::with(['project_data.user_data', 'task_data', 'calendar_category_data'])->findOrFail($id);
         $task_datas = \App\Models\TaskTemplate::orderBy('seq', 'asc')->get();
         $calendar_categorys = CalendarCategory::where('status', 'up')->get();
@@ -126,6 +136,7 @@ class ProjectMilestonesController extends Controller
 
     public function update(Request $request, $id)
     {
+        $this->ensureCanEdit();
         $data = ProjectMilestones::findOrFail($id);
         
         $data->update([

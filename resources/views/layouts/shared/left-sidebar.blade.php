@@ -3,12 +3,12 @@
 
     <div class="logo-box">
         <a href="#" class="logo-light">
-            <img src="/images/LOGO.png" alt="logo" width="50">
-            <img src="/images/LOGO.png" alt="small logo" class="logo-sm">
+            <img src="/images/LOGO.png" alt="logo" class="logo-lg" style="height: 58px; width: auto;">
+            <img src="/images/LOGO.png" alt="small logo" class="logo-sm" style="height: 34px; width: auto;">
         </a>
         <a href="#" class="logo-dark">
-            <img src="/images/LOGO.png" alt="dark logo" height="50">
-            <img src="/images/LOGO.png" alt="small logo" class="logo-sm">
+            <img src="/images/LOGO.png" alt="dark logo" class="logo-lg" style="height: 58px; width: auto;">
+            <img src="/images/LOGO.png" alt="small logo" class="logo-sm" style="height: 34px; width: auto;">
         </a>
     </div>
 
@@ -236,46 +236,52 @@
 
 
 
-                <li class="menu-item">
-                    <a class="menu-link" href="#setting" data-bs-toggle="collapse">
-                        <span class="menu-icon"><i data-feather="settings"></i></span>
-                        <span class="menu-text"> 設定管理 </span>
-                        <span class="menu-arrow"></span>
-                    </a>
-                    <div class="collapse" id="setting">
-                        <ul class="sub-menu">
-                            <li class="menu-item">
-                                <a class="menu-link" href="{{ route('contractStatus') }}"
-                                    class="{{ request()->is('contractStatus') ? 'active' : '' }}"><span
-                                        class="menu-text">專案狀態設定</span></a>
-                            </li>
-                            <li class="menu-item">
-                                <a class="menu-link" href="{{ route('checkStatus') }}"
-                                    class="{{ request()->is('checkStatus') ? 'active' : '' }}"><span
-                                        class="menu-text">專案階段設定</span></a>
-                            </li>
-                            <li class="menu-item">
-                                <a class="menu-link" href="{{ route('TaskTemplate') }}"
-                                    class="{{ request()->is('TaskTemplate') ? 'active' : '' }}"><span
-                                        class="menu-text">派工項目設定</span></a>
-                            </li>
-                            <li class="menu-item">
-                                <a class="menu-link" href="{{ route('projectTypes') }}"
-                                    class="{{ request()->is('projectTypes') ? 'active' : '' }}"><span
-                                        class="menu-text">專案類別設定</span></a>
-                            </li>
-                            <li class="menu-item">
-                                <a class="menu-link" href="{{ route('CalendarCategorys') }}"
-                                    class="{{ request()->is('CalendarCategorys') ? 'active' : '' }}"><span
-                                        class="menu-text">行事曆類別設定</span></a>
-                            </li>
-                            <li class="menu-item">
-                                <a class="menu-link" href="{{ route('jobs') }}"
-                                    class="{{ request()->is('jobs') ? 'active' : '' }}"><span
-                                        class="menu-text">職稱設定</span></a>
-                            </li>
-                        </ul>
-                    </div>
+                @if ((int) (Auth::user()->level ?? 2) !== 2)
+                    <li class="menu-item">
+                        <a class="menu-link" href="#setting" data-bs-toggle="collapse">
+                            <span class="menu-icon"><i data-feather="settings"></i></span>
+                            <span class="menu-text"> 設定管理 </span>
+                            <span class="menu-arrow"></span>
+                        </a>
+                        <div class="collapse" id="setting">
+                            <ul class="sub-menu">
+                                <li class="menu-item">
+                                    <a class="menu-link" href="{{ route('contractStatus') }}"
+                                        class="{{ request()->is('contractStatus') ? 'active' : '' }}"><span
+                                            class="menu-text">專案狀態設定</span></a>
+                                </li>
+                                <li class="menu-item">
+                                    <a class="menu-link" href="{{ route('checkStatus') }}"
+                                        class="{{ request()->is('checkStatus') ? 'active' : '' }}"><span
+                                            class="menu-text">專案階段設定</span></a>
+                                </li>
+                                <li class="menu-item">
+                                    <a class="menu-link" href="{{ route('TaskTemplate') }}"
+                                        class="{{ request()->is('TaskTemplate') ? 'active' : '' }}"><span
+                                            class="menu-text">派工項目設定</span></a>
+                                </li>
+                                <li class="menu-item">
+                                    <a class="menu-link" href="{{ route('projectTypes') }}"
+                                        class="{{ request()->is('projectTypes') ? 'active' : '' }}"><span
+                                            class="menu-text">專案類別設定</span></a>
+                                </li>
+                                <li class="menu-item">
+                                    <a class="menu-link" href="{{ route('CalendarCategorys') }}"
+                                        class="{{ request()->is('CalendarCategorys') ? 'active' : '' }}"><span
+                                            class="menu-text">行事曆類別設定</span></a>
+                                </li>
+                                <li class="menu-item">
+                                    <a class="menu-link" href="{{ route('jobs') }}"
+                                        class="{{ request()->is('jobs') ? 'active' : '' }}"><span
+                                            class="menu-text">職稱設定</span></a>
+                                </li>
+                                <li class="menu-item">
+                                    <a class="menu-link" href="{{ route('dispatch-reminder-settings') }}"
+                                        class="{{ request()->is('dispatch-reminder-settings') ? 'active' : '' }}"><span
+                                            class="menu-text">派工提醒設定</span></a>
+                                </li>
+                            </ul>
+                        </div>
                     {{-- <div class="collapse" id="setting">
                     <ul class="sub-menu">
                         <li class="menu-item">
@@ -283,14 +289,15 @@
                         </li>
                     </ul>
                 </div> --}}
-                </li>
+                    </li>
 
-                <li class="menu-item">
-                    <a href="{{ route('app.chat') }}" class="menu-link {{ request()->is('app/chat') ? 'active' : '' }}">
-                        <span class="menu-icon"><i data-feather="send"></i></span>
-                        <span class="menu-text"> Webhook 管理 </span>
-                    </a>
-                </li>
+                    <li class="menu-item">
+                        <a href="{{ route('app.chat') }}" class="menu-link {{ request()->is('app/chat') ? 'active' : '' }}">
+                            <span class="menu-icon"><i data-feather="send"></i></span>
+                            <span class="menu-text"> Webhook 管理 </span>
+                        </a>
+                    </li>
+                @endif
 
                 {{-- <li class="menu-item">
                 <a class="menu-link" href="#rpg" data-bs-toggle="collapse">
@@ -321,7 +328,7 @@
                     </ul>
                 </div>
             </li> --}}
-                @if (Auth::user()->level != 2)
+                @if ((int) (Auth::user()->level ?? 2) === 0)
                     <li class="menu-item">
                         <a class="menu-link" href="#sidebarUser" data-bs-toggle="collapse">
                             <span class="menu-icon"><i data-feather="user"></i></span>

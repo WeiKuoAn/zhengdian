@@ -175,8 +175,10 @@
                                                 @if (Auth::user()->id == $data->created_by)
                                                     <a href="{{ route('task.edit', $data->id) }}" class="action-icon">
                                                         <i class="mdi mdi-square-edit-outline"></i></a>
-                                                    <a href="{{ route('task.del', $data->id) }}" class="action-icon"> <i
-                                                            class="mdi mdi-trash-can-outline"></i></a>
+                                                    @if ((int) (Auth::user()->level ?? 2) !== 2)
+                                                        <a href="{{ route('task.del', $data->id) }}" class="action-icon"> <i
+                                                                class="mdi mdi-trash-can-outline"></i></a>
+                                                    @endif
                                                 @endif
                                                 <a href="{{ route('task.copy', $data->id) }}" class="action-icon">
                                                     <i class="mdi mdi-content-copy"></i></a>

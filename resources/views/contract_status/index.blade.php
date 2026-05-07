@@ -48,7 +48,9 @@
                                             <td>
                                                 <a href="{{ route('contractStatus.edit', $data->id) }}" class="action-icon"> <i
                                                         class="mdi mdi-square-edit-outline"></i></a>
-                                                <a href="{{ route('contractStatus.del', $data->id) }}" class="action-icon"> <i class="mdi mdi-trash-can-outline"></i></a>
+                                                @if ((int) (Auth::user()->level ?? 2) === 0)
+                                                    <a href="{{ route('contractStatus.del', $data->id) }}" class="action-icon"> <i class="mdi mdi-trash-can-outline"></i></a>
+                                                @endif
                                             </td>
                                         </tr>
                                     @endforeach

@@ -1,5 +1,14 @@
 @extends('layouts.vertical', ['title' => 'CRM Customers'])
 
+@section('css')
+    <style>
+        .pm-filter-card .form-label {
+            font-size: 13px;
+            margin-bottom: 6px;
+        }
+    </style>
+@endsection
+
 @section('content')
     <!-- Start Content-->
     <div class="container-fluid">
@@ -17,13 +26,13 @@
                             </div>
                         @endif
                         <!-- 篩選表單 -->
-                        <form method="GET" action="{{ route('projectMilestones') }}" class="mb-3">
-                            <div class="row g-3">
-                                <div class="col-md-3">
+                        <form method="GET" action="{{ route('projectMilestones') }}" class="mb-3 pm-filter-card">
+                            <div class="row g-2 align-items-end">
+                                <div class="col-md-3 col-lg-3">
                                     <label class="form-label">客戶名稱</label>
                                     <input type="text" class="form-control" name="customer_name" value="{{ request('customer_name') }}" placeholder="請輸入客戶名稱">
                                 </div>
-                                <div class="col-md-2">
+                                <div class="col-md-2 col-lg-2">
                                     <label class="form-label">日期欄位</label>
                                     <select class="form-control" name="date_field" data-toggle="select" data-width="100%">
                                         <option value="order_date" @if(request('date_field') == 'order_date') selected @endif>表訂時間</option>
@@ -31,17 +40,16 @@
                                         <option value="formal_date" @if(request('date_field') == 'formal_date') selected @endif>實際完成時間</option>
                                     </select>
                                 </div>
-                                <div class="col-md-2">
+                                <div class="col-md-2 col-lg-2">
                                     <label class="form-label">開始日期</label>
                                     <input type="date" class="form-control" name="start_date" value="{{ request('start_date') }}">
                                 </div>
-                                <div class="col-md-2">
+                                <div class="col-md-2 col-lg-2">
                                     <label class="form-label">結束日期</label>
                                     <input type="date" class="form-control" name="end_date" value="{{ request('end_date') }}">
                                 </div>
-                                <div class="col-md-3">
-                                    <label class="form-label">&nbsp;</label>
-                                    <div class="d-flex gap-2">
+                                <div class="col-md-3 col-lg-3">
+                                    <div class="d-flex gap-2 justify-content-md-start">
                                         <button type="submit" class="btn btn-primary waves-effect waves-light">
                                             <i class="mdi mdi-magnify me-1"></i> 篩選
                                         </button>
@@ -53,16 +61,18 @@
                             </div>
                         </form>
 
-                        <div class="row mb-2">
-                            <div class="col-sm-4">
-                                <a href="{{ route('projectMilestones.create') }}">
-                                    <button type="button" class="btn btn-danger waves-effect waves-light"><i
-                                            class="mdi mdi-plus-circle me-1"></i> 新增排程</button>
-                                </a>
+                        <div class="row mb-2 align-items-center">
+                            <div class="col-sm-6">
+                                <span class="text-muted">共 {{ $datas->total() }} 筆資料</span>
                             </div>
-                            <div class="col-sm-8">
-                                <div class="text-end">
-                                    <span class="text-muted">共 {{ $datas->total() }} 筆資料</span>
+                            <div class="col-sm-6">
+                                <div class="text-sm-end mt-2 mt-sm-0">
+                                    @if ((int) (Auth::user()->level ?? 2) !== 2)
+                                        <a href="{{ route('projectMilestones.create') }}">
+                                            <button type="button" class="btn btn-danger waves-effect waves-light"><i
+                                                    class="mdi mdi-plus-circle me-1"></i> 新增排程</button>
+                                        </a>
+                                    @endif
                                 </div>
                             </div><!-- end col-->
                         </div>
@@ -90,8 +100,10 @@
                                             <td>{{ $data->milestone_date ? \Carbon\Carbon::parse($data->milestone_date)->format('Y-m-d') : '' }}</td>
                                             <td>{{ $data->formal_date ? \Carbon\Carbon::parse($data->formal_date)->format('Y-m-d') : '' }}</td>
                                             <td>
-                                                <a href="{{ route('projectMilestones.edit', $data->id) }}" class="action-icon">
-                                                    <i class="mdi mdi-square-edit-outline"></i></a>
+                                                @if ((int) (Auth::user()->level ?? 2) !== 2)
+                                                    <a href="{{ route('projectMilestones.edit', $data->id) }}" class="action-icon">
+                                                        <i class="mdi mdi-square-edit-outline"></i></a>
+                                                @endif
                                                 {{-- <a href="javascript:void(0);" class="action-icon"> <i class="mdi mdi-delete"></i></a> --}}
                                             </td>
                                         </tr>

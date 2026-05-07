@@ -1376,7 +1376,15 @@ class ProjectController extends Controller
      */
     public function destroy(string $id)
     {
+        $level = (int) (Auth::user()->level ?? 2);
+        if (!in_array($level, [0, 1], true)) {
+            return response()->json(['message' => '僅超級管理者或管理者可刪除專案'], 403);
+        }
+
         $data = CustProject::where('id', $id)->first();
+        if (!$data) {
+            return response()->json(['message' => '專案不存在'], 404);
+        }
         $data->delete();
 
         return response()->json(['message' => '刪除成功'], 200);

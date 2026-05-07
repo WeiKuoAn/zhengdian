@@ -3,10 +3,18 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use App\Models\ProjectType;
 
 class ProjectTypeController extends Controller
 {
+    protected function ensureSuperAdminDelete(): void
+    {
+        if ((int) (Auth::user()->level ?? 2) !== 0) {
+            abort(403, '只有超級管理者可以刪除此模組資料');
+        }
+    }
+
     public function index(Request $request)
     {
         $datas = ProjectType::orderby('seq', 'asc')->get();
@@ -89,12 +97,14 @@ class ProjectTypeController extends Controller
      */
     public function delete($id)
     {
+        $this->ensureSuperAdminDelete();
         $data = ProjectType::where('id', $id)->first();
         return view('project_type.del')->with('data', $data);
     }
 
     public function destroy($id)
     {
+        $this->ensureSuperAdminDelete();
         $data = ProjectType::where('id', $id);
         $data->delete();
         return redirect()->route('projectTypes');

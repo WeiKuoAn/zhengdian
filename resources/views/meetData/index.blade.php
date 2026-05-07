@@ -1,5 +1,18 @@
 @extends('layouts.vertical', ['title' => 'CRM Customers'])
 
+@section('css')
+    <style>
+        .meetdata-table-wrap {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .meetdata-table {
+            min-width: 1200px;
+        }
+    </style>
+@endsection
+
 @section('content')
     <!-- Start Content-->
     <div class="container-fluid">
@@ -51,8 +64,8 @@
             <div class="col-12">
                 <div class="card">
                     <div class="card-body">
-                        <div class="table-responsive">
-                            <table class="table table-centered table-nowrap table-striped" id="products-datatable">
+                        <div class="table-responsive meetdata-table-wrap">
+                            <table class="table table-centered table-striped meetdata-table" id="products-datatable">
                                 <thead>
                                     <tr align="center">
                                         <th scope="col">No</th>
@@ -96,8 +109,10 @@
                                                 </a>
                                                 <a href="{{ route('meetData.edit', $data->id) }}" class="action-icon"> <i
                                                         class="mdi mdi-square-edit-outline"></i></a>
-                                                <a href="{{ route('meetData.del', $data->id) }}" class="action-icon"> <i
-                                                        class="mdi mdi-trash-can-outline"></i></a>
+                                                @if ((int) (Auth::user()->level ?? 2) !== 2)
+                                                    <a href="{{ route('meetData.del', $data->id) }}" class="action-icon"> <i
+                                                            class="mdi mdi-trash-can-outline"></i></a>
+                                                @endif
                                             </td>
                                         </tr>
                                     @endforeach

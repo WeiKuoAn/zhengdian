@@ -96,7 +96,9 @@
                                                             <a class="dropdown-item"
                                                                     href="{{ route('project.edit', $data->id) }}" >編輯
                                                             </a>
+                                                            @if ((int) (Auth::user()->level ?? 2) !== 2)
                                                                 <a href="javascript:void(0);" class="dropdown-item" onclick="deleteProject({{ $data->id }})">刪除</a>
+                                                            @endif
                                                             {{-- <a class="dropdown-item"
                                                                 @if ($data->type == 0) href="{{ route('user.project.business.appendix', $data->user_id) }}"
                                                         @elseif($data->type == 1)

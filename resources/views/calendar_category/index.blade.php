@@ -48,7 +48,9 @@
                                             <td>
                                                 <a href="{{ route('CalendarCategory.edit', $data->id) }}" class="action-icon"> <i
                                                         class="mdi mdi-square-edit-outline"></i></a>
-                                                <a href="{{ route('CalendarCategory.del', $data->id) }}" class="action-icon"> <i class="mdi mdi-trash-can-outline"></i></a>
+                                                @if ((int) (Auth::user()->level ?? 2) === 0)
+                                                    <a href="{{ route('CalendarCategory.del', $data->id) }}" class="action-icon"> <i class="mdi mdi-trash-can-outline"></i></a>
+                                                @endif
                                             </td>
                                         </tr>
                                     @endforeach
