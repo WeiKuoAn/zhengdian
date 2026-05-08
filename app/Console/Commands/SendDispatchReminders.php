@@ -22,7 +22,7 @@ class SendDispatchReminders extends Command
     protected $description = 'Send dispatch acceptance and due reminder messages';
 
     protected int $fixedNotifyUserId = 40;
-    protected string $dispatchReminderStartDate = '2026-04-01 00:00:00';
+    protected string $dispatchReminderStartDate = '2026-05-01 00:00:00';
 
     protected ?DispatchReminderSetting $setting = null;
     protected ?string $fixedNotifyUserName = null;
@@ -177,15 +177,24 @@ class SendDispatchReminders extends Command
                 }
             }
 
-            // 遲交提醒（每兩小時；超過 cutoff 不提醒）
-            $firstOverdue = $dueAt->copy()->addMinutes($overdueInterval);
-            $slot = $this->latestSlot($firstOverdue, $overdueInterval, $now);
+            // 遲交提醒：逾表定時間後發送。
+            // 表定「當日」：由表定完成時間起每間隔一拍，並限於最晚提醒時間／遲交截止前；
+            // 表定「隔日」起：改由每日最早提醒時間起每間隔一拍，同上限制；直至完成。
+            if (!$now->greaterThan($dueAt)) {
+                continue;
+            }
+
+            $slot = $this->overdueReminderSlot($now, $dueAt, $overdueInterval);
             if ($slot === null || !$this->isWithinNotifyWindow($slot)) {
                 continue;
             }
 
-            $cutoff = $this->dateTimeFor($dueAt, (string) $this->settingValue('overdue_cutoff_time', (string) config('dispatch_reminder.overdue_cutoff_time', '18:00')));
-            if ($slot->greaterThan($cutoff)) {
+            $dayCutoffHm = (string) $this->settingValue('overdue_cutoff_time', (string) config('dispatch_reminder.overdue_cutoff_time', '18:00'));
+            $dayWindowEndHm = (string) $this->settingValue('window_end', (string) config('dispatch_reminder.window_end', '18:00'));
+            $dayCutoffOverdue = $this->dateTimeFor($slot, $dayCutoffHm);
+            $dayCutoffNotify = $this->dateTimeFor($slot, $dayWindowEndHm);
+            $dayCutoff = $dayCutoffOverdue->lt($dayCutoffNotify) ? $dayCutoffOverdue : $dayCutoffNotify;
+            if ($slot->greaterThan($dayCutoff)) {
                 continue;
             }
 
@@ -234,6 +243,7 @@ class SendDispatchReminders extends Command
 
         foreach ($overdueBuckets as $bucket) {
             $cutoffText = (string) $this->settingValue('overdue_cutoff_time', (string) config('dispatch_reminder.overdue_cutoff_time', '18:00'));
+            $intervalText = (string) max((int) $this->settingValue('overdue_interval_minutes', (int) config('dispatch_reminder.overdue_interval_minutes', 120)), 1);
             if ($this->sendCombinedProjectMessages(
                 $chat,
                 $bucket['entries'],
@@ -241,7 +251,7 @@ class SendDispatchReminders extends Command
                 $bucket['user_ids'],
                 'overdue',
                 '【遲交提醒】',
-                '提醒：目前已逾期，將每 2 小時提醒一次（超過 ' . $cutoffText . ' 不再提醒）。'
+                '提醒：目前已逾期；表定當日自到期時間起、隔日起自最早提醒時間起，於時段內每 ' . $intervalText . ' 分鐘提醒直至完成（超過最晚提醒時間或遲交截止 ' . $cutoffText . ' 不再發送）。'
             )) {
                 $sent += count($bucket['entries']);
             }
@@ -538,6 +548,61 @@ class SendDispatchReminders extends Command
         $elapsed = $startAt->diffInMinutes($now);
         $steps = intdiv($elapsed, $intervalMinutes);
         return $startAt->copy()->addMinutes($steps * $intervalMinutes);
+    }
+
+    /**
+     * 遲交提醒用：逾表定後，「表定當日」自表定完成時間對齊間隔；
+     * 「隔日」起改自最早提醒時間對齊；僅在目前時刻已達當日第一個有效格時才回傳。
+     */
+    protected function overdueReminderSlot(Carbon $now, Carbon $dueAt, int $intervalMinutes): ?Carbon
+    {
+        $intervalMinutes = max($intervalMinutes, 1);
+
+        $windowStartHm = (string) $this->settingValue('window_start', (string) config('dispatch_reminder.window_start', '09:00'));
+        $windowEndHm = (string) $this->settingValue('window_end', (string) config('dispatch_reminder.window_end', '18:00'));
+        $overdueCutoffHm = (string) $this->settingValue('overdue_cutoff_time', (string) config('dispatch_reminder.overdue_cutoff_time', '18:00'));
+
+        $windowStartToday = $this->dateTimeFor($now, $windowStartHm);
+        $dayEndNotify = $this->dateTimeFor($now, $windowEndHm);
+        $dayEndOverdue = $this->dateTimeFor($now, $overdueCutoffHm);
+        $dayEnd = $dayEndNotify->lte($dayEndOverdue) ? $dayEndNotify : $dayEndOverdue;
+
+        if ($now->isSameDay($dueAt)) {
+            $seriesAnchor = $dueAt->copy();
+
+            if ($seriesAnchor->lt($windowStartToday)) {
+                $ahead = $seriesAnchor->diffInMinutes($windowStartToday);
+                $n = intdiv($ahead + $intervalMinutes - 1, $intervalMinutes);
+                $seriesAnchor = $seriesAnchor->copy()->addMinutes($n * $intervalMinutes);
+                if ($seriesAnchor->lt($windowStartToday)) {
+                    $seriesAnchor = $windowStartToday->copy();
+                }
+            }
+
+            if ($now->lt($seriesAnchor)) {
+                return null;
+            }
+
+            $slot = $this->latestSlot($seriesAnchor, $intervalMinutes, $now);
+        } else {
+            $seriesAnchor = $windowStartToday->copy();
+
+            if ($now->lt($seriesAnchor)) {
+                return null;
+            }
+
+            $slot = $this->latestSlot($seriesAnchor, $intervalMinutes, $now);
+        }
+
+        if ($slot === null) {
+            return null;
+        }
+
+        if ($slot->gt($dayEnd)) {
+            return null;
+        }
+
+        return $slot;
     }
 
     protected function claimReminder(string $key, string $type, ?int $taskId, ?int $taskItemId, Carbon $slot): bool
