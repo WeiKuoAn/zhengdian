@@ -110,6 +110,7 @@ class SendDispatchReminders extends Command
                 'project_name' => $projectName,
                 'task_name' => $taskName,
                 'project_plan_url' => $projectPlanUrl,
+                'planned_completion_suffix' => $this->plannedCompletionSuffix($task->estimated_end),
             ];
         }
 
@@ -173,6 +174,7 @@ class SendDispatchReminders extends Command
                         'project_name' => $projectName,
                         'task_name' => $taskName,
                         'project_plan_url' => $projectPlanUrl,
+                        'planned_completion_suffix' => $this->plannedCompletionSuffix($task->estimated_end),
                     ];
                 }
             }
@@ -224,6 +226,7 @@ class SendDispatchReminders extends Command
                 'project_name' => $projectName,
                 'task_name' => $taskName,
                 'project_plan_url' => $projectPlanUrl,
+                'planned_completion_suffix' => $this->plannedCompletionSuffix($task->estimated_end),
             ];
         }
 
@@ -448,19 +451,22 @@ class SendDispatchReminders extends Command
                 ];
             }
             $taskName = trim((string) ($entry['task_name'] ?? ''));
+            $plannedSuffix = (string) ($entry['planned_completion_suffix'] ?? '');
             if ($taskName !== '') {
-                $projectGroups[$projectKey]['tasks'][] = $taskName;
+                $projectGroups[$projectKey]['tasks'][] = ['name' => $taskName, 'suffix' => $plannedSuffix];
             }
         }
 
         $entryBlocks = [];
         foreach ($projectGroups as $group) {
             $taskLines = [];
-            foreach (array_values($group['tasks']) as $index => $taskName) {
-                $taskLines[] = '　' . ($index + 1) . '.' . $taskName;
+            foreach (array_values($group['tasks']) as $index => $row) {
+                $taskName = is_array($row) ? trim((string) ($row['name'] ?? '')) : trim((string) $row);
+                $plannedSuffix = is_array($row) ? (string) ($row['suffix'] ?? '') : '';
+                $taskLines[] = '　' . ($index + 1) . '.' . $taskName . $plannedSuffix;
             }
             if (empty($taskLines)) {
-                $taskLines[] = '　1.未命名工作項目';
+                $taskLines[] = '　1.未命名工作項目' . $this->plannedCompletionSuffix(null);
             }
 
             $entryBlocks[] = implode("\n", [
@@ -525,6 +531,14 @@ class SendDispatchReminders extends Command
         $prefix = (string) (optional(optional($task->project_data)->user_data)->name ?? '');
         $projectName = (string) (optional($task->project_data)->name ?? '未命名專案');
         return $prefix . $projectName;
+    }
+
+    /** 附加於工作項目列之後：(表訂完成日期：Y-m-d H:i)，無表訂則標示未設定 */
+    protected function plannedCompletionSuffix(mixed $estimatedEnd): string
+    {
+        $at = $this->asCarbon($estimatedEnd);
+
+        return ' (表訂完成日期：' . ($at === null ? '未設定' : $at->format('Y-m-d H:i')) . ')';
     }
 
     protected function isWithinNotifyWindow(Carbon $time): bool
