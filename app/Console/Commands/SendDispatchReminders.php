@@ -90,6 +90,7 @@ class SendDispatchReminders extends Command
 
             $projectName = $this->buildProjectName($task);
             $taskName = (string) (optional($task->task_template_data)->name ?? $task->name ?? '工作項目');
+            $taskNote = trim((string) ($task->comments ?? ''));
             $projectId = (int) ($task->project_id ?? 0);
             $projectPlanUrl = $projectId > 0
                 ? ('https://zhengdian.com.tw/project/plan/' . $projectId)
@@ -109,6 +110,7 @@ class SendDispatchReminders extends Command
                 'project_id' => $projectId,
                 'project_name' => $projectName,
                 'task_name' => $taskName,
+                'task_note' => $taskNote,
                 'project_plan_url' => $projectPlanUrl,
                 'planned_completion_suffix' => $this->plannedCompletionSuffix($task->estimated_end),
             ];
@@ -156,6 +158,7 @@ class SendDispatchReminders extends Command
                 if ($this->claimReminder($preKey, 'due_pre', $task->id, null, $preAt)) {
                     $projectName = $this->buildProjectName($task);
                     $taskName = (string) (optional($task->task_template_data)->name ?? $task->name ?? '工作項目');
+                    $taskNote = trim((string) ($task->comments ?? ''));
                     $projectId = (int) ($task->project_id ?? 0);
                     $projectPlanUrl = $projectId > 0
                         ? ('https://zhengdian.com.tw/project/plan/' . $projectId)
@@ -173,6 +176,7 @@ class SendDispatchReminders extends Command
                     $dueBuckets[$bucketKey]['entries'][] = [
                         'project_name' => $projectName,
                         'task_name' => $taskName,
+                        'task_note' => $taskNote,
                         'project_plan_url' => $projectPlanUrl,
                         'planned_completion_suffix' => $this->plannedCompletionSuffix($task->estimated_end),
                     ];
@@ -207,6 +211,7 @@ class SendDispatchReminders extends Command
 
             $projectName = $this->buildProjectName($task);
             $taskName = (string) (optional($task->task_template_data)->name ?? $task->name ?? '工作項目');
+            $taskNote = trim((string) ($task->comments ?? ''));
             $projectId = (int) ($task->project_id ?? 0);
             $projectPlanUrl = $projectId > 0
                 ? ('https://zhengdian.com.tw/project/plan/' . $projectId)
@@ -225,6 +230,7 @@ class SendDispatchReminders extends Command
             $overdueBuckets[$bucketKey]['entries'][] = [
                 'project_name' => $projectName,
                 'task_name' => $taskName,
+                'task_note' => $taskNote,
                 'project_plan_url' => $projectPlanUrl,
                 'planned_completion_suffix' => $this->plannedCompletionSuffix($task->estimated_end),
             ];
@@ -451,9 +457,14 @@ class SendDispatchReminders extends Command
                 ];
             }
             $taskName = trim((string) ($entry['task_name'] ?? ''));
+            $taskNote = trim((string) ($entry['task_note'] ?? ''));
             $plannedSuffix = (string) ($entry['planned_completion_suffix'] ?? '');
             if ($taskName !== '') {
-                $projectGroups[$projectKey]['tasks'][] = ['name' => $taskName, 'suffix' => $plannedSuffix];
+                $projectGroups[$projectKey]['tasks'][] = [
+                    'name' => $taskName,
+                    'note' => $taskNote,
+                    'suffix' => $plannedSuffix,
+                ];
             }
         }
 
@@ -462,8 +473,13 @@ class SendDispatchReminders extends Command
             $taskLines = [];
             foreach (array_values($group['tasks']) as $index => $row) {
                 $taskName = is_array($row) ? trim((string) ($row['name'] ?? '')) : trim((string) $row);
+                $taskNote = is_array($row) ? trim((string) ($row['note'] ?? '')) : '';
                 $plannedSuffix = is_array($row) ? (string) ($row['suffix'] ?? '') : '';
-                $taskLines[] = '　' . ($index + 1) . '.' . $taskName . $plannedSuffix;
+                $label = $taskName;
+                if ($taskNote !== '') {
+                    $label .= ' - ' . $taskNote;
+                }
+                $taskLines[] = '　' . ($index + 1) . '.' . $label . $plannedSuffix;
             }
             if (empty($taskLines)) {
                 $taskLines[] = '　1.未命名工作項目' . $this->plannedCompletionSuffix(null);

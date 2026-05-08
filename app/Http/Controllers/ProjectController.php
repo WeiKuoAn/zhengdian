@@ -879,6 +879,10 @@ class ProjectController extends Controller
             $linkedTaskId = $milestone ? ($milestone->linked_task_id ?? null) : null;
             $linkedTask = $linkedTaskId ? Task::with('items.user_data')->find($linkedTaskId) : null;
             $myTaskItem = $linkedTask ? $linkedTask->items->firstWhere('user_id', $loginUserId) : null;
+            $dispatchEstimatedEnd = null;
+            if (!empty(optional($linkedTask)->estimated_end)) {
+                $dispatchEstimatedEnd = Carbon::parse($linkedTask->estimated_end)->format('Y/m/d H:i');
+            }
 
             $executorRows = [['user_id' => '', 'context' => '']];
             if ($linkedTask && $linkedTask->items->isNotEmpty()) {
@@ -909,6 +913,7 @@ class ProjectController extends Controller
             $durationHours = (float) ($task->duration_hours ?? (($task->duration_days ?? 0) * 8));
             $gapDaysDisplay = $durationHours <= 0 ? 0 : ($durationHours / 8);
             $gapDays = $gapDaysDisplay <= 0 ? 0 : (int) ceil($gapDaysDisplay);
+            $durationMinutes = (int) round(max($durationHours, 0) * 60);
 
             return (object) [
                 'id' => $task->id,
@@ -921,6 +926,7 @@ class ProjectController extends Controller
                 'linked_task_id' => $linkedTaskId,
                 'dispatch_status_text' => $linkedTask ? $linkedTask->status() : '未建立派工',
                 'dispatch_status_value' => $linkedTask->status ?? null,
+                'dispatch_estimated_end' => $dispatchEstimatedEnd,
                 'executor_rows' => $executorRows,
                 'dispatch_comments' => $myTaskItem->context ?? ($linkedTask->comments ?? ''),
                 'my_task_item_id' => $myTaskItem->id ?? null,
@@ -928,6 +934,7 @@ class ProjectController extends Controller
                 'can_report_completion' => $myTaskItem !== null,
                 'gap_days' => $gapDays,
                 'gap_days_display' => $gapDaysDisplay,
+                'duration_minutes' => $durationMinutes,
             ];
         });
 
@@ -1108,6 +1115,7 @@ class ProjectController extends Controller
         $task->template_id = $template->id;
         $task->check_status_id = $template->check_status_id;
         $task->created_by = Auth::id();
+        // 僅保留原本派工列表的表訂時間寫法；排程頁灰字預估由前端即時計算。
         $task->estimated_end = $dateStr.' 17:00:00';
         $task->priority = 2;
         if (! $task->exists) {
@@ -1155,6 +1163,53 @@ class ProjectController extends Controller
         }
 
         return (int) $task->id;
+    }
+
+    /**
+     * 以工作時段推進時間：
+     * - 工作時間：09:00–12:00、13:00–18:00
+     * - 午休：12:00–13:00（會自動跳過）
+     * - 超過 18:00 會順延隔天 09:00 繼續
+     */
+    protected function addWorkingMinutesSkippingLunch(Carbon $startAt, int $minutes): Carbon
+    {
+        $minutes = max($minutes, 0);
+        $t = $startAt->copy();
+
+        while ($minutes > 0) {
+            $workStart = $t->copy()->setTime(9, 0, 0);
+            $lunchStart = $t->copy()->setTime(12, 0, 0);
+            $lunchEnd = $t->copy()->setTime(13, 0, 0);
+            $workEnd = $t->copy()->setTime(18, 0, 0);
+
+            if ($t->lt($workStart)) {
+                $t = $workStart;
+                continue;
+            }
+
+            if ($t->greaterThanOrEqualTo($lunchStart) && $t->lt($lunchEnd)) {
+                $t = $lunchEnd;
+                continue;
+            }
+
+            if ($t->greaterThanOrEqualTo($workEnd)) {
+                $t = $t->copy()->addDay()->setTime(9, 0, 0);
+                continue;
+            }
+
+            $segmentEnd = $t->lt($lunchStart) ? $lunchStart : $workEnd;
+            $available = $t->diffInMinutes($segmentEnd);
+            if ($available <= 0) {
+                $t = $segmentEnd;
+                continue;
+            }
+
+            $consume = min($minutes, $available);
+            $t = $t->copy()->addMinutes($consume);
+            $minutes -= $consume;
+        }
+
+        return $t;
     }
 
 

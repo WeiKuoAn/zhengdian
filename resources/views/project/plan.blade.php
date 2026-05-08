@@ -364,7 +364,12 @@
                                                     value="{{ $task_data->order_date }}"
                                                     data-row="{{ $key }}"
                                                     data-gap-days="{{ (int) ($task_data->gap_days ?? 0) }}"
+                                                    data-duration-minutes="{{ (int) ($task_data->duration_minutes ?? 0) }}"
                                                     @if ($isLevelTwo) readonly @endif>
+                                                <div class="small text-muted mt-1 plan-dispatch-estimated-end">
+                                                    派工表訂完成：
+                                                    {{ $task_data->dispatch_estimated_end ?? '尚未建立' }}
+                                                </div>
                                             </div>
                                             <div class="col-lg-3 mb-2 mb-lg-0 plan-executor-col plan-equal-col">
                                                 <label class="d-lg-none small text-muted">派工與負責執行人員</label>
@@ -610,7 +615,86 @@
 
             function bindOrderCascade() {
                 const inputs = document.querySelectorAll('.plan-order-date');
+
+                function toSlashDateTime(d) {
+                    const y = d.getFullYear();
+                    const m = String(d.getMonth() + 1).padStart(2, '0');
+                    const day = String(d.getDate()).padStart(2, '0');
+                    const hh = String(d.getHours()).padStart(2, '0');
+                    const mm = String(d.getMinutes()).padStart(2, '0');
+                    return `${y}/${m}/${day} ${hh}:${mm}`;
+                }
+
+                function addWorkingMinutesSkippingLunch(baseDateIso, minutes) {
+                    if (!baseDateIso) {
+                        return null;
+                    }
+                    let remain = Number(minutes || 0);
+                    if (!Number.isFinite(remain) || remain < 0) {
+                        remain = 0;
+                    }
+
+                    const [y, m, d] = baseDateIso.split('-').map(v => parseInt(v, 10));
+                    if (!y || !m || !d) {
+                        return null;
+                    }
+
+                    // 第一日以「表訂日期隔天 09:00」作為起算點，與後端一致。
+                    let t = new Date(y, m - 1, d + 1, 9, 0, 0, 0);
+                    while (remain > 0) {
+                        const workStart = new Date(t.getFullYear(), t.getMonth(), t.getDate(), 9, 0, 0, 0);
+                        const lunchStart = new Date(t.getFullYear(), t.getMonth(), t.getDate(), 12, 0, 0, 0);
+                        const lunchEnd = new Date(t.getFullYear(), t.getMonth(), t.getDate(), 13, 0, 0, 0);
+                        const workEnd = new Date(t.getFullYear(), t.getMonth(), t.getDate(), 18, 0, 0, 0);
+
+                        if (t < workStart) {
+                            t = workStart;
+                            continue;
+                        }
+                        if (t >= lunchStart && t < lunchEnd) {
+                            t = lunchEnd;
+                            continue;
+                        }
+                        if (t >= workEnd) {
+                            t = new Date(t.getFullYear(), t.getMonth(), t.getDate() + 1, 9, 0, 0, 0);
+                            continue;
+                        }
+
+                        const segmentEnd = t < lunchStart ? lunchStart : workEnd;
+                        const available = Math.max(0, Math.floor((segmentEnd - t) / 60000));
+                        if (available <= 0) {
+                            t = segmentEnd;
+                            continue;
+                        }
+
+                        const consume = Math.min(remain, available);
+                        t = new Date(t.getTime() + consume * 60000);
+                        remain -= consume;
+                    }
+
+                    return t;
+                }
+
+                function refreshDispatchEstimatedEnd(input) {
+                    const row = input.closest('.plan-order-col');
+                    const label = row ? row.querySelector('.plan-dispatch-estimated-end') : null;
+                    if (!label) {
+                        return;
+                    }
+
+                    const orderDate = String(input.value || '').trim();
+                    if (!orderDate) {
+                        label.textContent = '派工表訂完成：尚未建立';
+                        return;
+                    }
+
+                    const durationMinutes = parseInt(input.getAttribute('data-duration-minutes') || '0', 10);
+                    const estimated = addWorkingMinutesSkippingLunch(orderDate, durationMinutes);
+                    label.textContent = '派工表訂完成：' + (estimated ? toSlashDateTime(estimated) : '尚未建立');
+                }
+
                 inputs.forEach(function(input) {
+                    refreshDispatchEstimatedEnd(input);
                     input.addEventListener('change', function() {
                         const row = parseInt(input.getAttribute('data-row'), 10);
                         const n = inputs.length;
@@ -625,7 +709,9 @@
                                 if (prev) {
                                     inputs[j].value = addBusinessDaysInclusive(prev, gap);
                                 }
+                                refreshDispatchEstimatedEnd(inputs[j]);
                             }
+                            refreshDispatchEstimatedEnd(input);
                             return;
                         }
 
@@ -635,7 +721,9 @@
                             if (prev) {
                                 inputs[j].value = addBusinessDaysInclusive(prev, gap);
                             }
+                            refreshDispatchEstimatedEnd(inputs[j]);
                         }
+                        refreshDispatchEstimatedEnd(input);
                     });
                 });
             }
