@@ -7,6 +7,7 @@ use App\Models\DispatchReminderSetting;
 use App\Models\ChatWebhookEvent;
 use App\Models\Task;
 use App\Models\TaskItem;
+use App\Models\User;
 use App\Support\DispatchReminderCalendar;
 use App\Services\ChatWebhookService;
 use Illuminate\Console\Command;
@@ -279,21 +280,20 @@ class SendDispatchReminders extends Command
         string $reminderType,
         ?Task $task = null,
         ?TaskItem $item = null
-    ): bool
-    {
+    ): bool {
         $userIds = $this->buildRecipientUserIds($items);
-
-        $result = $chat->sendIncomingToSynology($text, $userIds);
-        $this->logWebhookEvent($reminderType, $text, $userIds, $result, $task, $item);
-        if (!($result['success'] ?? false)) {
-            Log::warning('dispatch_reminder_send_failed', [
-                'message' => $result['message'] ?? 'unknown',
-                'result' => $result,
-            ]);
+        if ($userIds === []) {
             return false;
         }
 
-        return true;
+        $allOk = true;
+        foreach ($userIds as $userId) {
+            if (!$this->sendReminderMessageToUserIds($chat, $text, [$userId], $reminderType)) {
+                $allOk = false;
+            }
+        }
+
+        return $allOk;
     }
 
     protected function sendReminderMessageToUserIds(
@@ -321,14 +321,22 @@ class SendDispatchReminders extends Command
         array $userIds,
         string $reminderType
     ): bool {
+        $userIds = $this->normalizeSynologyUserIds($userIds);
+        if ($userIds === []) {
+            return false;
+        }
+
         $chunks = $this->splitMessagesByLength($messages, 2800);
-        foreach ($chunks as $chunkText) {
-            if (!$this->sendReminderMessageToUserIds($chat, $chunkText, $userIds, $reminderType)) {
-                return false;
+        $allOk = true;
+        foreach ($userIds as $userId) {
+            foreach ($chunks as $chunkText) {
+                if (!$this->sendReminderMessageToUserIds($chat, $chunkText, [$userId], $reminderType)) {
+                    $allOk = false;
+                }
             }
         }
 
-        return true;
+        return $allOk;
     }
 
     protected function splitMessagesByLength(array $messages, int $maxLen): array
@@ -382,6 +390,25 @@ class SendDispatchReminders extends Command
             ->all();
     }
 
+    /** @param int[] $userIds */
+    protected function normalizeSynologyUserIds(array $userIds): array
+    {
+        return array_values(array_unique(array_filter(
+            array_map(static fn ($id) => (int) $id, $userIds),
+            static fn (int $id) => $id > 0
+        )));
+    }
+
+    /** @return string[] */
+    protected function mentionNamesForSynologyUserId(int $synologyUserId): array
+    {
+        $name = trim((string) User::query()
+            ->where('synology_user_id', $synologyUserId)
+            ->value('name'));
+
+        return $name !== '' ? [$name] : [];
+    }
+
     protected function sendCombinedAcceptanceMessages(
         ChatWebhookService $chat,
         array $entries,
@@ -412,6 +439,38 @@ class SendDispatchReminders extends Command
             return true;
         }
 
+        $userIds = $this->normalizeSynologyUserIds($userIds);
+        if ($userIds === []) {
+            return false;
+        }
+
+        $allOk = true;
+        foreach ($userIds as $userId) {
+            if (!$this->sendCombinedProjectMessagesForRecipient(
+                $chat,
+                $entries,
+                $this->mentionNamesForSynologyUserId($userId),
+                $userId,
+                $reminderType,
+                $title,
+                $footer
+            )) {
+                $allOk = false;
+            }
+        }
+
+        return $allOk;
+    }
+
+    protected function sendCombinedProjectMessagesForRecipient(
+        ChatWebhookService $chat,
+        array $entries,
+        array $mentionNames,
+        int $synologyUserId,
+        string $reminderType,
+        string $title,
+        string $footer
+    ): bool {
         $mentionLine = implode(' ', array_map(fn ($name) => '@' . $name, $mentionNames));
         $projectGroups = [];
         foreach ($entries as $entry) {
@@ -479,7 +538,7 @@ class SendDispatchReminders extends Command
         }
 
         foreach ($chunks as $chunk) {
-            if (!$this->sendReminderMessageToUserIds($chat, $chunk, $userIds, $reminderType)) {
+            if (!$this->sendReminderMessageToUserIds($chat, $chunk, [$synologyUserId], $reminderType)) {
                 return false;
             }
         }

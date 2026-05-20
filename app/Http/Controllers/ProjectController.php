@@ -118,29 +118,37 @@ class ProjectController extends Controller
                 ];
             });
 
-        $mentionText = $executorData->pluck('mention')->implode('、');
-        $userIds = $executorData->pluck('chat_id')->filter()->values()->toArray();
-
-        $textLines = [];
-        if ($mentionText !== '') {
-            $textLines[] = $mentionText;
-        }
-        $textLines = array_merge($textLines, [
+        $bodyLines = [
             '專案網址：' . route('project.plan', $project->id),
             '表定時間：' . $scheduledDate,
             '專案名稱：' . ($project->name ?? ''),
             '派工項目：' . $taskName,
             '派工內容：' . $dispatchContent,
-        ]);
-        $text = implode("\n", $textLines);
+        ];
 
-        $result = app(ChatWebhookService::class)->sendIncomingToSynology($text, $userIds);
-        if (!($result['success'] ?? false)) {
-            Log::warning('dispatch_webhook_send_failed', [
-                'project_id' => $project->id,
-                'task_name' => $taskName,
-                'message' => $result['message'] ?? 'unknown error',
-            ]);
+        $chat = app(ChatWebhookService::class);
+        foreach ($executorData as $executor) {
+            $chatUserId = (int) ($executor['chat_id'] ?? 0);
+            if ($chatUserId <= 0) {
+                continue;
+            }
+
+            $textLines = [];
+            $mention = trim((string) ($executor['mention'] ?? ''));
+            if ($mention !== '') {
+                $textLines[] = $mention;
+            }
+            $text = implode("\n", array_merge($textLines, $bodyLines));
+
+            $result = $chat->sendIncomingToSynology($text, [$chatUserId]);
+            if (!($result['success'] ?? false)) {
+                Log::warning('dispatch_webhook_send_failed', [
+                    'project_id' => $project->id,
+                    'task_name' => $taskName,
+                    'synology_user_id' => $chatUserId,
+                    'message' => $result['message'] ?? 'unknown error',
+                ]);
+            }
         }
     }
 
