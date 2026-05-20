@@ -8,6 +8,7 @@ use App\Services\ChatWebhookService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\View\View;
 
 class DispatchReminderSettingController extends Controller
@@ -48,11 +49,22 @@ class DispatchReminderSettingController extends Controller
             'remind_on_holidays' => ['sometimes', 'boolean'],
         ]);
 
-        $validated['remind_on_holidays'] = $request->boolean('remind_on_holidays');
+        $hasHolidayColumn = Schema::hasColumn('dispatch_reminder_settings', 'remind_on_holidays');
+        if ($hasHolidayColumn) {
+            $validated['remind_on_holidays'] = $request->boolean('remind_on_holidays');
+        }
 
         DispatchReminderSetting::query()->updateOrCreate(['id' => 1], $validated);
 
-        return redirect()->route('dispatch-reminder-settings')->with('success', '提醒設定已更新');
+        $redirect = redirect()->route('dispatch-reminder-settings')->with('success', '提醒設定已更新');
+        if (!$hasHolidayColumn && $request->boolean('remind_on_holidays')) {
+            $redirect->with(
+                'error',
+                '資料庫尚未新增「假日提醒」欄位，請在伺服器執行：php artisan migrate --force'
+            );
+        }
+
+        return $redirect;
     }
 
     public function sendTest(ChatWebhookService $chat): RedirectResponse
