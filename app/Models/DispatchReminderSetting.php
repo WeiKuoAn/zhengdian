@@ -15,9 +15,14 @@ class DispatchReminderSetting extends Model
         'accept_interval_minutes',
         'due_before_minutes',
         'overdue_interval_minutes',
+        'remind_on_holidays',
         'accept_template',
         'due_template',
         'overdue_template',
+    ];
+
+    protected $casts = [
+        'remind_on_holidays' => 'boolean',
     ];
 }
 

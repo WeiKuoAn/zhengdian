@@ -292,10 +292,27 @@
                     </li>
 
                     <li class="menu-item">
-                        <a href="{{ route('app.chat') }}" class="menu-link {{ request()->is('app/chat') ? 'active' : '' }}">
+                        <a class="menu-link" href="#webhook" data-bs-toggle="collapse">
                             <span class="menu-icon"><i data-feather="send"></i></span>
                             <span class="menu-text"> Webhook 管理 </span>
+                            <span class="menu-arrow"></span>
                         </a>
+                        <div class="collapse {{ request()->is('app/webhook*') || request()->is('app/chat*') ? 'show' : '' }}" id="webhook">
+                            <ul class="sub-menu">
+                                <li class="menu-item">
+                                    <a class="menu-link {{ request()->routeIs('app.webhook.records') || request()->is('app/chat') ? 'active' : '' }}"
+                                        href="{{ route('app.webhook.records') }}">
+                                        <span class="menu-text">Webhook 記錄</span>
+                                    </a>
+                                </li>
+                                <li class="menu-item">
+                                    <a class="menu-link {{ request()->routeIs('app.webhook.endpoints') ? 'active' : '' }}"
+                                        href="{{ route('app.webhook.endpoints') }}">
+                                        <span class="menu-text">Webhook 端點資訊</span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
                     </li>
                 @endif
 

@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\DispatchReminderSetting;
+use App\Support\DispatchReminderCalendar;
 use App\Services\ChatWebhookService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
 class DispatchReminderSettingController extends Controller
@@ -24,6 +26,7 @@ class DispatchReminderSettingController extends Controller
                 'accept_template' => (string) config('dispatch_reminder.accept_template', ''),
                 'due_template' => (string) config('dispatch_reminder.due_template', ''),
                 'overdue_template' => (string) config('dispatch_reminder.overdue_template', ''),
+                'remind_on_holidays' => (bool) config('dispatch_reminder.remind_on_holidays', false),
             ]);
         }
 
@@ -42,7 +45,10 @@ class DispatchReminderSettingController extends Controller
             'accept_template' => ['nullable', 'string'],
             'due_template' => ['nullable', 'string'],
             'overdue_template' => ['nullable', 'string'],
+            'remind_on_holidays' => ['sometimes', 'boolean'],
         ]);
+
+        $validated['remind_on_holidays'] = $request->boolean('remind_on_holidays');
 
         DispatchReminderSetting::query()->updateOrCreate(['id' => 1], $validated);
 
@@ -52,6 +58,17 @@ class DispatchReminderSettingController extends Controller
     public function sendTest(ChatWebhookService $chat): RedirectResponse
     {
         $setting = DispatchReminderSetting::query()->first();
+        $synologyUserId = (int) (Auth::user()?->synology_user_id ?? 0);
+        if ($synologyUserId <= 0) {
+            return redirect()->route('dispatch-reminder-settings')
+                ->with('error', '請先在使用者資料設定 Synology Chat ID，才能發送測試訊息。');
+        }
+
+        $remindOnHolidays = (bool) ($setting?->remind_on_holidays ?? config('dispatch_reminder.remind_on_holidays', false));
+        if (!DispatchReminderCalendar::allowsRemindersToday($remindOnHolidays, now())) {
+            return redirect()->route('dispatch-reminder-settings')
+                ->with('error', '今日為假日且未勾選「假日提醒」，無法發送測試訊息。');
+        }
 
         $vars = [
             '{mentions}' => '@測試使用者',
@@ -82,7 +99,7 @@ class DispatchReminderSettingController extends Controller
             if ($message === '') {
                 continue;
             }
-            $result = $chat->sendIncomingToSynology($message, [40]);
+            $result = $chat->sendIncomingToSynology($message, [$synologyUserId]);
             if (!($result['success'] ?? false)) {
                 $allOk = false;
                 $errors[] = '第 ' . ($index + 1) . ' 則失敗：' . ($result['message'] ?? 'unknown');
@@ -91,7 +108,7 @@ class DispatchReminderSettingController extends Controller
 
         if ($allOk) {
             return redirect()->route('dispatch-reminder-settings')
-                ->with('success', '已發送測試訊息至 Synology Chat ID=40（接收/繳交/遲交）');
+                ->with('success', '已發送測試訊息至您的 Synology Chat（接收/繳交/遲交）');
         }
 
         return redirect()->route('dispatch-reminder-settings')

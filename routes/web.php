@@ -44,6 +44,9 @@ require __DIR__ . '/auth.php';
 Route::middleware(['auth'])->group(function () {
     Route::get('home', [DashboardController::class, 'loginSuccess'])->name('index');
     Route::get('app/chat', [ChatWebhookDashboardController::class, 'index'])->name('app.chat');
+    Route::get('app/webhook/records', [ChatWebhookDashboardController::class, 'records'])->name('app.webhook.records');
+    Route::get('app/webhook/endpoints', [ChatWebhookDashboardController::class, 'endpoints'])->name('app.webhook.endpoints');
+    Route::post('app/webhook/test', [ChatWebhookDashboardController::class, 'testSend'])->name('app.webhook.test');
     Route::post('app/chat/test', [ChatWebhookDashboardController::class, 'testSend'])->name('app.chat.test');
     Route::get('dispatch-reminder-settings', [DispatchReminderSettingController::class, 'index'])->name('dispatch-reminder-settings');
     Route::post('dispatch-reminder-settings', [DispatchReminderSettingController::class, 'update'])->name('dispatch-reminder-settings.update');

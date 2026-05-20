@@ -16,6 +16,9 @@ return [
     // 逾時提醒的當日截止時間（例如 18:00 過後不再提醒）
     'overdue_cutoff_time' => env('DISPATCH_REMINDER_OVERDUE_CUTOFF', '18:00'),
 
+    // 未勾選「假日提醒」時，週六、週日不發送
+    'remind_on_holidays' => filter_var(env('DISPATCH_REMINDER_ON_HOLIDAYS', false), FILTER_VALIDATE_BOOLEAN),
+
     // 三種提醒訊息模板（可被前台設定覆蓋）
     // 可用變數：{mentions} {project_name} {task_name} {task_url} {due_time} {cutoff_time}
     'accept_template' => env('DISPATCH_REMINDER_ACCEPT_TEMPLATE', "{mentions}\n【派工接收提醒】\n專案名稱：{project_name}\n工作項目：{task_name}\n派工列表：{task_url}\n提醒：派工後 1 小時內請接收，未接收將每小時提醒一次。"),

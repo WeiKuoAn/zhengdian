@@ -7,7 +7,7 @@ use App\Models\DispatchReminderSetting;
 use App\Models\ChatWebhookEvent;
 use App\Models\Task;
 use App\Models\TaskItem;
-use App\Models\User;
+use App\Support\DispatchReminderCalendar;
 use App\Services\ChatWebhookService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Carbon;
@@ -21,11 +21,9 @@ class SendDispatchReminders extends Command
 
     protected $description = 'Send dispatch acceptance and due reminder messages';
 
-    protected int $fixedNotifyUserId = 40;
     protected string $dispatchReminderStartDate = '2026-05-01 00:00:00';
 
     protected ?DispatchReminderSetting $setting = null;
-    protected ?string $fixedNotifyUserName = null;
 
     public function handle(ChatWebhookService $chat): int
     {
@@ -38,6 +36,11 @@ class SendDispatchReminders extends Command
                 $this->error('無效的 --at 時間格式，請用例如：2026-05-05 10:00');
                 return self::INVALID;
             }
+        }
+
+        if (!DispatchReminderCalendar::allowsRemindersToday($this->remindOnHolidaysEnabled(), $now)) {
+            $this->info('dispatch reminders skipped: holiday (remind_on_holidays=off), at=' . $now->format('Y-m-d H:i:s'));
+            return self::SUCCESS;
         }
 
         $acceptCount = $this->sendAcceptanceReminders($chat, $now);
@@ -301,13 +304,6 @@ class SendDispatchReminders extends Command
     ): bool {
         $result = $chat->sendIncomingToSynology($text, $userIds);
         $this->logWebhookEvent($reminderType, $text, $userIds, $result, null, null);
-        if (!($result['success'] ?? false) && $this->extractSynologyErrorCode($result) === 407) {
-            $fallbackUserIds = array_values(array_unique(array_filter([$this->fixedNotifyUserId])));
-            if ($fallbackUserIds !== $userIds && !empty($fallbackUserIds)) {
-                $result = $chat->sendIncomingToSynology($text, $fallbackUserIds);
-                $this->logWebhookEvent($reminderType, $text, $fallbackUserIds, $result, null, null);
-            }
-        }
         if (!($result['success'] ?? false)) {
             Log::warning('dispatch_reminder_send_failed', [
                 'message' => $result['message'] ?? 'unknown',
@@ -366,17 +362,11 @@ class SendDispatchReminders extends Command
         return $chunks;
     }
 
-    protected function extractSynologyErrorCode(array $result): int
-    {
-        return (int) data_get($result, 'data.error.code', 0);
-    }
-
     protected function buildRecipientUserIds(Collection $items): array
     {
         return $items
             ->map(fn ($item) => (int) (optional($item->user_data)->synology_user_id ?? 0))
             ->filter(fn ($id) => $id > 0)
-            ->push($this->fixedNotifyUserId)
             ->unique()
             ->values()
             ->all();
@@ -384,33 +374,12 @@ class SendDispatchReminders extends Command
 
     protected function buildMentionNames(Collection $items): array
     {
-        $names = $items
+        return $items
             ->map(fn ($item) => trim((string) (optional($item->user_data)->name ?? '')))
             ->filter(fn ($name) => $name !== '')
             ->unique()
             ->values()
             ->all();
-
-        $fixedName = $this->resolveFixedNotifyUserName();
-        if ($fixedName !== null && !in_array($fixedName, $names, true)) {
-            $names[] = $fixedName;
-        }
-
-        return $names;
-    }
-
-    protected function resolveFixedNotifyUserName(): ?string
-    {
-        if ($this->fixedNotifyUserName !== null) {
-            return $this->fixedNotifyUserName;
-        }
-
-        $name = trim((string) User::query()
-            ->where('synology_user_id', $this->fixedNotifyUserId)
-            ->value('name'));
-
-        $this->fixedNotifyUserName = $name !== '' ? $name : null;
-        return $this->fixedNotifyUserName;
     }
 
     protected function sendCombinedAcceptanceMessages(
@@ -526,10 +495,9 @@ class SendDispatchReminders extends Command
         }
         $parts[] = $title;
         $parts[] = implode("\n--------------------------------------------------------------------------------\n\n", $entryBlocks);
-        $parts[] = '';
         $parts[] = $footer;
 
-        return implode("\n", $parts);
+        return trim(implode("\n", $parts));
     }
 
     protected function buildMentionText(Collection $items): string
@@ -663,6 +631,13 @@ class SendDispatchReminders extends Command
         } catch (\Throwable $e) {
             return null;
         }
+    }
+
+    protected function remindOnHolidaysEnabled(): bool
+    {
+        $value = $this->settingValue('remind_on_holidays', (bool) config('dispatch_reminder.remind_on_holidays', false));
+
+        return filter_var($value, FILTER_VALIDATE_BOOLEAN);
     }
 
     protected function settingValue(string $field, mixed $fallback): mixed

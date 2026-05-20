@@ -67,6 +67,19 @@
                                     </div>
                                 </div>
                             </div>
+
+                            <div class="mb-3">
+                                <div class="form-check">
+                                    <input type="checkbox" class="form-check-input" id="remind_on_holidays"
+                                        name="remind_on_holidays" value="1"
+                                        {{ old('remind_on_holidays', $setting->remind_on_holidays ?? false) ? 'checked' : '' }}>
+                                    <label class="form-check-label" for="remind_on_holidays">假日提醒</label>
+                                </div>
+                                <p class="text-muted small mb-0 mt-1">
+                                    未勾選時，週六、週日不發送提醒；勾選後週末也會發送。
+                                </p>
+                            </div>
+
                             <p class="text-muted mb-0">排程固定每分鐘檢查一次，並依上述分鐘數決定是否發送提醒。</p>
 
                             <hr>
@@ -90,7 +103,7 @@
 
                         <form method="POST" action="{{ route('dispatch-reminder-settings.test') }}" class="mt-3">
                             @csrf
-                            <button class="btn btn-warning" type="submit">發送測試訊息（Synology Chat ID=40）</button>
+                            <button class="btn btn-warning" type="submit">發送測試訊息（發送至目前登入者的 Synology Chat）</button>
                         </form>
                     </div>
                 </div>

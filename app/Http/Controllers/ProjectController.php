@@ -74,6 +74,16 @@ class ProjectController extends Controller
             || $this->normalizeExecutorRows($oldExecutors) !== $this->normalizeExecutorRows($newExecutors);
     }
 
+    protected function buildDispatchItemLabel(TaskTemplate $template): string
+    {
+        $template->loadMissing('check_status_data');
+        $stageName = trim((string) (optional($template->check_status_data)->name ?? ''));
+
+        return $stageName !== ''
+            ? '【' . $stageName . '】' . $template->name
+            : (string) $template->name;
+    }
+
     protected function sendDispatchWebhookMessage(
         CustProject $project,
         string $taskName,
@@ -81,15 +91,26 @@ class ProjectController extends Controller
         string $dispatchContent,
         array $executors
     ): void {
+        $hasSynologyUserId = Schema::hasColumn('users', 'synology_user_id');
+
         $executorData = collect($executors)
             ->filter(fn ($row) => !empty($row['name']))
             ->unique('id')
             ->values()
-            ->map(function ($row) {
+            ->map(function ($row) use ($hasSynologyUserId) {
                 $name = (string) $row['name'];
-                $chatUserId = \App\Models\User::where('name', $name)
-                    ->whereNotNull('synology_user_id')
-                    ->value('synology_user_id');
+                $chatUserId = null;
+                if ($hasSynologyUserId) {
+                    $userId = (int) ($row['id'] ?? 0);
+                    if ($userId > 0) {
+                        $chatUserId = User::where('id', $userId)->value('synology_user_id');
+                    }
+                    if ($chatUserId === null && $name !== '') {
+                        $chatUserId = User::where('name', $name)
+                            ->whereNotNull('synology_user_id')
+                            ->value('synology_user_id');
+                    }
+                }
 
                 return [
                     'mention' => '@' . $name,
@@ -108,6 +129,7 @@ class ProjectController extends Controller
             '專案網址：' . route('project.plan', $project->id),
             '表定時間：' . $scheduledDate,
             '專案名稱：' . ($project->name ?? ''),
+            '派工項目：' . $taskName,
             '派工內容：' . $dispatchContent,
         ]);
         $text = implode("\n", $textLines);
@@ -914,6 +936,7 @@ class ProjectController extends Controller
             $gapDaysDisplay = $durationHours <= 0 ? 0 : ($durationHours / 8);
             $gapDays = $gapDaysDisplay <= 0 ? 0 : (int) ceil($gapDaysDisplay);
             $durationMinutes = (int) round(max($durationHours, 0) * 60);
+            $linkDays = (int) (optional($task->check_status_data)->duration_days ?? 0);
 
             return (object) [
                 'id' => $task->id,
@@ -935,17 +958,15 @@ class ProjectController extends Controller
                 'gap_days' => $gapDays,
                 'gap_days_display' => $gapDaysDisplay,
                 'duration_minutes' => $durationMinutes,
+                'link_days' => $linkDays,
             ];
         });
-
-        $planGapDays = $task_datas->map(fn ($row) => (int) ($row->gap_days ?? 0))->values()->all();
 
         return view('project.plan', [
             'data' => $data,
             'request' => $request,
             'task_datas' => $task_datas,
             'users' => $users,
-            'plan_gap_days' => $planGapDays,
             'is_level_two' => $isLevelTwo,
         ]);
     }
@@ -953,9 +974,14 @@ class ProjectController extends Controller
     public function plan_update(string $id, Request $request)
     {
         if ((int) (Auth::user()->level ?? 0) === 2) {
+            $readonlyMessage = '您目前是唯讀權限，無法修改排程內容。';
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json(['success' => false, 'message' => $readonlyMessage], 403);
+            }
+
             return redirect()
                 ->route('project.plan', $id)
-                ->with('error', '您目前是唯讀權限，無法修改排程內容。');
+                ->with('error', $readonlyMessage);
         }
 
         $milestone_types = $request->milestone_types ?? [];
@@ -1050,6 +1076,10 @@ class ProjectController extends Controller
             ProjectMilestones::where('project_id', $id)
                 ->whereNotIn('milestone_type', $typesInForm->all())
                 ->delete();
+        }
+
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json(['success' => true, 'message' => '排程已儲存']);
         }
 
         return redirect()->route('project.plan', $id)->with('success', '排程已儲存');
@@ -1153,13 +1183,21 @@ class ProjectController extends Controller
 
         if ($shouldSend) {
             $dispatchContent = $comments !== '' ? $comments : ((string) ($template->description ?? $template->name));
-            $this->sendDispatchWebhookMessage(
-                $project,
-                $taskName,
-                $dateStr,
-                $dispatchContent,
-                $executors
-            );
+            try {
+                $this->sendDispatchWebhookMessage(
+                    $project,
+                    $this->buildDispatchItemLabel($template),
+                    $dateStr,
+                    $dispatchContent,
+                    $executors
+                );
+            } catch (\Throwable $e) {
+                Log::warning('dispatch_webhook_send_failed', [
+                    'project_id' => $project->id,
+                    'task_name' => $taskName,
+                    'message' => $e->getMessage(),
+                ]);
+            }
         }
 
         return (int) $task->id;
@@ -1269,9 +1307,12 @@ class ProjectController extends Controller
             if ($dispatchContent === '') {
                 $dispatchContent = (string) ($template->description ?? $template->name ?? $data->name);
             }
+            $dispatchItem = $template
+                ? $this->buildDispatchItemLabel($template)
+                : (string) $data->name;
             $this->sendDispatchWebhookMessage(
                 $project,
-                (string) $data->name,
+                $dispatchItem,
                 $scheduledDate,
                 $dispatchContent,
                 $executors
@@ -1357,9 +1398,12 @@ class ProjectController extends Controller
                 $executors
             );
             if ($shouldSend) {
+                $dispatchItem = $template
+                    ? $this->buildDispatchItemLabel($template)
+                    : (string) $data->name;
                 $this->sendDispatchWebhookMessage(
                     $project,
-                    (string) $data->name,
+                    $dispatchItem,
                     $scheduledDate,
                     $dispatchContent,
                     $executors
