@@ -75,12 +75,7 @@
                                         {{ old('remind_on_holidays', $setting->remind_on_holidays ?? false) ? 'checked' : '' }}>
                                     <label class="form-check-label" for="remind_on_holidays">假日提醒</label>
                                 </div>
-                                <p class="text-muted small mb-0 mt-1">
-                                    未勾選時，週六、週日不發送提醒；勾選後週末也會發送。
-                                </p>
                             </div>
-
-                            <p class="text-muted mb-0">排程固定每分鐘檢查一次，並依上述分鐘數決定是否發送提醒。</p>
 
                             <hr>
                             <h5 class="mb-3">提醒訊息模板（可手動調整）</h5>
