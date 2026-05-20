@@ -36,6 +36,33 @@
             margin-left: 0;
             padding: 10px 12px;
         }
+
+        .webhook-payload-content {
+            white-space: pre-wrap;
+            word-break: break-word;
+            font-size: 12px;
+            line-height: 1.5;
+            background: #fff;
+            border: 1px solid #e9ecef;
+            border-radius: 6px;
+            margin-left: 0;
+            padding: 10px 12px;
+            max-height: 320px;
+            overflow: auto;
+        }
+
+        .webhook-records-pagination {
+            margin-bottom: 0;
+        }
+
+        .webhook-records-pagination .pagination {
+            margin-bottom: 0;
+        }
+
+        .webhook-records-pagination .page-link {
+            border-radius: 6px;
+            margin: 0 2px;
+        }
     </style>
 @endsection
 
@@ -156,6 +183,17 @@
                                                 </details>
                                                 @if ($event->error_message)
                                                     <div class="text-danger mt-2">發送失敗：{{ $event->error_message }}</div>
+                                                    @if ($event->synologyErrorSummary())
+                                                        <div class="text-danger small mt-1">
+                                                            Synology：{{ $event->synologyErrorSummary() }}
+                                                        </div>
+                                                    @endif
+                                                    @if ($event->shouldShowFailurePayload())
+                                                        <details class="webhook-records-details mt-2">
+                                                            <summary>查看 payload</summary>
+                                                            <pre class="webhook-payload-content mt-2 mb-0"><code>{{ $event->displayFailurePayloadJson() }}</code></pre>
+                                                        </details>
+                                                    @endif
                                                 @endif
                                             </td>
                                         </tr>
@@ -168,8 +206,13 @@
                             </table>
                         </div>
 
-                        <div class="mt-3">
-                            {{ $events->links() }}
+                        <div class="mt-3 d-flex flex-wrap justify-content-between align-items-center gap-2 webhook-records-pagination">
+                            <div class="text-muted small">
+                                顯示第 {{ $events->firstItem() ?? 0 }} 到 {{ $events->lastItem() ?? 0 }} 筆，共 {{ $events->total() }} 筆
+                            </div>
+                            <nav aria-label="Webhook 記錄分頁">
+                                {{ $events->links('pagination::custom-bootstrap-5') }}
+                            </nav>
                         </div>
                     </div>
                 </div>

@@ -186,4 +186,59 @@ class ChatWebhookEvent extends Model
 
         return implode("\n", $lines);
     }
+
+    /** 發送失敗時是否可展開查看 payload。 */
+    public function shouldShowFailurePayload(): bool
+    {
+        if (trim((string) ($this->error_message ?? '')) === '') {
+            return false;
+        }
+
+        $payload = $this->payload_json;
+        return is_array($payload) && $payload !== [];
+    }
+
+    /** Synology API 錯誤摘要（code + errors），無則 null。 */
+    public function synologyErrorSummary(): ?string
+    {
+        $code = (int) data_get($this->payload_json, 'result.data.error.code', 0);
+        if ($code === 0) {
+            return null;
+        }
+
+        $errors = trim((string) data_get($this->payload_json, 'result.data.error.errors', ''));
+        $hint = self::synologyErrorHint($code);
+        $line = '錯誤碼 ' . $code;
+        if ($errors !== '') {
+            $line .= '：' . $errors;
+        }
+        if ($hint !== '') {
+            $line .= '（' . $hint . '）';
+        }
+
+        return $line;
+    }
+
+    /** 失敗記錄用：格式化 payload JSON 供管理者檢視。 */
+    public function displayFailurePayloadJson(): string
+    {
+        $payload = $this->payload_json ?? [];
+        if (! is_array($payload) || $payload === []) {
+            return '（無 payload）';
+        }
+
+        $encoded = json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+
+        return $encoded !== false ? $encoded : '（payload 無法解析）';
+    }
+
+    protected static function synologyErrorHint(int $code): string
+    {
+        return match ($code) {
+            407 => '請確認 user_ids 與 @ 提及是否有效',
+            410 => '訊息過長，請縮短或拆段發送',
+            800 => '無發送目標，請設定 channel_id 或 user_ids',
+            default => '',
+        };
+    }
 }
