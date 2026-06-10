@@ -37,8 +37,8 @@
                                     @foreach ($datas as $key => $data)
                                         <tr>
                                             <td>{{ $key + 1 }}</td>
-                                            <td>{{ $data->check_status_parent_data->name }}</td>
-                                            <td>{{ $data->check_status_data->name }}</td>
+                                            <td>{{ optional($data->check_status_parent_data)->name ?? '—' }}</td>
+                                            <td>{{ optional($data->check_status_data)->name ?? '—' }}</td>
                                             <td>{{ $data->name }}</td>
                                             <td>{{ $data->duration_hours !== null ? rtrim(rtrim(number_format((float) $data->duration_hours, 2, '.', ''), '0'), '.') . ' 小時' : '—' }}</td>
                                             <td>
