@@ -9,10 +9,10 @@ use App\Models\CheckStatus;
 
 class TaskTemplateController extends Controller
 {
-    protected function ensureSuperAdminDelete(): void
+    protected function ensureCanDeleteSetting(): void
     {
-        if ((int) (Auth::user()->level ?? 2) !== 0) {
-            abort(403, '只有超級管理者可以刪除此模組資料');
+        if ((int) (Auth::user()->level ?? 2) === 2) {
+            abort(403, '一般使用者無法刪除設定資料');
         }
     }
 
@@ -138,7 +138,7 @@ class TaskTemplateController extends Controller
      */
     public function delete($id)
     {
-        $this->ensureSuperAdminDelete();
+        $this->ensureCanDeleteSetting();
         $data = TaskTemplate::where('id', $id)->first();
         $check_status_parent_ids = CheckStatus::orderby('seq', 'asc')->whereNull('parent_id')->get();
         $check_status_ids = CheckStatus::orderby('seq', 'asc')->whereNotNull('parent_id')->get();
@@ -146,7 +146,7 @@ class TaskTemplateController extends Controller
     }
     public function destroy($id)
     {
-        $this->ensureSuperAdminDelete();
+        $this->ensureCanDeleteSetting();
         $data = TaskTemplate::where('id', $id)->first();
         $data->delete();
         return redirect()->route('TaskTemplate');

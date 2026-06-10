@@ -8,10 +8,10 @@ use App\Models\CheckStatus;
 
 class CheckStatusController extends Controller
 {
-    protected function ensureSuperAdminDelete(): void
+    protected function ensureCanDeleteSetting(): void
     {
-        if ((int) (Auth::user()->level ?? 2) !== 0) {
-            abort(403, '只有超級管理者可以刪除此模組資料');
+        if ((int) (Auth::user()->level ?? 2) === 2) {
+            abort(403, '一般使用者無法刪除設定資料');
         }
     }
 
@@ -118,14 +118,14 @@ class CheckStatusController extends Controller
      */
     public function delete($id)
     {
-        $this->ensureSuperAdminDelete();
+        $this->ensureCanDeleteSetting();
         $data = CheckStatus::orderby('seq', 'asc')->where('id', $id)->first();
         $status_datas = CheckStatus::whereNull('parent_id')->get();
         return view('check_status.del')->with('data', $data)->with('status_datas', $status_datas);
     }
     public function destroy($id)
     {
-        $this->ensureSuperAdminDelete();
+        $this->ensureCanDeleteSetting();
         $data = CheckStatus::where('id', $id)->first();
         $data->delete();
         return redirect()->route('checkStatus');

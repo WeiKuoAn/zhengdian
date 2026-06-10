@@ -8,10 +8,10 @@ use App\Models\ProjectType;
 
 class ProjectTypeController extends Controller
 {
-    protected function ensureSuperAdminDelete(): void
+    protected function ensureCanDeleteSetting(): void
     {
-        if ((int) (Auth::user()->level ?? 2) !== 0) {
-            abort(403, '只有超級管理者可以刪除此模組資料');
+        if ((int) (Auth::user()->level ?? 2) === 2) {
+            abort(403, '一般使用者無法刪除設定資料');
         }
     }
 
@@ -97,14 +97,14 @@ class ProjectTypeController extends Controller
      */
     public function delete($id)
     {
-        $this->ensureSuperAdminDelete();
+        $this->ensureCanDeleteSetting();
         $data = ProjectType::where('id', $id)->first();
         return view('project_type.del')->with('data', $data);
     }
 
     public function destroy($id)
     {
-        $this->ensureSuperAdminDelete();
+        $this->ensureCanDeleteSetting();
         $data = ProjectType::where('id', $id);
         $data->delete();
         return redirect()->route('projectTypes');

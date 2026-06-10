@@ -48,7 +48,7 @@
                                             <td>
                                                 <a href="{{ route('projectType.edit', $data->id) }}" class="action-icon"> <i
                                                         class="mdi mdi-square-edit-outline"></i></a>
-                                                @if ((int) (Auth::user()->level ?? 2) === 0)
+                                                @if ((int) (Auth::user()->level ?? 2) !== 2)
                                                     <a href="{{ route('projectType.del', $data->id) }}" class="action-icon"> <i class="mdi mdi-trash-can-outline"></i></a>
                                                 @endif
                                             </td>
