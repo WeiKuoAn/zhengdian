@@ -18,7 +18,8 @@
                             <div class="row">
                                 <div class="mb-3">
                                     <label class="form-label">派工項目名稱<span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control" name="name" value="{{ $data->name }}" required>
+                                    <input type="text" class="form-control" name="name" value="{{ $data->name }}" maxlength="500" required>
+                                    <div class="form-text">最多 500 字</div>
                                 </div>
                                 <div class="mb-3">
                                     <label for="project-priority" class="form-label">專案狀態<span

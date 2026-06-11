@@ -71,13 +71,21 @@ class TaskTemplateController extends Controller
 
     public function store(Request $request)
     {
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:500'],
+            'check_status_parent_id' => ['nullable', 'integer'],
+            'check_status_id' => ['nullable', 'integer'],
+            'description' => ['nullable', 'string', 'max:65535'],
+            'duration_hours' => ['nullable', 'numeric', 'min:0'],
+            'status' => ['nullable', 'in:up,down'],
+        ]);
+
         $data = new TaskTemplate;
-        $data->name = $request->name;
-        $data->check_status_parent_id = $request->check_status_parent_id;
-        $data->check_status_id = $request->check_status_id;
-        $data->description = $request->description;
-        $hours = (float) ($request->input('duration_hours', 0) ?? 0);
-        $data->duration_hours = max(0, $hours);
+        $data->name = $validated['name'];
+        $data->check_status_parent_id = $validated['check_status_parent_id'] ?? null;
+        $data->check_status_id = $validated['check_status_id'] ?? null;
+        $data->description = $validated['description'] ?? null;
+        $data->duration_hours = max(0, (float) ($validated['duration_hours'] ?? 0));
         $data->created_by = Auth::user()->id;
         $data->save();
         return redirect()->route('TaskTemplate');
@@ -118,13 +126,21 @@ class TaskTemplateController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $data = TaskTemplate::where('id', $id)->first();
-        $data->name = $request->name;
-        $data->check_status_parent_id = $request->check_status_parent_id;
-        $data->check_status_id = $request->check_status_id;
-        $data->description = $request->description;
-        $hours = (float) ($request->input('duration_hours', 0) ?? 0);
-        $data->duration_hours = max(0, $hours);
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:500'],
+            'check_status_parent_id' => ['nullable', 'integer'],
+            'check_status_id' => ['nullable', 'integer'],
+            'description' => ['nullable', 'string', 'max:65535'],
+            'duration_hours' => ['nullable', 'numeric', 'min:0'],
+            'status' => ['nullable', 'in:up,down'],
+        ]);
+
+        $data = TaskTemplate::where('id', $id)->firstOrFail();
+        $data->name = $validated['name'];
+        $data->check_status_parent_id = $validated['check_status_parent_id'] ?? null;
+        $data->check_status_id = $validated['check_status_id'] ?? null;
+        $data->description = $validated['description'] ?? null;
+        $data->duration_hours = max(0, (float) ($validated['duration_hours'] ?? 0));
         $data->created_by = Auth::user()->id;
         $data->save();
         return redirect()->route('TaskTemplate');
