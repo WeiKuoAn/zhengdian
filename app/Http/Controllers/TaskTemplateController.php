@@ -26,6 +26,13 @@ class TaskTemplateController extends Controller
         }
     }
 
+    protected function ensureCanManageSetting(): void
+    {
+        if ((int) (Auth::user()->level ?? 2) === 2) {
+            abort(403, '一般使用者無法管理設定資料');
+        }
+    }
+
     public function getTaskTemplate(Request $request)
     {
         $checkStatusId = (int) $request->input('check_status_id');
@@ -38,44 +45,29 @@ class TaskTemplateController extends Controller
             return response()->json([]);
         }
 
-        $task_template_ids = TaskTemplate::with('check_status_data')
-            ->where(function ($query) use ($checkStatusId, $stage) {
-                $query->where('check_status_id', $checkStatusId);
-                if ($stage->parent_id) {
-                    $query->orWhere(function ($query) use ($stage) {
-                        $query->whereNull('check_status_id')
-                            ->where('check_status_parent_id', $stage->parent_id);
-                    });
-                }
-            })
-            ->get()
-            ->sort(function ($a, $b) {
-                $aStageSeq = (string) optional($a->check_status_data)->seq;
-                $bStageSeq = (string) optional($b->check_status_data)->seq;
-                $stageCompare = strnatcmp($aStageSeq, $bStageSeq);
-                if ($stageCompare !== 0) {
-                    return $stageCompare;
-                }
-                return strnatcmp((string) ($a->seq ?? ''), (string) ($b->seq ?? ''));
-            })
-            ->values();
+        $task_template_ids = TaskTemplate::sortByScheduleOrder(
+            TaskTemplate::with(['check_status_data', 'check_status_parent_data'])
+                ->listed()
+                ->where(function ($query) use ($checkStatusId, $stage) {
+                    $query->where('check_status_id', $checkStatusId);
+                    if ($stage->parent_id) {
+                        $query->orWhere(function ($query) use ($stage) {
+                            $query->whereNull('check_status_id')
+                                ->where('check_status_parent_id', $stage->parent_id);
+                        });
+                    }
+                })
+                ->get()
+        );
+
         return response()->json($task_template_ids);
     }
 
     public function index(Request $request)
     {
-        $datas = TaskTemplate::with(['check_status_parent_data', 'check_status_data'])
-            ->get()
-            ->sort(function ($a, $b) {
-                $aStageSeq = (string) optional($a->check_status_data)->seq;
-                $bStageSeq = (string) optional($b->check_status_data)->seq;
-                $stageCompare = strnatcmp($aStageSeq, $bStageSeq);
-                if ($stageCompare !== 0) {
-                    return $stageCompare;
-                }
-                return strnatcmp((string) ($a->seq ?? ''), (string) ($b->seq ?? ''));
-            })
-            ->values();
+        $datas = TaskTemplate::sortByScheduleOrder(
+            TaskTemplate::with(['check_status_parent_data', 'check_status_data'])->get()
+        );
         return view('task_template.index')->with('datas', $datas);
     }
 
@@ -105,6 +97,7 @@ class TaskTemplateController extends Controller
             'description' => ['nullable', 'string', 'max:65535'],
             'duration_hours' => ['nullable', 'numeric', 'min:0'],
             'status' => ['nullable', 'in:up,down'],
+            'seq' => ['nullable', 'string', 'max:50'],
         ]);
 
         $data = new TaskTemplate;
@@ -113,6 +106,8 @@ class TaskTemplateController extends Controller
         $data->check_status_id = $validated['check_status_id'] ?? null;
         $data->description = $validated['description'] ?? null;
         $data->duration_hours = max(0, (float) ($validated['duration_hours'] ?? 0));
+        $data->status = $validated['status'] ?? 'up';
+        $data->seq = $validated['seq'] ?? '0';
         $data->created_by = Auth::user()->id;
         $data->save();
         return redirect()->route('TaskTemplate');
@@ -160,6 +155,7 @@ class TaskTemplateController extends Controller
             'description' => ['nullable', 'string', 'max:65535'],
             'duration_hours' => ['nullable', 'numeric', 'min:0'],
             'status' => ['nullable', 'in:up,down'],
+            'seq' => ['nullable', 'string', 'max:50'],
         ]);
 
         $data = TaskTemplate::where('id', $id)->firstOrFail();
@@ -168,6 +164,8 @@ class TaskTemplateController extends Controller
         $data->check_status_id = $validated['check_status_id'] ?? null;
         $data->description = $validated['description'] ?? null;
         $data->duration_hours = max(0, (float) ($validated['duration_hours'] ?? 0));
+        $data->status = $validated['status'] ?? 'up';
+        $data->seq = $validated['seq'] ?? '0';
         $data->created_by = Auth::user()->id;
         $data->save();
         return redirect()->route('TaskTemplate');
@@ -238,5 +236,43 @@ class TaskTemplateController extends Controller
         }
 
         return $redirect;
+    }
+
+    public function batchTakeDown(Request $request): RedirectResponse
+    {
+        $this->ensureCanManageSetting();
+
+        $validated = $request->validate([
+            'ids' => ['required', 'array', 'min:1'],
+            'ids.*' => ['integer', 'exists:task_templates,id'],
+        ]);
+
+        $count = TaskTemplate::query()
+            ->whereIn('id', $validated['ids'])
+            ->update(['status' => 'down']);
+
+        return redirect()
+            ->route('TaskTemplate')
+            ->with('success', '已批次下架 ' . $count . ' 筆派工項目');
+    }
+
+    public function updateSort(Request $request): RedirectResponse
+    {
+        $this->ensureCanManageSetting();
+
+        $validated = $request->validate([
+            'seq' => ['required', 'array'],
+            'seq.*' => ['nullable', 'string', 'max:50'],
+        ]);
+
+        foreach ($validated['seq'] as $id => $seq) {
+            TaskTemplate::query()
+                ->where('id', (int) $id)
+                ->update(['seq' => (string) ($seq ?? '0')]);
+        }
+
+        return redirect()
+            ->route('TaskTemplate')
+            ->with('success', '排序已儲存');
     }
 }

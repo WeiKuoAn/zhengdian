@@ -883,22 +883,11 @@ class ProjectController extends Controller
         $loginUserId = (int) Auth::id();
         $isLevelTwo = (int) ($loginUser->level ?? 0) === 2;
 
-        $task_templates = TaskTemplate::with('check_status_data')
-            ->get()
-            ->sort(function ($a, $b) {
-                $aStageSeq = (string) optional($a->check_status_data)->seq;
-                $bStageSeq = (string) optional($b->check_status_data)->seq;
-
-                // 先依「專案階段設定」的排序（支援 1-2、1-10 這種自然排序）
-                $stageCompare = strnatcmp($aStageSeq, $bStageSeq);
-                if ($stageCompare !== 0) {
-                    return $stageCompare;
-                }
-
-                // 同階段下再依任務模板自身排序
-                return strnatcmp((string) $a->seq, (string) $b->seq);
-            })
-            ->values();
+        $task_templates = TaskTemplate::sortByScheduleOrder(
+            TaskTemplate::with(['check_status_parent_data', 'check_status_data'])
+                ->listed()
+                ->get()
+        );
 
         $project_milestones = ProjectMilestones::where('project_id', $id)->get()->keyBy('milestone_type');
 

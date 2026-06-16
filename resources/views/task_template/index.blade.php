@@ -30,8 +30,29 @@
             width: 9%;
         }
 
-        .task-template-table .col-actions {
-            width: 7%;
+        .task-template-table .col-check {
+            width: 40px;
+            white-space: nowrap;
+            text-align: center;
+        }
+
+        .task-template-table .col-list-status {
+            width: 72px;
+            white-space: nowrap;
+        }
+
+        .task-template-table .col-seq {
+            width: 88px;
+            white-space: nowrap;
+        }
+
+        .task-template-table .seq-input {
+            width: 72px;
+            min-width: 72px;
+        }
+
+        .task-template-table tr.is-down td {
+            opacity: 0.72;
         }
     </style>
 @endsection
@@ -81,29 +102,83 @@
                                         <i class="mdi mdi-upload me-1"></i> 匯入 Excel
                                     </button>
                                 </div>
+                                <div class="col-sm-auto">
+                                    <button type="submit" form="batchTakeDownForm" id="batchTakeDownBtn"
+                                        class="btn btn-warning waves-effect waves-light" disabled>
+                                        <i class="mdi mdi-arrow-down-bold-box-outline me-1"></i> 批次下架
+                                    </button>
+                                </div>
+                                <div class="col-sm-auto">
+                                    <button type="submit" form="sortTaskTemplateForm"
+                                        class="btn btn-outline-primary waves-effect waves-light">
+                                        <i class="mdi mdi-sort me-1"></i> 儲存排序
+                                    </button>
+                                </div>
                             @endif
                         </div>
 
+                        <p class="text-muted small mb-2">
+                            排序數字愈小愈前面；同專案階段內依排序顯示。可支援 1、1-2、1-10 這類自然排序。
+                        </p>
+
+                        <form method="POST" action="{{ route('TaskTemplate.batch.down') }}" id="batchTakeDownForm">
+                            @csrf
+                        </form>
+                        <form method="POST" action="{{ route('TaskTemplate.sort') }}" id="sortTaskTemplateForm">
+                            @csrf
+                        </form>
                         <div class="table-responsive">
                             <table class="table table-centered table-striped task-template-table" id="products-datatable">
                                 <thead>
                                     <tr>
+                                        @if ((int) (Auth::user()->level ?? 2) !== 2)
+                                            <th scope="col" class="col-check">
+                                                <input type="checkbox" class="form-check-input" id="selectAllTaskTemplates"
+                                                    title="全選">
+                                            </th>
+                                        @endif
                                         <th scope="col" class="col-no">No</th>
                                         <th scope="col" class="col-status">專案狀態</th>
                                         <th scope="col" class="col-stage">專案階段</th>
                                         <th scope="col" class="col-name">派工項目</th>
                                         <th scope="col" class="col-hours">執行時數</th>
+                                        <th scope="col" class="col-seq">排序</th>
+                                        <th scope="col" class="col-list-status">狀態</th>
                                         <th scope="col" class="col-actions">操作</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     @foreach ($datas as $key => $data)
-                                        <tr>
+                                        <tr class="{{ ($data->status ?? 'up') === 'down' ? 'is-down' : '' }}">
+                                            @if ((int) (Auth::user()->level ?? 2) !== 2)
+                                                <td class="col-check">
+                                                    <input type="checkbox" class="form-check-input task-template-check"
+                                                        form="batchTakeDownForm" name="ids[]" value="{{ $data->id }}"
+                                                        {{ ($data->status ?? 'up') === 'down' ? 'disabled' : '' }}>
+                                                </td>
+                                            @endif
                                             <td class="col-no">{{ $key + 1 }}</td>
                                             <td class="col-status">{{ optional($data->check_status_parent_data)->name ?? '—' }}</td>
                                             <td class="col-stage">{{ optional($data->check_status_data)->name ?? '—' }}</td>
                                             <td class="col-name">{{ $data->name }}</td>
                                             <td class="col-hours">{{ $data->duration_hours !== null ? rtrim(rtrim(number_format((float) $data->duration_hours, 2, '.', ''), '0'), '.') . ' 小時' : '—' }}</td>
+                                            <td class="col-seq">
+                                                @if ((int) (Auth::user()->level ?? 2) !== 2)
+                                                    <input type="text" form="sortTaskTemplateForm"
+                                                        name="seq[{{ $data->id }}]"
+                                                        value="{{ $data->seq ?? '0' }}"
+                                                        class="form-control form-control-sm seq-input">
+                                                @else
+                                                    {{ $data->seq ?? '0' }}
+                                                @endif
+                                            </td>
+                                            <td class="col-list-status">
+                                                @if (($data->status ?? 'up') === 'down')
+                                                    <span class="badge bg-secondary">下架</span>
+                                                @else
+                                                    <span class="badge bg-success">上架</span>
+                                                @endif
+                                            </td>
                                             <td class="col-actions">
                                                 <a href="{{ route('TaskTemplate.edit', $data->id) }}" class="action-icon"> <i
                                                         class="mdi mdi-square-edit-outline"></i></a>
@@ -172,20 +247,66 @@
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             const modalEl = document.getElementById('importTaskTemplateModal');
-            if (!modalEl) {
-                return;
+            if (modalEl) {
+                modalEl.addEventListener('hidden.bs.modal', function () {
+                    const form = document.getElementById('importTaskTemplateForm');
+                    const fileInput = document.getElementById('importTaskTemplateFile');
+                    if (form) {
+                        form.reset();
+                    }
+                    if (fileInput) {
+                        fileInput.value = '';
+                    }
+                });
             }
 
-            modalEl.addEventListener('hidden.bs.modal', function () {
-                const form = document.getElementById('importTaskTemplateForm');
-                const fileInput = document.getElementById('importTaskTemplateFile');
-                if (form) {
-                    form.reset();
+            const selectAll = document.getElementById('selectAllTaskTemplates');
+            const batchBtn = document.getElementById('batchTakeDownBtn');
+            const batchForm = document.getElementById('batchTakeDownForm');
+
+            function getSelectableChecks() {
+                return Array.from(document.querySelectorAll('.task-template-check:not(:disabled)'));
+            }
+
+            function syncBatchControls() {
+                const checks = getSelectableChecks();
+                const checked = checks.filter((el) => el.checked);
+                if (batchBtn) {
+                    batchBtn.disabled = checked.length === 0;
                 }
-                if (fileInput) {
-                    fileInput.value = '';
+                if (selectAll) {
+                    selectAll.checked = checks.length > 0 && checked.length === checks.length;
+                    selectAll.indeterminate = checked.length > 0 && checked.length < checks.length;
                 }
+            }
+
+            if (selectAll) {
+                selectAll.addEventListener('change', function () {
+                    getSelectableChecks().forEach((el) => {
+                        el.checked = selectAll.checked;
+                    });
+                    syncBatchControls();
+                });
+            }
+
+            document.querySelectorAll('.task-template-check').forEach((el) => {
+                el.addEventListener('change', syncBatchControls);
             });
+
+            if (batchForm) {
+                batchForm.addEventListener('submit', function (event) {
+                    const count = getSelectableChecks().filter((el) => el.checked).length;
+                    if (count === 0) {
+                        event.preventDefault();
+                        return;
+                    }
+                    if (!confirm('確定要下架所選的 ' + count + ' 筆派工項目嗎？')) {
+                        event.preventDefault();
+                    }
+                });
+            }
+
+            syncBatchControls();
         });
     </script>
 @endsection

@@ -50,6 +50,11 @@
                                         min="0" step="0.5">
                                     <div class="form-text">可自行輸入時數；排程作業會以 8 小時 = 1 天換算執行天數。</div>
                                 </div>
+                                <div class="mb-3">
+                                    <label class="form-label">排序</label>
+                                    <input type="text" class="form-control" name="seq" value="{{ old('seq', '0') }}">
+                                    <div class="form-text">數字愈小愈前面；可填 1、1-2、1-10。</div>
+                                </div>
                                 <div class="mb-1">
                                     <label for="project-priority" class="form-label">狀態<span
                                             class="text-danger">*</span></label>

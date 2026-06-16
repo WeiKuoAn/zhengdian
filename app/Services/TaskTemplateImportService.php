@@ -102,6 +102,7 @@ final class TaskTemplateImportService
 
             TaskTemplate::query()->create(array_merge($payload, [
                 'name' => $name,
+                'status' => 'up',
                 'created_by' => Auth::id(),
             ]));
             $result['created']++;
