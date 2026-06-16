@@ -65,10 +65,20 @@ class TaskTemplateController extends Controller
 
     public function index(Request $request)
     {
+        $statusFilter = $request->input('status_filter', 'all');
+        if (! in_array($statusFilter, ['all', 'up', 'down'], true)) {
+            $statusFilter = 'all';
+        }
+
         $datas = TaskTemplate::sortByScheduleOrder(
-            TaskTemplate::with(['check_status_parent_data', 'check_status_data'])->get()
+            TaskTemplate::with(['check_status_parent_data', 'check_status_data'])
+                ->byListStatusFilter($statusFilter)
+                ->get()
         );
-        return view('task_template.index')->with('datas', $datas);
+
+        return view('task_template.index')
+            ->with('datas', $datas)
+            ->with('statusFilter', $statusFilter);
     }
 
     /**
@@ -251,8 +261,13 @@ class TaskTemplateController extends Controller
             ->whereIn('id', $validated['ids'])
             ->update(['status' => 'down']);
 
+        $statusFilter = $request->input('status_filter', 'all');
+        if (! in_array($statusFilter, ['all', 'up', 'down'], true)) {
+            $statusFilter = 'all';
+        }
+
         return redirect()
-            ->route('TaskTemplate')
+            ->route('TaskTemplate', ['status_filter' => $statusFilter])
             ->with('success', '已批次下架 ' . $count . ' 筆派工項目');
     }
 
@@ -271,8 +286,13 @@ class TaskTemplateController extends Controller
                 ->update(['seq' => (string) ($seq ?? '0')]);
         }
 
+        $statusFilter = $request->input('status_filter', 'all');
+        if (! in_array($statusFilter, ['all', 'up', 'down'], true)) {
+            $statusFilter = 'all';
+        }
+
         return redirect()
-            ->route('TaskTemplate')
+            ->route('TaskTemplate', ['status_filter' => $statusFilter])
             ->with('success', '排序已儲存');
     }
 }

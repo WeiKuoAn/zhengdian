@@ -90,6 +90,21 @@
                     <div class="card-body">
                         <div class="row mb-2 align-items-center g-2">
                             <div class="col-sm-auto">
+                                <form method="GET" action="{{ route('TaskTemplate') }}"
+                                    class="d-inline-flex align-items-center flex-nowrap">
+                                    <label for="status_filter" class="me-2 mb-0 text-nowrap">上架狀態</label>
+                                    <select id="status_filter" name="status_filter" class="form-select form-select-sm"
+                                        style="min-width: 90px;" onchange="this.form.submit()">
+                                        <option value="all" {{ ($statusFilter ?? 'all') === 'all' ? 'selected' : '' }}>全部
+                                        </option>
+                                        <option value="up" {{ ($statusFilter ?? 'all') === 'up' ? 'selected' : '' }}>上架
+                                        </option>
+                                        <option value="down" {{ ($statusFilter ?? 'all') === 'down' ? 'selected' : '' }}>下架
+                                        </option>
+                                    </select>
+                                </form>
+                            </div>
+                            <div class="col-sm-auto">
                                 <a href="{{ route('TaskTemplate.create') }}">
                                     <button type="button" class="btn btn-danger waves-effect waves-light"><i
                                             class="mdi mdi-plus-circle me-1"></i> 新增派工項目</button>
@@ -123,9 +138,11 @@
 
                         <form method="POST" action="{{ route('TaskTemplate.batch.down') }}" id="batchTakeDownForm">
                             @csrf
+                            <input type="hidden" name="status_filter" value="{{ $statusFilter ?? 'all' }}">
                         </form>
                         <form method="POST" action="{{ route('TaskTemplate.sort') }}" id="sortTaskTemplateForm">
                             @csrf
+                            <input type="hidden" name="status_filter" value="{{ $statusFilter ?? 'all' }}">
                         </form>
                         <div class="table-responsive">
                             <table class="table table-centered table-striped task-template-table" id="products-datatable">

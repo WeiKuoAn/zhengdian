@@ -65,4 +65,19 @@ class TaskTemplate extends Model
             $query->where('status', 'up')->orWhereNull('status');
         });
     }
+
+    public function scopeByListStatusFilter($query, ?string $filter)
+    {
+        if ($filter === 'up') {
+            return $query->where(function ($query) {
+                $query->where('status', 'up')->orWhereNull('status');
+            });
+        }
+
+        if ($filter === 'down') {
+            return $query->where('status', 'down');
+        }
+
+        return $query;
+    }
 }
