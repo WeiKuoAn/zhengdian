@@ -65,9 +65,9 @@ class TaskTemplateController extends Controller
 
     public function index(Request $request)
     {
-        $statusFilter = $request->input('status_filter', 'all');
+        $statusFilter = $request->input('status_filter', 'up');
         if (! in_array($statusFilter, ['all', 'up', 'down'], true)) {
-            $statusFilter = 'all';
+            $statusFilter = 'up';
         }
 
         $datas = TaskTemplate::sortByScheduleOrder(
@@ -261,9 +261,9 @@ class TaskTemplateController extends Controller
             ->whereIn('id', $validated['ids'])
             ->update(['status' => 'down']);
 
-        $statusFilter = $request->input('status_filter', 'all');
+        $statusFilter = $request->input('status_filter', 'up');
         if (! in_array($statusFilter, ['all', 'up', 'down'], true)) {
-            $statusFilter = 'all';
+            $statusFilter = 'up';
         }
 
         return redirect()
@@ -286,9 +286,9 @@ class TaskTemplateController extends Controller
                 ->update(['seq' => (string) ($seq ?? '0')]);
         }
 
-        $statusFilter = $request->input('status_filter', 'all');
+        $statusFilter = $request->input('status_filter', 'up');
         if (! in_array($statusFilter, ['all', 'up', 'down'], true)) {
-            $statusFilter = 'all';
+            $statusFilter = 'up';
         }
 
         return redirect()

@@ -95,11 +95,11 @@
                                     <label for="status_filter" class="me-2 mb-0 text-nowrap">上架狀態</label>
                                     <select id="status_filter" name="status_filter" class="form-select form-select-sm"
                                         style="min-width: 90px;" onchange="this.form.submit()">
-                                        <option value="all" {{ ($statusFilter ?? 'all') === 'all' ? 'selected' : '' }}>全部
+                                        <option value="all" {{ ($statusFilter ?? 'up') === 'all' ? 'selected' : '' }}>全部
                                         </option>
-                                        <option value="up" {{ ($statusFilter ?? 'all') === 'up' ? 'selected' : '' }}>上架
+                                        <option value="up" {{ ($statusFilter ?? 'up') === 'up' ? 'selected' : '' }}>上架
                                         </option>
-                                        <option value="down" {{ ($statusFilter ?? 'all') === 'down' ? 'selected' : '' }}>下架
+                                        <option value="down" {{ ($statusFilter ?? 'up') === 'down' ? 'selected' : '' }}>下架
                                         </option>
                                     </select>
                                 </form>
@@ -138,11 +138,11 @@
 
                         <form method="POST" action="{{ route('TaskTemplate.batch.down') }}" id="batchTakeDownForm">
                             @csrf
-                            <input type="hidden" name="status_filter" value="{{ $statusFilter ?? 'all' }}">
+                            <input type="hidden" name="status_filter" value="{{ $statusFilter ?? 'up' }}">
                         </form>
                         <form method="POST" action="{{ route('TaskTemplate.sort') }}" id="sortTaskTemplateForm">
                             @csrf
-                            <input type="hidden" name="status_filter" value="{{ $statusFilter ?? 'all' }}">
+                            <input type="hidden" name="status_filter" value="{{ $statusFilter ?? 'up' }}">
                         </form>
                         <div class="table-responsive">
                             <table class="table table-centered table-striped task-template-table" id="products-datatable">
