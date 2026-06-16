@@ -111,6 +111,8 @@ Route::middleware(['auth'])->group(function () {
     Route::post('TaskTemplate/edit/{id}', [TaskTemplateController::class, 'update'])->name('TaskTemplate.edit.data');
     Route::get('TaskTemplate/del/{id}', [TaskTemplateController::class, 'delete'])->name('TaskTemplate.del');
     Route::post('TaskTemplate/del/{id}', [TaskTemplateController::class, 'destroy'])->name('TaskTemplate.del.data');
+    Route::get('TaskTemplate/import/template', [TaskTemplateController::class, 'downloadImportTemplate'])->name('TaskTemplate.import.template');
+    Route::post('TaskTemplate/import', [TaskTemplateController::class, 'import'])->name('TaskTemplate.import');
     Route::get('/get-tasktemplate-id', [TaskTemplateController::class, 'getTaskTemplate']);
 
     /* 派工狀態設定 */

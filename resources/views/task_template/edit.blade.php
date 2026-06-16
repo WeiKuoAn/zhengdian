@@ -51,7 +51,7 @@
                                 </div>
                                 <div class="mb-3">
                                     <label class="form-label">描述</label>
-                                    <input type="text" class="form-control" name="description" value="{{ $data->description }}">
+                                    <textarea class="form-control" name="description" rows="5">{{ old('description', $data->description) }}</textarea>
                                 </div>
                                 <div class="mb-3">
                                     <label class="form-label">執行時數</label>

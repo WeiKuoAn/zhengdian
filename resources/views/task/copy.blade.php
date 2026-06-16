@@ -49,14 +49,11 @@
                                 <div class="mb-3">
                                     <label for="project-priority" class="form-label">任務項目<span
                                             class="text-danger">*</span></label>
-                                    <select class="form-control" data-toggle="select" data-width="100%" name="template_id">
-                                        @foreach ($task_templates as $key => $task_template)
-                                            <option value="{{ $task_template->id }}"
-                                                {{ $data->template_id == $task_template->id ? 'selected' : '' }}>
-                                                {{ $task_template->name }}</option>
-                                        @endforeach
-                                        <option value="">無</option>
+                                    <select class="form-control" data-toggle="select2" data-width="100%" name="template_id"
+                                        required disabled>
+                                        <option value="">載入中...</option>
                                     </select>
+                                    <div class="form-text">依專案執行階段篩選派工項目。</div>
                                 </div>
                                 <div class="mb-3">
                                     <label class="form-label">負責執行人員：<span class="text-danger">*</span></label>
@@ -142,6 +139,7 @@
     @vite(['resources/js/pages/form-pickers.init.js'])
     @vite(['resources/js/pages/form-advanced.init.js'])
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    @include('task.partials.template-by-stage-script')
     <script>
         $(document).ready(function() {
             $('#add-executor').off('click').on('click', function() {
@@ -167,48 +165,18 @@
             });
 
             $('form').on('submit', function(event) {
-                let timepickerValue = $('#24hours-timepicker').val().trim(); // 取得輸入值並去除空格
+                const endDate = $('#end_date').val().trim();
+                const endTime = $('#end_time').val().trim();
 
-                if (timepickerValue === '') {
-                    alert('請輸入預計完成時間！'); // 顯示警告
-                    $('#24hours-timepicker').focus(); // 將焦點放到該輸入框
-                    event.preventDefault(); // 阻止表單提交
+                if (endDate === '' || endTime === '') {
+                    alert('請輸入預計完成日期與時間！');
+                    event.preventDefault();
                 }
             });
-        });
 
-        $(document).ready(function() {
-            // 當 check_status_id 改變時執行 AJAX 請求
-            $('select[name="check_status_id"]').change(function() {
-                let checkStatusId = $(this).val(); // 獲取選中的 check_status_id 值
-                let templateSelect = $('select[name="template_id"]'); // 目標 template_id 的 <select>
-
-                // 清空現有選項
-                templateSelect.empty().append('<option value="">請選擇...</option>');
-
-                // 若 check_status_id 為空，停止執行
-                if (!checkStatusId) {
-                    return;
-                }
-
-                // 發送 AJAX 請求
-                $.ajax({
-                    url: '/get-tasktemplate-id', // 請求的路由
-                    method: 'GET',
-                    data: {
-                        check_status_id: checkStatusId
-                    }, // 傳遞的參數
-                    success: function(response) {
-                        // 動態添加回傳的資料到 <select> 選單
-                        response.forEach(function(item) {
-                            templateSelect.append('<option value="' + item.id + '">' +
-                                item.name + '</option>');
-                        });
-                    },
-                    error: function() {
-                        alert('無法加載資料，請稍後再試！');
-                    }
-                });
+            initTaskTemplateByStage({
+                selectedTemplateId: @json($data->template_id),
+                initialStageId: @json($data->check_status_id),
             });
         });
     </script>

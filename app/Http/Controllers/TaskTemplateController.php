@@ -4,8 +4,11 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\TaskTemplate;
+use App\Services\TaskTemplateImportService;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use App\Models\CheckStatus;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class TaskTemplateController extends Controller
 {
@@ -16,11 +19,35 @@ class TaskTemplateController extends Controller
         }
     }
 
+    protected function ensureCanImportSetting(): void
+    {
+        if ((int) (Auth::user()->level ?? 2) === 2) {
+            abort(403, '一般使用者無法匯入設定資料');
+        }
+    }
+
     public function getTaskTemplate(Request $request)
     {
-        $check_status_id = $request->input('check_status_id');
+        $checkStatusId = (int) $request->input('check_status_id');
+        if ($checkStatusId <= 0) {
+            return response()->json([]);
+        }
+
+        $stage = CheckStatus::query()->find($checkStatusId);
+        if ($stage === null) {
+            return response()->json([]);
+        }
+
         $task_template_ids = TaskTemplate::with('check_status_data')
-            ->where('check_status_id', $check_status_id)
+            ->where(function ($query) use ($checkStatusId, $stage) {
+                $query->where('check_status_id', $checkStatusId);
+                if ($stage->parent_id) {
+                    $query->orWhere(function ($query) use ($stage) {
+                        $query->whereNull('check_status_id')
+                            ->where('check_status_parent_id', $stage->parent_id);
+                    });
+                }
+            })
             ->get()
             ->sort(function ($a, $b) {
                 $aStageSeq = (string) optional($a->check_status_data)->seq;
@@ -166,5 +193,50 @@ class TaskTemplateController extends Controller
         $data = TaskTemplate::where('id', $id)->first();
         $data->delete();
         return redirect()->route('TaskTemplate');
+    }
+
+    public function downloadImportTemplate(): BinaryFileResponse
+    {
+        $this->ensureCanImportSetting();
+
+        $path = base_path('專案-流程表（更新系統用）.xlsx');
+        if (!is_file($path)) {
+            abort(404, '找不到匯入範本檔');
+        }
+
+        return response()->download($path, '派工項目匯入範本.xlsx');
+    }
+
+    public function import(Request $request, TaskTemplateImportService $importService): RedirectResponse
+    {
+        $this->ensureCanImportSetting();
+
+        $request->validate([
+            'file' => ['required', 'file', 'mimes:xlsx', 'max:5120'],
+        ]);
+
+        $result = $importService->importFromXlsx($request->file('file')->getRealPath());
+
+        $redirect = redirect()->route('TaskTemplate');
+        $summary = '匯入完成：新增 ' . $result['created'] . ' 筆、更新 ' . $result['updated'] . ' 筆';
+        if ($result['skipped'] > 0) {
+            $summary .= '、略過 ' . $result['skipped'] . ' 筆';
+        }
+        if (!empty($result['auto_created_statuses'])) {
+            $summary .= '（已自動建立：' . implode('、', $result['auto_created_statuses']) . '）';
+        }
+
+        if ($result['created'] === 0 && $result['updated'] === 0 && $result['errors'] !== []) {
+            return $redirect
+                ->with('error', '匯入失敗，請確認 Excel 格式與系統中的專案狀態／階段名稱是否一致')
+                ->with('import_errors', array_slice($result['errors'], 0, 20));
+        }
+
+        $redirect = $redirect->with('success', $summary);
+        if ($result['errors'] !== []) {
+            $redirect->with('import_errors', array_slice($result['errors'], 0, 20));
+        }
+
+        return $redirect;
     }
 }

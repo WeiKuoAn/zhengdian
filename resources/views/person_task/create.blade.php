@@ -47,12 +47,11 @@
                                 <div class="mb-3">
                                     <label for="project-priority" class="form-label">任務項目<span
                                             class="text-danger">*</span></label>
-                                    <select class="form-control" data-toggle="select" data-width="100%" name="template_id">
-                                        @foreach ($task_templates as $key => $task_template)
-                                            <option value="{{ $task_template->id }}">{{ $task_template->name }}</option>
-                                        @endforeach
-                                        <option value="">無</option>
+                                    <select class="form-control" data-toggle="select2" data-width="100%" name="template_id"
+                                        required disabled>
+                                        <option value="">請先選擇專案執行階段</option>
                                     </select>
+                                    <div class="form-text">請先選擇專案執行階段，再從清單中挑選派工項目。</div>
                                 </div>
 
                                 <div class="mb-3">
@@ -132,6 +131,7 @@
     @vite(['resources/js/pages/form-pickers.init.js'])
     @vite(['resources/js/pages/form-advanced.init.js'])
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    @include('task.partials.template-by-stage-script')
     <script>
         $(document).ready(function() {
             // 避免多次綁定事件，先移除後綁定
@@ -157,6 +157,8 @@
                     $(this).closest('.executor-entry').remove();
                 }
             });
+
+            initTaskTemplateByStage();
         });
     </script>
 @endsection

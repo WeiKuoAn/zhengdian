@@ -965,6 +965,7 @@ class ProjectController extends Controller
                 'can_report_completion' => $myTaskItem !== null,
                 'gap_days' => $gapDays,
                 'gap_days_display' => $gapDaysDisplay,
+                'duration_hours' => $durationHours,
                 'duration_minutes' => $durationMinutes,
                 'link_days' => $linkDays,
             ];

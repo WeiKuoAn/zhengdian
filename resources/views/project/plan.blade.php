@@ -323,7 +323,20 @@
                                                             任務說明
                                                         </div>
                                                     @endif
-                                                    <span class="plan-gap-tag">執行天數：{{ rtrim(rtrim(number_format((float) ($task_data->gap_days_display ?? $task_data->gap_days ?? 0), 2, '.', ''), '0'), '.') }} 天</span>
+                                                    @php
+                                                        $durationHours = max(0, (float) ($task_data->duration_hours ?? 0));
+                                                        $durationRemainder = fmod($durationHours, 8.0);
+                                                        $isWholeDays = $durationHours > 0
+                                                            && (abs($durationRemainder) < 0.00001 || abs($durationRemainder - 8.0) < 0.00001);
+                                                        $durationHoursText = rtrim(rtrim(number_format($durationHours, 2, '.', ''), '0'), '.');
+                                                    @endphp
+                                                    <span class="plan-gap-tag">
+                                                        @if ($isWholeDays)
+                                                            執行天數：{{ (int) round($durationHours / 8) }} 天
+                                                        @else
+                                                            執行時數：{{ $durationHoursText }} 小時
+                                                        @endif
+                                                    </span>
                                                 </div>
                                                 <input type="hidden" name="milestone_types[]"
                                                     value="{{ $task_data->id }}">
