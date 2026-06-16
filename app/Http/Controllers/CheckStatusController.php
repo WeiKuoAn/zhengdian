@@ -61,7 +61,6 @@ class CheckStatusController extends Controller
         $data->name = $request->name;
         $data->seq = $request->seq;
         $data->status = $request->status;
-        $data->duration_days = null;
         $data->save();
         return redirect()->route('checkStatus');
     }
@@ -105,7 +104,6 @@ class CheckStatusController extends Controller
         $data->name = $request->name;
         $data->seq = $request->seq;
         $data->status = $request->status;
-        $data->duration_days = null;
         $data->save();
         return redirect()->route('checkStatus');
     }
