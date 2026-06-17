@@ -3,6 +3,8 @@
         options = options || {};
         const selectedTemplateId = String(options.selectedTemplateId || '');
         const initialStageId = String(options.initialStageId || $('select[name="check_status_id"]').val() || '');
+        const commentsSelector = options.commentsSelector || 'textarea[name="comments"]';
+        let templateDescriptions = {};
 
         function escapeHtml(text) {
             return $('<div>').text(text ?? '').html();
@@ -19,15 +21,43 @@
             }
         }
 
+        function applyTemplateDescription(templateId, forceUpdate) {
+            const $comments = $(commentsSelector);
+            if (!$comments.length) {
+                return;
+            }
+
+            if (!templateId) {
+                if (forceUpdate) {
+                    $comments.val('');
+                }
+                return;
+            }
+
+            const description = templateDescriptions[String(templateId)] || '';
+            if (forceUpdate || !String($comments.val() || '').trim()) {
+                $comments.val(description);
+            }
+        }
+
+        function bindTemplateDescriptionHandler($templateSelect) {
+            $templateSelect.off('change.taskTemplateDesc select2:select.taskTemplateDesc')
+                .on('change.taskTemplateDesc select2:select.taskTemplateDesc', function () {
+                    applyTemplateDescription(String($(this).val() || ''), true);
+                });
+        }
+
         function refreshTemplateSelect(checkStatusId, keepTemplateId) {
             const $templateSelect = $('select[name="template_id"]');
 
             if (!checkStatusId) {
+                templateDescriptions = {};
                 $templateSelect
                     .prop('disabled', true)
                     .empty()
                     .append('<option value="">請先選擇專案執行階段</option>');
                 syncTemplateSelect2($templateSelect);
+                applyTemplateDescription('', true);
                 return;
             }
 
@@ -42,12 +72,14 @@
                 method: 'GET',
                 data: { check_status_id: checkStatusId },
                 success: function (response) {
+                    templateDescriptions = {};
                     $templateSelect.empty().append('<option value="">請選擇...</option>');
 
                     if (!response.length) {
                         $templateSelect.append('<option value="" disabled>此階段尚無派工項目</option>');
                     } else {
                         response.forEach(function (item) {
+                            templateDescriptions[String(item.id)] = item.description || '';
                             const isSelected = String(keepTemplateId) === String(item.id);
                             $templateSelect.append(
                                 '<option value="' + item.id + '"' + (isSelected ? ' selected' : '') + '>' +
@@ -58,8 +90,14 @@
 
                     $templateSelect.prop('disabled', false);
                     syncTemplateSelect2($templateSelect);
+                    bindTemplateDescriptionHandler($templateSelect);
+
+                    if (keepTemplateId) {
+                        applyTemplateDescription(String(keepTemplateId), false);
+                    }
                 },
                 error: function () {
+                    templateDescriptions = {};
                     $templateSelect
                         .prop('disabled', true)
                         .empty()

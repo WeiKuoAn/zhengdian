@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\ChatWebhookEvent;
+use App\Models\DispatchReminderSetting;
 use App\Models\CustData;
 use App\Models\Task;
 use App\Models\TaskItem;
@@ -98,7 +99,7 @@ class ChatWebhookService
 
     public function sendIncomingToSynology(string $text, array $userIds = []): array
     {
-        $host = rtrim((string) config('chat_webhook.synology_host', ''), '/');
+        $host = $this->resolveSynologyHost();
         $token = trim((string) config('chat_webhook.synology_bot_token', ''), "\"' ");
 
         if ($host === '' || $token === '') {
@@ -655,5 +656,28 @@ class ChatWebhookService
         }
 
         return $payload;
+    }
+
+    protected function resolveSynologyHost(): string
+    {
+        static $cachedHost = null;
+        if ($cachedHost !== null) {
+            return $cachedHost;
+        }
+
+        $fromDb = '';
+        if (
+            Schema::hasTable('dispatch_reminder_settings')
+            && Schema::hasColumn('dispatch_reminder_settings', 'synology_chat_host')
+        ) {
+            $fromDb = trim((string) (DispatchReminderSetting::query()->value('synology_chat_host') ?? ''));
+        }
+
+        $cachedHost = rtrim(
+            $fromDb !== '' ? $fromDb : (string) config('chat_webhook.synology_host', ''),
+            '/'
+        );
+
+        return $cachedHost;
     }
 }

@@ -19,6 +19,7 @@ class DispatchReminderSetting extends Model
         'accept_template',
         'due_template',
         'overdue_template',
+        'synology_chat_host',
     ];
 
     protected $casts = [

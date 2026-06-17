@@ -28,10 +28,14 @@ class DispatchReminderSettingController extends Controller
                 'due_template' => (string) config('dispatch_reminder.due_template', ''),
                 'overdue_template' => (string) config('dispatch_reminder.overdue_template', ''),
                 'remind_on_holidays' => (bool) config('dispatch_reminder.remind_on_holidays', false),
+                'synology_chat_host' => (string) config('chat_webhook.synology_host', ''),
             ]);
         }
 
-        return view('dispatch_reminder_settings.index', ['setting' => $setting]);
+        return view('dispatch_reminder_settings.index', [
+            'setting' => $setting,
+            'defaultSynologyChatHost' => (string) config('chat_webhook.synology_host', ''),
+        ]);
     }
 
     public function update(Request $request): RedirectResponse
@@ -47,9 +51,17 @@ class DispatchReminderSettingController extends Controller
             'due_template' => ['nullable', 'string'],
             'overdue_template' => ['nullable', 'string'],
             'remind_on_holidays' => ['sometimes', 'boolean'],
+            'synology_chat_host' => ['nullable', 'string', 'max:500'],
         ]);
 
+        $validated['synology_chat_host'] = $this->normalizeSynologyChatHost(
+            (string) ($validated['synology_chat_host'] ?? '')
+        );
+
         $hasHolidayColumn = Schema::hasColumn('dispatch_reminder_settings', 'remind_on_holidays');
+        if (! Schema::hasColumn('dispatch_reminder_settings', 'synology_chat_host')) {
+            unset($validated['synology_chat_host']);
+        }
         if ($hasHolidayColumn) {
             $validated['remind_on_holidays'] = $request->boolean('remind_on_holidays');
         }
@@ -125,6 +137,20 @@ class DispatchReminderSettingController extends Controller
 
         return redirect()->route('dispatch-reminder-settings')
             ->with('error', implode('；', $errors));
+    }
+
+    protected function normalizeSynologyChatHost(string $host): ?string
+    {
+        $host = rtrim(trim($host), '/');
+        if ($host === '') {
+            return null;
+        }
+
+        if (! preg_match('#^https?://#i', $host)) {
+            $host = 'https://' . $host;
+        }
+
+        return $host;
     }
 }
 

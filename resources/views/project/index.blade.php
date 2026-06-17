@@ -77,7 +77,7 @@
                                                 {{ $data->user_data->name }}
                                             </td>
                                             <td>
-                                                {{$data->name}}
+                                                <a href="{{ route('project.edit', $data->id) }}">{{ $data->name }}</a>
                                             </td>
                                             <td align="center">
                                                 @if(isset($data->check_data))

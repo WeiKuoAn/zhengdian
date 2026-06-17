@@ -78,6 +78,21 @@
                             </div>
 
                             <hr>
+                            <h5 class="mb-3">Synology Chat 連線</h5>
+                            <div class="mb-3">
+                                <label class="form-label" for="synology_chat_host">Chat Host（NAS 網址）</label>
+                                <input type="url" name="synology_chat_host" id="synology_chat_host" class="form-control"
+                                    placeholder="https://zhengdian.direct.quickconnect.to:52667"
+                                    value="{{ old('synology_chat_host', $setting->synology_chat_host ?? ($defaultSynologyChatHost ?? '')) }}">
+                                <div class="form-text">
+                                    NAS 重啟後若 QuickConnect 埠號改變，請在此更新；儲存後派工提醒、派工通知都會使用此網址。
+                                    @if (!empty($defaultSynologyChatHost))
+                                        若留空則使用 .env 的 <code>SYNOLOGY_CHAT_HOST</code>（目前：{{ $defaultSynologyChatHost }}）。
+                                    @endif
+                                </div>
+                            </div>
+
+                            <hr>
                             <h5 class="mb-3">提醒訊息模板（可手動調整）</h5>
                             <p class="text-muted mb-2">可用變數：<code>{mentions}</code> <code>{project_name}</code> <code>{task_name}</code> <code>{task_url}</code> <code>{due_time}</code> <code>{cutoff_time}</code></p>
                             <div class="mb-3">

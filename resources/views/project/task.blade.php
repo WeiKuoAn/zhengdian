@@ -705,12 +705,32 @@
 
 
             // 專案執行階段變化時更新任務選項
+            let projectTaskTemplateDescriptions = {};
+
+            function applyProjectTaskTemplateDescription(templateId, forceUpdate) {
+                const commentsEl = document.getElementById('floatingTextarea');
+                if (!commentsEl) {
+                    return;
+                }
+                if (!templateId) {
+                    if (forceUpdate) {
+                        commentsEl.value = '';
+                    }
+                    return;
+                }
+                const description = projectTaskTemplateDescriptions[String(templateId)] || '';
+                if (forceUpdate || !String(commentsEl.value || '').trim()) {
+                    commentsEl.value = description;
+                }
+            }
+
             $('select[name="check_status_id"]').change(function() {
                 const checkStatusId = $(this).val();
                 const templateSelect = $('select[name="template_id"]');
 
-                // 清空現有選項
+                projectTaskTemplateDescriptions = {};
                 templateSelect.empty().append('<option value="">請選擇...</option>');
+                applyProjectTaskTemplateDescription('', true);
 
                 if (!checkStatusId) return;
 
@@ -722,6 +742,7 @@
                     },
                     success: function(response) {
                         response.forEach(function(item) {
+                            projectTaskTemplateDescriptions[String(item.id)] = item.description || '';
                             templateSelect.append(
                                 `<option value="${item.id}">${item.name}</option>`);
                         });
@@ -730,6 +751,10 @@
                         alert('無法加載資料，請稍後再試！');
                     },
                 });
+            });
+
+            $('select[name="template_id"]').change(function() {
+                applyProjectTaskTemplateDescription(String($(this).val() || ''), true);
             });
         });
 
