@@ -698,7 +698,12 @@
                     return addWorkingMinutesFromDateTime(startAt, minutes);
                 }
 
+                function isManualOrder(input) {
+                    return input.getAttribute('data-manual-order') === '1';
+                }
+
                 function getEstimatedEndDateTime(input) {
+                    const row = parseInt(input.getAttribute('data-row'), 10);
                     const orderDate = String(input.value || '').trim();
                     const durationMinutes = parseInt(input.getAttribute('data-duration-minutes') || '0', 10);
 
@@ -706,8 +711,23 @@
                         return null;
                     }
 
-                    // 每列表訂完成時間皆由「該列表訂日 09:00 起算工時」；手動改日期時後續列才能正確連動。
-                    return addWorkingMinutesSkippingLunch(orderDate, durationMinutes);
+                    // 第一列，或使用者手動改表訂日：從該日 09:00 起算。
+                    if (isNaN(row) || row <= 0 || isManualOrder(input)) {
+                        return addWorkingMinutesSkippingLunch(orderDate, durationMinutes);
+                    }
+
+                    const prevInput = inputs[row - 1];
+                    if (!prevInput) {
+                        return addWorkingMinutesSkippingLunch(orderDate, durationMinutes);
+                    }
+
+                    const prevEnd = getEstimatedEndDateTime(prevInput);
+                    if (!prevEnd) {
+                        return addWorkingMinutesSkippingLunch(orderDate, durationMinutes);
+                    }
+
+                    // 第二列起：自前一段完成時刻累加本列執行時數。
+                    return addWorkingMinutesFromDateTime(prevEnd, durationMinutes);
                 }
 
                 function refreshDispatchEstimatedEnd(input) {
@@ -760,6 +780,7 @@
                         if (!prevInput || !prevInput.value) {
                             continue;
                         }
+                        inputs[j].removeAttribute('data-manual-order');
                         const linkDays = parseInt(inputs[j].getAttribute('data-link-days') || '0', 10);
                         inputs[j].value = computeNextOrderDateFromPrevious(prevInput, linkDays);
                     }
@@ -787,7 +808,12 @@
                             return;
                         }
 
-                        refreshDispatchEstimatedEnd(input);
+                        if (row > 0) {
+                            input.setAttribute('data-manual-order', '1');
+                        } else {
+                            input.removeAttribute('data-manual-order');
+                        }
+
                         cascadeFromRow(row);
                     });
                 });
