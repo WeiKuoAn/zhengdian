@@ -64,19 +64,61 @@ class DispatchReminderSettingController extends Controller
         }
         if ($hasHolidayColumn) {
             $validated['remind_on_holidays'] = $request->boolean('remind_on_holidays');
+        } else {
+            unset($validated['remind_on_holidays']);
         }
+
+        $validated = $this->onlyExistingColumns($validated);
+        $missingColumns = $this->missingOptionalColumns($request);
 
         DispatchReminderSetting::query()->updateOrCreate(['id' => 1], $validated);
 
         $redirect = redirect()->route('dispatch-reminder-settings')->with('success', '提醒設定已更新');
-        if (!$hasHolidayColumn && $request->boolean('remind_on_holidays')) {
+        if ($missingColumns !== []) {
             $redirect->with(
                 'error',
-                '資料庫尚未新增「假日提醒」欄位，請在伺服器執行：php artisan migrate --force'
+                '部分欄位尚未建立，請依序執行 migration：' . implode('、', $missingColumns)
             );
         }
 
         return $redirect;
+    }
+
+    /** @param array<string, mixed> $payload @return array<string, mixed> */
+    protected function onlyExistingColumns(array $payload): array
+    {
+        if (! Schema::hasTable('dispatch_reminder_settings')) {
+            return $payload;
+        }
+
+        return array_filter(
+            $payload,
+            fn ($value, string $key) => Schema::hasColumn('dispatch_reminder_settings', $key),
+            ARRAY_FILTER_USE_BOTH
+        );
+    }
+
+    /** @return list<string> */
+    protected function missingOptionalColumns(Request $request): array
+    {
+        $missing = [];
+
+        foreach (['accept_template', 'due_template', 'overdue_template'] as $column) {
+            if (! Schema::hasColumn('dispatch_reminder_settings', $column)) {
+                $missing[] = '2026_05_05_091500_add_message_templates_to_dispatch_reminder_settings_table.php';
+                break;
+            }
+        }
+
+        if (! Schema::hasColumn('dispatch_reminder_settings', 'remind_on_holidays') && $request->boolean('remind_on_holidays')) {
+            $missing[] = '2026_05_20_100000_add_remind_on_holidays_to_dispatch_reminder_settings_table.php';
+        }
+
+        if (! Schema::hasColumn('dispatch_reminder_settings', 'synology_chat_host') && trim((string) $request->input('synology_chat_host', '')) !== '') {
+            $missing[] = '2026_06_18_120000_add_synology_chat_host_to_dispatch_reminder_settings_table.php';
+        }
+
+        return array_values(array_unique($missing));
     }
 
     public function sendTest(ChatWebhookService $chat): RedirectResponse
