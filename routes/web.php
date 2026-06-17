@@ -114,6 +114,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('TaskTemplate/import/template', [TaskTemplateController::class, 'downloadImportTemplate'])->name('TaskTemplate.import.template');
     Route::post('TaskTemplate/import', [TaskTemplateController::class, 'import'])->name('TaskTemplate.import');
     Route::post('TaskTemplate/batch-down', [TaskTemplateController::class, 'batchTakeDown'])->name('TaskTemplate.batch.down');
+    Route::post('TaskTemplate/batch-delete', [TaskTemplateController::class, 'batchDelete'])->name('TaskTemplate.batch.delete');
     Route::post('TaskTemplate/sort', [TaskTemplateController::class, 'updateSort'])->name('TaskTemplate.sort');
     Route::get('/get-tasktemplate-id', [TaskTemplateController::class, 'getTaskTemplate']);
 

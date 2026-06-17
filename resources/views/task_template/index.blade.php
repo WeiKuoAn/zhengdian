@@ -118,10 +118,28 @@
                                     </button>
                                 </div>
                                 <div class="col-sm-auto">
-                                    <button type="submit" form="batchTakeDownForm" id="batchTakeDownBtn"
-                                        class="btn btn-warning waves-effect waves-light" disabled>
-                                        <i class="mdi mdi-arrow-down-bold-box-outline me-1"></i> 批次下架
-                                    </button>
+                                    <div class="btn-group" id="batchActionGroup">
+                                        <button type="button" class="btn btn-secondary dropdown-toggle waves-effect waves-light"
+                                            id="batchActionBtn" data-bs-toggle="dropdown" aria-expanded="false" disabled>
+                                            <i class="mdi mdi-checkbox-multiple-marked-outline me-1"></i> 批次操作
+                                        </button>
+                                        <ul class="dropdown-menu">
+                                            <li>
+                                                <button type="submit" class="dropdown-item" form="batchActionForm"
+                                                    id="batchTakeDownSubmit"
+                                                    formaction="{{ route('TaskTemplate.batch.down') }}">
+                                                    <i class="mdi mdi-arrow-down-bold-box-outline me-1"></i> 批次下架
+                                                </button>
+                                            </li>
+                                            <li>
+                                                <button type="submit" class="dropdown-item text-danger" form="batchActionForm"
+                                                    id="batchDeleteSubmit"
+                                                    formaction="{{ route('TaskTemplate.batch.delete') }}">
+                                                    <i class="mdi mdi-trash-can-outline me-1"></i> 批次刪除
+                                                </button>
+                                            </li>
+                                        </ul>
+                                    </div>
                                 </div>
                                 <div class="col-sm-auto">
                                     <button type="submit" form="sortTaskTemplateForm"
@@ -136,7 +154,7 @@
                             排序數字愈小愈前面；同專案階段內依排序顯示。可支援 1、1-2、1-10 這類自然排序。
                         </p>
 
-                        <form method="POST" action="{{ route('TaskTemplate.batch.down') }}" id="batchTakeDownForm">
+                        <form method="POST" id="batchActionForm">
                             @csrf
                             <input type="hidden" name="status_filter" value="{{ $statusFilter ?? 'up' }}">
                         </form>
@@ -170,8 +188,7 @@
                                             @if ((int) (Auth::user()->level ?? 2) !== 2)
                                                 <td class="col-check">
                                                     <input type="checkbox" class="form-check-input task-template-check"
-                                                        form="batchTakeDownForm" name="ids[]" value="{{ $data->id }}"
-                                                        {{ ($data->status ?? 'up') === 'down' ? 'disabled' : '' }}>
+                                                        form="batchActionForm" name="ids[]" value="{{ $data->id }}">
                                                 </td>
                                             @endif
                                             <td class="col-no">{{ $key + 1 }}</td>
@@ -278,18 +295,29 @@
             }
 
             const selectAll = document.getElementById('selectAllTaskTemplates');
-            const batchBtn = document.getElementById('batchTakeDownBtn');
-            const batchForm = document.getElementById('batchTakeDownForm');
+            const batchActionBtn = document.getElementById('batchActionBtn');
+            const batchActionForm = document.getElementById('batchActionForm');
+            const batchTakeDownSubmit = document.getElementById('batchTakeDownSubmit');
+            const batchDeleteSubmit = document.getElementById('batchDeleteSubmit');
+            let pendingBatchAction = null;
 
-            function getSelectableChecks() {
-                return Array.from(document.querySelectorAll('.task-template-check:not(:disabled)'));
+            function getChecks() {
+                return Array.from(document.querySelectorAll('.task-template-check'));
+            }
+
+            function getCheckedCount() {
+                return getChecks().filter((el) => el.checked).length;
             }
 
             function syncBatchControls() {
-                const checks = getSelectableChecks();
+                const checks = getChecks();
                 const checked = checks.filter((el) => el.checked);
-                if (batchBtn) {
-                    batchBtn.disabled = checked.length === 0;
+                const count = checked.length;
+                if (batchActionBtn) {
+                    batchActionBtn.disabled = count === 0;
+                    batchActionBtn.innerHTML = count > 0
+                        ? '<i class="mdi mdi-checkbox-multiple-marked-outline me-1"></i> 批次操作（' + count + '）'
+                        : '<i class="mdi mdi-checkbox-multiple-marked-outline me-1"></i> 批次操作';
                 }
                 if (selectAll) {
                     selectAll.checked = checks.length > 0 && checked.length === checks.length;
@@ -299,7 +327,7 @@
 
             if (selectAll) {
                 selectAll.addEventListener('change', function () {
-                    getSelectableChecks().forEach((el) => {
+                    getChecks().forEach((el) => {
                         el.checked = selectAll.checked;
                     });
                     syncBatchControls();
@@ -310,16 +338,36 @@
                 el.addEventListener('change', syncBatchControls);
             });
 
-            if (batchForm) {
-                batchForm.addEventListener('submit', function (event) {
-                    const count = getSelectableChecks().filter((el) => el.checked).length;
+            if (batchTakeDownSubmit) {
+                batchTakeDownSubmit.addEventListener('click', function () {
+                    pendingBatchAction = 'down';
+                });
+            }
+
+            if (batchDeleteSubmit) {
+                batchDeleteSubmit.addEventListener('click', function () {
+                    pendingBatchAction = 'delete';
+                });
+            }
+
+            if (batchActionForm) {
+                batchActionForm.addEventListener('submit', function (event) {
+                    const count = getCheckedCount();
                     if (count === 0) {
                         event.preventDefault();
                         return;
                     }
-                    if (!confirm('確定要下架所選的 ' + count + ' 筆派工項目嗎？')) {
+
+                    let message = '確定要下架所選的 ' + count + ' 筆派工項目嗎？';
+                    if (pendingBatchAction === 'delete') {
+                        message = '確定要永久刪除所選的 ' + count + ' 筆派工項目嗎？此操作無法復原。';
+                    }
+
+                    if (!confirm(message)) {
                         event.preventDefault();
                     }
+
+                    pendingBatchAction = null;
                 });
             }
 

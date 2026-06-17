@@ -271,6 +271,29 @@ class TaskTemplateController extends Controller
             ->with('success', '已批次下架 ' . $count . ' 筆派工項目');
     }
 
+    public function batchDelete(Request $request): RedirectResponse
+    {
+        $this->ensureCanDeleteSetting();
+
+        $validated = $request->validate([
+            'ids' => ['required', 'array', 'min:1'],
+            'ids.*' => ['integer', 'exists:task_templates,id'],
+        ]);
+
+        $count = TaskTemplate::query()
+            ->whereIn('id', $validated['ids'])
+            ->delete();
+
+        $statusFilter = $request->input('status_filter', 'up');
+        if (! in_array($statusFilter, ['all', 'up', 'down'], true)) {
+            $statusFilter = 'up';
+        }
+
+        return redirect()
+            ->route('TaskTemplate', ['status_filter' => $statusFilter])
+            ->with('success', '已批次刪除 ' . $count . ' 筆派工項目');
+    }
+
     public function updateSort(Request $request): RedirectResponse
     {
         $this->ensureCanManageSetting();
