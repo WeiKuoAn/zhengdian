@@ -625,6 +625,8 @@
                 return formatIsoDate(d);
             }
 
+            let syncPlanMilestoneDates = null;
+
             function bindOrderCascade() {
                 const inputs = document.querySelectorAll('.plan-order-date');
 
@@ -697,7 +699,6 @@
                 }
 
                 function getEstimatedEndDateTime(input) {
-                    const row = parseInt(input.getAttribute('data-row'), 10);
                     const orderDate = String(input.value || '').trim();
                     const durationMinutes = parseInt(input.getAttribute('data-duration-minutes') || '0', 10);
 
@@ -705,22 +706,8 @@
                         return null;
                     }
 
-                    if (isNaN(row) || row <= 0) {
-                        return addWorkingMinutesSkippingLunch(orderDate, durationMinutes);
-                    }
-
-                    const prevInput = inputs[row - 1];
-                    if (!prevInput) {
-                        return addWorkingMinutesSkippingLunch(orderDate, durationMinutes);
-                    }
-
-                    const prevEnd = getEstimatedEndDateTime(prevInput);
-                    if (!prevEnd) {
-                        return addWorkingMinutesSkippingLunch(orderDate, durationMinutes);
-                    }
-
-                    // 第二筆起：自前一段表訂完成時刻累加工時。
-                    return addWorkingMinutesFromDateTime(prevEnd, durationMinutes);
+                    // 每列表訂完成時間皆由「該列表訂日 09:00 起算工時」；手動改日期時後續列才能正確連動。
+                    return addWorkingMinutesSkippingLunch(orderDate, durationMinutes);
                 }
 
                 function refreshDispatchEstimatedEnd(input) {
@@ -779,6 +766,18 @@
                     refreshAllEstimatedEnds();
                 }
 
+                syncPlanMilestoneDates = function() {
+                    document.querySelectorAll('.plan-milestone-row').forEach(function(row) {
+                        const orderInput = row.querySelector('.plan-order-date');
+                        const milestoneInput = row.querySelector('input[name="milestone_dates[]"]');
+                        if (!orderInput || !milestoneInput) {
+                            return;
+                        }
+                        const estimated = getEstimatedEndDateTime(orderInput);
+                        milestoneInput.value = estimated ? formatIsoDate(estimated) : (orderInput.value || '');
+                    });
+                };
+
                 inputs.forEach(function(input) {
                     refreshDispatchEstimatedEnd(input);
                     input.addEventListener('change', function() {
@@ -788,12 +787,18 @@
                             return;
                         }
 
+                        refreshDispatchEstimatedEnd(input);
                         cascadeFromRow(row);
                     });
                 });
 
-                if (inputs.length > 1 && inputs[0].value) {
-                    cascadeFromRow(0);
+                refreshAllEstimatedEnds();
+
+                const planForm = document.getElementById('plan-form');
+                if (planForm) {
+                    planForm.addEventListener('submit', function() {
+                        syncPlanMilestoneDates();
+                    });
                 }
             }
 
@@ -920,6 +925,9 @@
 
                 const planForm = document.getElementById('plan-form');
                 if (planForm) {
+                    if (typeof syncPlanMilestoneDates === 'function') {
+                        syncPlanMilestoneDates();
+                    }
                     const saveBtn = document.getElementById('saveDispatchEditor');
                     if (saveBtn) {
                         saveBtn.disabled = true;
