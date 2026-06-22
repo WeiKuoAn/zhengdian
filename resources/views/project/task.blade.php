@@ -247,7 +247,7 @@
                                 </select>
                             </div>
                             <div class="mb-3">
-                                <label for="project-priority" class="form-label">任務項目<span
+                                <label for="project-priority" class="form-label">派工項目<span
                                         class="text-danger">*</span></label>
                                 <select class="form-control" data-toggle="select" data-width="100%" name="template_id"
                                     required>
@@ -257,30 +257,18 @@
 
                             <div class="mb-3">
                                 <label class="form-label">負責執行人員：<span class="text-danger">*</span></label>
-                                <div class="executor-container">
-                                    <div class="input-group mb-2 executor-entry">
-                                        <select class="form-control" data-toggle="select" data-width="100%"
-                                            name="user_ids[]" required>
-                                            @foreach ($users as $key => $user)
-                                                <option value="{{ $user->id }}">{{ $user->name }}</option>
-                                            @endforeach
-                                            <option value="">無</option>
-                                        </select>
-                                        <input type="text" class="form-control" name="contexts[]" placeholder="執行內容">
-                                        <button type="button" class="btn btn-danger remove-executor">-</button>
-                                    </div>
+                                <div id="executor-container">
+                                    @include('task.partials.executor-entry', ['users' => $users])
                                 </div>
-                                <button type="button" class="btn btn-link add-executor">+ 新增更多人員或執行內容</button>
+                                <button type="button" class="btn btn-link" id="add-executor">+ 新增更多人員或執行內容</button>
                             </div>
                             <div class="mb-3">
                                 <label class="form-label">預計完成日期：<span class="text-danger">*</span></label>
-                                <div id="executor-container">
-                                    <div class="input-group mb-2">
+                                <div class="input-group mb-2">
                                         <input type="date" class="form-control" name="estimated_end_date"
                                             placeholder="執行內容" required>
                                         <input type="time" name="estimated_end_time" class="form-control"
                                             placeholder="時：分" required>
-                                    </div>
                                 </div>
                             </div>
                             <div class="mb-3">
@@ -294,7 +282,7 @@
                                 </select>
                             </div>
                             <div class="mb-3">
-                                <label class="form-label">任務項目描述<span class="text-danger"></span></label>
+                                <label class="form-label">派工描述</label>
                                 <textarea class="form-control" id="floatingTextarea" name="comments" rows="3"></textarea>
                             </div>
                             <div class="mb-3">
@@ -354,7 +342,7 @@
                                 </select>
                             </div>
                             <div class="mb-3">
-                                <label for="editTemplateId" class="form-label">任務項目：</label>
+                                <label for="editTemplateId" class="form-label">派工項目：</label>
                                 <select class="form-control" id="editTemplateId" name="template_id" required>
                                     <option value="">請選擇...</option>
                                     @foreach ($task_templates as $task_template)
@@ -364,12 +352,8 @@
                             </div>
                             <div class="mb-3">
                                 <label class="form-label">負責執行人員：</label>
-                                <div id="editExecutorContainer">
-                                    <div class="executor-container">
-                                        <!-- 動態填充執行人員數據 -->
-                                    </div>
-                                </div>
-                                <button type="button" class="btn btn-link add-executor">+ 新增更多人員或執行內容</button>
+                                <div id="editExecutorContainer"></div>
+                                <button type="button" class="btn btn-link" id="add-edit-executor">+ 新增更多人員或執行內容</button>
 
                             </div>
                             <div class="mb-3">
@@ -392,7 +376,7 @@
                                 </select>
                             </div>
                             <div class="mb-3">
-                                <label for="editComments" class="form-label">任務項目描述：</label>
+                                <label for="editComments" class="form-label">派工描述：</label>
                                 <textarea class="form-control" id="editComments" name="comments" rows="3"></textarea>
                             </div>
                             <div class="mb-3">
@@ -445,7 +429,7 @@
                                 </select>
                             </div>
                             <div class="mb-3">
-                                <label for="copyTemplateId" class="form-label">任務項目：</label>
+                                <label for="copyTemplateId" class="form-label">派工項目：</label>
                                 <select class="form-control" id="copyTemplateId" name="template_id" required>
                                     <option value="">請選擇...</option>
                                     @foreach ($task_templates as $task_template)
@@ -455,12 +439,8 @@
                             </div>
                             <div class="mb-3">
                                 <label class="form-label">負責執行人員：</label>
-                                <div id="copyExecutorContainer">
-                                    <div class="executor-container">
-                                        <!-- 動態填充執行人員數據 -->
-                                    </div>
-                                </div>
-                                <button type="button" class="btn btn-link add-executor">+ 新增更多人員或執行內容</button>
+                                <div id="copyExecutorContainer"></div>
+                                <button type="button" class="btn btn-link" id="add-copy-executor">+ 新增更多人員或執行內容</button>
 
                             </div>
                             <div class="mb-3">
@@ -483,7 +463,7 @@
                                 </select>
                             </div>
                             <div class="mb-3">
-                                <label for="copyComments" class="form-label">任務項目描述：</label>
+                                <label for="copyComments" class="form-label">派工描述：</label>
                                 <textarea class="form-control" id="copyComments" name="comments" rows="3"></textarea>
                             </div>
                             <div class="mb-3">
@@ -538,6 +518,7 @@
     @vite(['resources/js/pages/form-pickers.init.js'])
     @vite(['resources/js/pages/form-advanced.init.js'])
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    @include('task.partials.executor-fields-script')
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const editModal = new bootstrap.Modal(document.getElementById('editTaskModal'));
@@ -562,23 +543,13 @@
                         // 動態生成執行人員列表
                         const executorContainer = document.getElementById('editExecutorContainer');
                         executorContainer.innerHTML = '';
-                        data.items.forEach(item => {
-                            executorContainer.innerHTML += `
-                        <div class="input-group mb-2 executor-entry">
-                            <select class="form-control" name="user_ids[]" required>
-                                @foreach ($users as $user)
-                                    <option value="{{ $user->id }}" ${item.user_id == {{ $user->id }} ? 'selected' : ''}>
-                                        {{ $user->name }}
-                                    </option>
-                                @endforeach
-                            </select>
-                            <input type="text" class="form-control" name="contexts[]" value="${item.context}" placeholder="執行內容">
-                            <button type="button" class="btn btn-danger remove-executor">-</button>
-                        </div>
-                       
-                    `;
+                        const editItems = data.items && data.items.length ? data.items : [{}];
+                        editItems.forEach(item => {
+                            const $row = $(buildExecutorEntryHtml());
+                            $row.find('select[name="user_ids[]"]').val(item.user_id);
+                            $row.find('textarea[name="contexts[]"]').val(item.context || '');
+                            $(executorContainer).append($row);
                         });
-                        executorContainer.innerHTML += `<div class="executor-container"> </div>`
 
                         // 設置表單的動作 URL
                         const editForm = document.getElementById('editTaskForm');
@@ -617,23 +588,13 @@
                         // 動態生成執行人員列表
                         const executorContainer = document.getElementById('copyExecutorContainer');
                         executorContainer.innerHTML = '';
-                        data.items.forEach(item => {
-                            executorContainer.innerHTML += `
-                        <div class="input-group mb-2 executor-entry">
-                            <select class="form-control" name="user_ids[]" required>
-                                @foreach ($users as $user)
-                                    <option value="{{ $user->id }}" ${item.user_id == {{ $user->id }} ? 'selected' : ''}>
-                                        {{ $user->name }}
-                                    </option>
-                                @endforeach
-                            </select>
-                            <input type="text" class="form-control" name="contexts[]" value="${item.context}" placeholder="執行內容">
-                            <button type="button" class="btn btn-danger remove-executor">-</button>
-                        </div>
-                       
-                    `;
+                        const copyItems = data.items && data.items.length ? data.items : [{}];
+                        copyItems.forEach(item => {
+                            const $row = $(buildExecutorEntryHtml());
+                            $row.find('select[name="user_ids[]"]').val(item.user_id);
+                            $row.find('textarea[name="contexts[]"]').val(item.context || '');
+                            $(executorContainer).append($row);
                         });
-                        executorContainer.innerHTML += `<div class="executor-container"> </div>`
 
                         // 設置表單的動作 URL
                         const copyForm = document.getElementById('copyTaskForm');
@@ -651,32 +612,9 @@
 
 
         $(document).ready(function() {
-            // 綁定新增執行人員按鈕
-            $(document).on('click', '.add-executor', function() {
-                const newRow = `
-            <div class="input-group mb-2 executor-entry">
-                <select class="form-control" data-toggle="select" data-width="100%" name="user_ids[]" required>
-                    @foreach ($users as $key => $user)
-                        <option value="{{ $user->id }}">{{ $user->name }}</option>
-                    @endforeach
-                    <option value="">無</option>
-                </select>
-                <input type="text" class="form-control" name="contexts[]" placeholder="執行內容">
-                <button type="button" class="btn btn-danger remove-executor">-</button>
-            </div>
-        `;
-                $('.executor-container').append(newRow);
-            });
-
-            // 綁定刪除執行人員按鈕
-            $(document).on('click', '.remove-executor', function() {
-                if ($('.executor-entry').length > 1) {
-                    $(this).closest('.executor-entry').remove();
-                } else {
-                    alert('至少需要保留一個執行人員條目');
-                }
-            });
-
+            bindExecutorFields({ buttonSelector: '#add-executor', containerSelector: '#executor-container' });
+            bindExecutorFields({ buttonSelector: '#add-edit-executor', containerSelector: '#editExecutorContainer' });
+            bindExecutorFields({ buttonSelector: '#add-copy-executor', containerSelector: '#copyExecutorContainer' });
             $('form').on('submit', function(event) {
                 const formId = $(this).attr('id');
 
@@ -706,22 +644,34 @@
 
             // 專案執行階段變化時更新任務選項
             let projectTaskTemplateDescriptions = {};
+            let projectTaskTemplateNames = {};
 
-            function applyProjectTaskTemplateDescription(templateId, forceUpdate) {
-                const commentsEl = document.getElementById('floatingTextarea');
-                if (!commentsEl) {
-                    return;
-                }
-                if (!templateId) {
-                    if (forceUpdate) {
-                        commentsEl.value = '';
-                    }
-                    return;
-                }
+            function applyProjectTaskTemplateFields(templateId, forceUpdate) {
                 const description = projectTaskTemplateDescriptions[String(templateId)] || '';
-                if (forceUpdate || !String(commentsEl.value || '').trim()) {
-                    commentsEl.value = description;
+                const name = projectTaskTemplateNames[String(templateId)] || '';
+
+                const commentsEl = document.getElementById('floatingTextarea');
+                if (commentsEl) {
+                    if (!templateId) {
+                        if (forceUpdate) {
+                            commentsEl.value = '';
+                        }
+                    } else if (forceUpdate || !String(commentsEl.value || '').trim()) {
+                        commentsEl.value = description;
+                    }
                 }
+
+                document.querySelectorAll('#executor-container textarea[name="contexts[]"]').forEach(function (input) {
+                    if (!templateId) {
+                        if (forceUpdate) {
+                            input.value = '';
+                        }
+                        return;
+                    }
+                    if (forceUpdate || !String(input.value || '').trim()) {
+                        input.value = name;
+                    }
+                });
             }
 
             $('select[name="check_status_id"]').change(function() {
@@ -729,8 +679,9 @@
                 const templateSelect = $('select[name="template_id"]');
 
                 projectTaskTemplateDescriptions = {};
+                projectTaskTemplateNames = {};
                 templateSelect.empty().append('<option value="">請選擇...</option>');
-                applyProjectTaskTemplateDescription('', true);
+                applyProjectTaskTemplateFields('', true);
 
                 if (!checkStatusId) return;
 
@@ -743,6 +694,7 @@
                     success: function(response) {
                         response.forEach(function(item) {
                             projectTaskTemplateDescriptions[String(item.id)] = item.description || '';
+                            projectTaskTemplateNames[String(item.id)] = item.name || '';
                             templateSelect.append(
                                 `<option value="${item.id}">${item.name}</option>`);
                         });
@@ -754,7 +706,7 @@
             });
 
             $('select[name="template_id"]').change(function() {
-                applyProjectTaskTemplateDescription(String($(this).val() || ''), true);
+                applyProjectTaskTemplateFields(String($(this).val() || ''), true);
             });
         });
 

@@ -48,7 +48,7 @@
                                     </select>
                                 </div>
                                 <div class="mb-3">
-                                    <label for="project-priority" class="form-label">任務項目<span
+                                    <label for="project-priority" class="form-label">派工項目<span
                                             class="text-danger">*</span></label>
                                     <select class="form-control" data-toggle="select2" data-width="100%" name="template_id"
                                         required disabled>
@@ -60,20 +60,11 @@
                                     <label class="form-label">負責執行人員：<span class="text-danger">*</span></label>
                                     <div id="executor-container">
                                         @foreach ($data->items as $item)
-                                            <div class="input-group mb-2 executor-entry">
-                                                <select class="form-control" data-toggle="select" data-width="100%"
-                                                    name="user_ids[]" required>
-                                                    @foreach ($users as $key => $user)
-                                                        <option value="{{ $user->id }}"
-                                                            {{ $item->user_id == $user->id ? 'selected' : '' }}>
-                                                            {{ $user->name }}</option>
-                                                    @endforeach
-                                                    <option value="">無</option>
-                                                </select>
-                                                <input type="text" class="form-control" name="contexts[]"
-                                                    placeholder="執行內容" value="{{ $item->context }}">
-                                                <button type="button" class="btn btn-danger remove-executor">-</button>
-                                            </div>
+                                            @include('task.partials.executor-entry', [
+                                                'users' => $users,
+                                                'selectedUserId' => $item->user_id,
+                                                'context' => $item->context,
+                                            ])
                                         @endforeach
                                     </div>
                                     <button type="button" class="btn btn-link" id="add-executor">+ 新增更多人員或執行內容</button>
@@ -98,7 +89,7 @@
                                     </select>
                                 </div>
                                 <div class="mb-3">
-                                    <label class="form-label">任務項目描述<span class="text-danger"></span></label>
+                                    <label class="form-label">派工描述</label>
                                     <textarea class="form-control" id="floatingTextarea" name="comments" rows="3">{{ $data->comments }}</textarea>
                                 </div>
                                 <div class="mb-3">
@@ -145,29 +136,10 @@
     @vite(['resources/js/pages/form-advanced.init.js'])
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     @include('task.partials.template-by-stage-script')
+    @include('task.partials.executor-fields-script')
     <script>
         $(document).ready(function() {
-            $('#add-executor').off('click').on('click', function() {
-                var newRow = `
-                <div class="input-group mb-2 executor-entry">
-                    <select class="form-control" data-toggle="select" data-width="100%" name="user_ids[]" required>
-                        @foreach ($users as $key => $user)
-                            <option value="{{ $user->id }}">{{ $user->name }}</option>
-                        @endforeach
-                        <option value="">無</option>
-                    </select>
-                    <input type="text" class="form-control" name="contexts[]" placeholder="執行內容">
-                    <button type="button" class="btn btn-danger remove-executor">-</button>
-                </div>
-            `;
-                $('#executor-container').append(newRow);
-            });
-
-            $(document).on('click', '.remove-executor', function() {
-                if ($('.executor-entry').length > 1) {
-                    $(this).closest('.executor-entry').remove();
-                }
-            });
+            bindExecutorFields();
 
             $('form').on('submit', function(event) {
                 const endDate = $('#end_date').val().trim();

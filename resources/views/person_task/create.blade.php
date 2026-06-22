@@ -45,7 +45,7 @@
                                     </select>
                                 </div>
                                 <div class="mb-3">
-                                    <label for="project-priority" class="form-label">任務項目<span
+                                    <label for="project-priority" class="form-label">派工項目<span
                                             class="text-danger">*</span></label>
                                     <select class="form-control" data-toggle="select2" data-width="100%" name="template_id"
                                         required disabled>
@@ -57,31 +57,21 @@
                                 <div class="mb-3">
                                     <label class="form-label">負責執行人員：<span class="text-danger">*</span></label>
                                     <div id="executor-container">
-                                        <div class="input-group mb-2 executor-entry">
-                                            <select class="form-control" data-toggle="select" data-width="100%"
-                                                name="user_ids[]">
-                                                @foreach ($users as $key => $user)
-                                                    <option value="{{ $user->id }}">{{ $user->name }}</option>
-                                                @endforeach
-                                                <option value="">無</option>
-                                            </select>
-                                            <input type="text" class="form-control" name="contexts[]" placeholder="執行內容"
-                                                required>
-                                            <button type="button" class="btn btn-danger remove-executor">-</button>
-                                        </div>
+                                        @include('task.partials.executor-entry', [
+                                            'users' => $users,
+                                            'contextRequired' => true,
+                                        ])
                                     </div>
                                     <button type="button" class="btn btn-link" id="add-executor">+ 新增更多人員或執行內容</button>
                                 </div>
                                 <div class="mb-3">
                                     <label class="form-label">預計完成日期：<span class="text-danger">*</span></label>
-                                    <div id="executor-container">
-                                        <div class="input-group mb-2">
+                                    <div class="input-group mb-2">
                                             <input type="date" class="form-control" name="estimated_end_date"
                                                 placeholder="執行內容" required>
                                             <input type="text" id="24hours-timepicker" name="estimated_end_time"
                                                 class="form-control" placeholder="時：分" required>
                                         </div>
-                                    </div>
                                 </div>
                                 <div class="mb-3">
                                     <label for="project-priority" class="form-label">優先序<span
@@ -94,7 +84,7 @@
                                     </select>
                                 </div>
                                 <div class="mb-3">
-                                    <label class="form-label">備註<span class="text-danger"></span></label>
+                                    <label class="form-label">派工描述</label>
                                     <textarea class="form-control" id="floatingTextarea" name="comments" rows="3"></textarea>
                                 </div>
                                 <div class="mb-3">
@@ -132,32 +122,10 @@
     @vite(['resources/js/pages/form-advanced.init.js'])
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     @include('task.partials.template-by-stage-script')
+    @include('task.partials.executor-fields-script')
     <script>
         $(document).ready(function() {
-            // 避免多次綁定事件，先移除後綁定
-            $('#add-executor').off('click').on('click', function() {
-                var newRow = `
-                <div class="input-group mb-2 executor-entry">
-                    <select class="form-control" data-toggle="select" data-width="100%" name="user_ids[]">
-                        @foreach ($users as $key => $user)
-                            <option value="{{ $user->id }}">{{ $user->name }}</option>
-                        @endforeach
-                        <option value="">無</option>
-                    </select>
-                    <input type="text" class="form-control" name="contexts[]" placeholder="執行內容" required>
-                    <button type="button" class="btn btn-danger remove-executor">-</button>
-                </div>
-            `;
-                $('#executor-container').append(newRow);
-            });
-
-            // 刪除執行人員列，確保最少保留一列
-            $(document).on('click', '.remove-executor', function() {
-                if ($('.executor-entry').length > 1) {
-                    $(this).closest('.executor-entry').remove();
-                }
-            });
-
+            bindExecutorFields({ contextRequired: true });
             initTaskTemplateByStage();
         });
     </script>

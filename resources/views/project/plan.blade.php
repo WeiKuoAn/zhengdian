@@ -164,18 +164,21 @@
         }
 
         .dispatch-modal .dispatch-editor-entry {
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.75rem;
         }
 
         .dispatch-modal .dispatch-editor-user,
         .dispatch-modal .dispatch-editor-context {
             font-size: 14px;
-            min-height: 42px;
+        }
+
+        .dispatch-modal .dispatch-editor-context {
+            min-height: 96px;
+            resize: vertical;
         }
 
         .dispatch-modal .remove-dispatch-editor-row {
-            font-size: 14px;
-            min-width: 44px;
+            min-width: 36px;
         }
 
         .dispatch-modal #addDispatchEditorRow {
@@ -425,6 +428,7 @@
                                                             class="btn btn-outline-primary btn-sm plan-dispatch-btn open-dispatch-modal"
                                                             data-row-key="{{ $key }}"
                                                             data-stage-label="【{{ optional($task_data->check_status_data)->name }}】{{ $task_data->name }}"
+                                                            data-task-name="{{ $task_data->name }}"
                                                             data-bs-toggle="tooltip"
                                                             data-bs-html="true"
                                                             data-bs-placement="top"
@@ -578,6 +582,7 @@
             const isLevelTwo = @json($isLevelTwo);
             let currentTaskItemId = null;
             let currentDispatchRowKey = null;
+            let currentDispatchTaskName = '';
             let currentConfirmTaskId = null;
             const userNameMap = @json($users->pluck('name', 'id')->toArray());
 
@@ -866,16 +871,27 @@
                 });
                 const safeContext = $('<div/>').text(context || '').html();
                 return `
-                    <div class="input-group dispatch-editor-entry">
-                        <select class="form-select dispatch-editor-user">${options.join('')}</select>
-                        <input type="text" class="form-control dispatch-editor-context" value="${safeContext}" placeholder="執行內容／任務描述">
-                        <button type="button" class="btn btn-danger remove-dispatch-editor-row" tabindex="-1">-</button>
+                    <div class="dispatch-editor-entry border rounded p-3 mb-3 bg-light">
+                        <div class="d-flex justify-content-end mb-2">
+                            <button type="button" class="btn btn-danger btn-sm remove-dispatch-editor-row" tabindex="-1" aria-label="移除執行人員">
+                                <i class="mdi mdi-trash-can-outline"></i>
+                            </button>
+                        </div>
+                        <div class="mb-3">
+                            <label class="d-block small text-muted mb-1">執行人員</label>
+                            <select class="form-select w-100 dispatch-editor-user">${options.join('')}</select>
+                        </div>
+                        <div>
+                            <label class="d-block small text-muted mb-1">執行內容</label>
+                            <textarea class="form-control w-100 dispatch-editor-context" rows="4" placeholder="執行內容（自動帶入派工項目名稱，可修改）">${safeContext}</textarea>
+                        </div>
                     </div>
                 `;
             }
 
-            function openDispatchModal(rowKey, stageLabel) {
+            function openDispatchModal(rowKey, stageLabel, taskName) {
                 currentDispatchRowKey = rowKey;
+                currentDispatchTaskName = taskName || '';
                 const modal = new bootstrap.Modal(document.getElementById('dispatchModal'));
                 const editor = document.getElementById('dispatchEditorRows');
                 const stageTitle = document.getElementById('dispatchStageTitle');
@@ -891,7 +907,10 @@
                 const length = Math.max(userInputs.length, contextInputs.length, 1);
                 for (let i = 0; i < length; i++) {
                     const userId = userInputs[i] ? userInputs[i].value : '';
-                    const context = contextInputs[i] ? contextInputs[i].value : '';
+                    let context = contextInputs[i] ? contextInputs[i].value : '';
+                    if (!String(context || '').trim() && currentDispatchTaskName) {
+                        context = currentDispatchTaskName;
+                    }
                     editor.insertAdjacentHTML('beforeend', createDispatchEditorEntry(userId, context));
                 }
 
@@ -1055,7 +1074,8 @@
             $(document).on('click', '.open-dispatch-modal', function() {
                 const rowKey = $(this).data('row-key');
                 const stageLabel = $(this).data('stage-label');
-                openDispatchModal(rowKey, stageLabel);
+                const taskName = $(this).data('task-name') || '';
+                openDispatchModal(rowKey, stageLabel, taskName);
             });
 
             $(document).on('click', '.open-confirm-dispatch-modal', function() {
@@ -1065,7 +1085,7 @@
             });
 
             $(document).on('click', '#addDispatchEditorRow', function() {
-                $('#dispatchEditorRows').append(createDispatchEditorEntry('', ''));
+                $('#dispatchEditorRows').append(createDispatchEditorEntry('', currentDispatchTaskName));
             });
 
             $(document).on('click', '.remove-dispatch-editor-row', function() {

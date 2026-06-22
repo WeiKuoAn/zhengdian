@@ -4,7 +4,9 @@
         const selectedTemplateId = String(options.selectedTemplateId || '');
         const initialStageId = String(options.initialStageId || $('select[name="check_status_id"]').val() || '');
         const commentsSelector = options.commentsSelector || 'textarea[name="comments"]';
+        const contextSelector = options.contextSelector || 'textarea[name="contexts[]"]';
         let templateDescriptions = {};
+        let templateNames = {};
 
         function escapeHtml(text) {
             return $('<div>').text(text ?? '').html();
@@ -21,29 +23,59 @@
             }
         }
 
-        function applyTemplateDescription(templateId, forceUpdate) {
+        function getTemplateDescription(templateId) {
+            return templateDescriptions[String(templateId)] || '';
+        }
+
+        function getTemplateName(templateId) {
+            return templateNames[String(templateId)] || '';
+        }
+
+        window.getSelectedTaskTemplateDescription = function () {
+            const templateId = String($('select[name="template_id"]').val() || '');
+            return getTemplateDescription(templateId);
+        };
+
+        window.getSelectedTaskTemplateName = function () {
+            const templateId = String($('select[name="template_id"]').val() || '');
+            return getTemplateName(templateId);
+        };
+
+        function applyTemplateFields(templateId, forceUpdate) {
+            const description = getTemplateDescription(templateId);
+            const name = getTemplateName(templateId);
+
             const $comments = $(commentsSelector);
-            if (!$comments.length) {
-                return;
-            }
-
-            if (!templateId) {
-                if (forceUpdate) {
-                    $comments.val('');
+            if ($comments.length) {
+                if (!templateId) {
+                    if (forceUpdate) {
+                        $comments.val('');
+                    }
+                } else if (forceUpdate || !String($comments.val() || '').trim()) {
+                    $comments.val(description);
                 }
-                return;
             }
 
-            const description = templateDescriptions[String(templateId)] || '';
-            if (forceUpdate || !String($comments.val() || '').trim()) {
-                $comments.val(description);
+            const $contexts = $(contextSelector);
+            if ($contexts.length) {
+                if (!templateId) {
+                    if (forceUpdate) {
+                        $contexts.val('');
+                    }
+                } else {
+                    $contexts.each(function () {
+                        if (forceUpdate || !String($(this).val() || '').trim()) {
+                            $(this).val(name);
+                        }
+                    });
+                }
             }
         }
 
         function bindTemplateDescriptionHandler($templateSelect) {
             $templateSelect.off('change.taskTemplateDesc select2:select.taskTemplateDesc')
                 .on('change.taskTemplateDesc select2:select.taskTemplateDesc', function () {
-                    applyTemplateDescription(String($(this).val() || ''), true);
+                    applyTemplateFields(String($(this).val() || ''), true);
                 });
         }
 
@@ -52,12 +84,13 @@
 
             if (!checkStatusId) {
                 templateDescriptions = {};
+                templateNames = {};
                 $templateSelect
                     .prop('disabled', true)
                     .empty()
                     .append('<option value="">請先選擇專案執行階段</option>');
                 syncTemplateSelect2($templateSelect);
-                applyTemplateDescription('', true);
+                applyTemplateFields('', true);
                 return;
             }
 
@@ -73,6 +106,7 @@
                 data: { check_status_id: checkStatusId },
                 success: function (response) {
                     templateDescriptions = {};
+                    templateNames = {};
                     $templateSelect.empty().append('<option value="">請選擇...</option>');
 
                     if (!response.length) {
@@ -80,6 +114,7 @@
                     } else {
                         response.forEach(function (item) {
                             templateDescriptions[String(item.id)] = item.description || '';
+                            templateNames[String(item.id)] = item.name || '';
                             const isSelected = String(keepTemplateId) === String(item.id);
                             $templateSelect.append(
                                 '<option value="' + item.id + '"' + (isSelected ? ' selected' : '') + '>' +
@@ -93,11 +128,12 @@
                     bindTemplateDescriptionHandler($templateSelect);
 
                     if (keepTemplateId) {
-                        applyTemplateDescription(String(keepTemplateId), false);
+                        applyTemplateFields(String(keepTemplateId), false);
                     }
                 },
                 error: function () {
                     templateDescriptions = {};
+                    templateNames = {};
                     $templateSelect
                         .prop('disabled', true)
                         .empty()
