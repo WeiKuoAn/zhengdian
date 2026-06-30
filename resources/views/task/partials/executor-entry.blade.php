@@ -21,8 +21,8 @@
         </select>
     </div>
     <div>
-        <label class="d-block small text-muted mb-1">執行內容</label>
+        <label class="d-block small text-muted mb-1">派工項目</label>
         <textarea class="form-control w-100 executor-context-input" name="contexts[]" rows="4"
-            placeholder="執行內容（選派工項目後自動帶入項目名稱，可修改）" @if ($contextRequired) required @endif>{{ $context }}</textarea>
+            placeholder="派工項目（選派工項目後自動帶入項目名稱，可修改）" @if ($contextRequired) required @endif>{{ $context }}</textarea>
     </div>
 </div>

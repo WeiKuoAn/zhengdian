@@ -948,6 +948,7 @@ class ProjectController extends Controller
                 'dispatch_status_value' => $linkedTask->status ?? null,
                 'dispatch_estimated_end' => $dispatchEstimatedEnd,
                 'executor_rows' => $executorRows,
+                'dispatch_task_comments' => $linkedTask ? ($linkedTask->comments ?? '') : '',
                 'dispatch_comments' => $myTaskItem->context ?? ($linkedTask->comments ?? ''),
                 'my_task_item_id' => $myTaskItem->id ?? null,
                 'my_task_item_status' => isset($myTaskItem->status) ? (int) $myTaskItem->status : null,
@@ -1038,6 +1039,7 @@ class ProjectController extends Controller
                 fn ($v) => $v !== null && $v !== ''
             ));
             $contextRows = array_values((array) $request->input('executor_contexts.'.$index, []));
+            $taskComments = trim((string) $request->input('executor_task_comments.'.$index, ''));
 
             if ($template && count($userRows) > 0) {
                 $newTaskId = $this->syncPlanDispatchTask(
@@ -1047,7 +1049,8 @@ class ProjectController extends Controller
                     $userRows,
                     $contextRows,
                     $milestone_dates[$index] ?? null,
-                    $order_dates[$index] ?? null
+                    $order_dates[$index] ?? null,
+                    $taskComments
                 );
                 if ($newTaskId !== null) {
                     if ($hasLinkedTaskColumn) {
@@ -1093,7 +1096,8 @@ class ProjectController extends Controller
         array $userIds,
         array $contexts,
         ?string $milestoneDateStr,
-        ?string $orderDateStr
+        ?string $orderDateStr,
+        ?string $taskComments = null
     ): ?int {
         $userIds = array_values(array_filter($userIds, fn ($v) => $v !== null && $v !== ''));
         if (count($userIds) === 0) {
@@ -1114,7 +1118,10 @@ class ProjectController extends Controller
             fn ($c) => trim((string) $c),
             array_slice($contexts, 0, count($userIds))
         )));
-        $comments = implode("\n", $cleanContexts);
+        $comments = trim((string) ($taskComments ?? ''));
+        if ($comments === '') {
+            $comments = (string) ($template->description ?? '');
+        }
 
         $task = null;
         if ($linkedTaskId) {

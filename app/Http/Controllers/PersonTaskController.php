@@ -154,21 +154,22 @@ class PersonTaskController extends Controller
     public function getTaskComments($taskId)
     {
         $task = TaskItem::join('task', 'task_item.task_id', '=', 'task.id')
-        ->select('task_item.task_id', 'task.comments')  // 修正為 task_item.task_id
-        ->where('task_item.id', $taskId)  // 根據 taskId 來過濾資料
-        ->first();  // 因為只需要一筆資料，使用 first() 而不是 get()
+            ->select('task_item.task_id', 'task_item.context', 'task.comments')
+            ->where('task_item.id', $taskId)
+            ->first();
 
         if ($task) {
             return response()->json([
                 'status' => 'success',
-                'comments' => $task->comments,  // 回傳任務的描述
-            ]);
-        } else {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Task not found',
+                'context' => $task->context,
+                'comments' => $task->comments,
             ]);
         }
+
+        return response()->json([
+            'status' => 'error',
+            'message' => 'Task not found',
+        ]);
     }
     
     /**

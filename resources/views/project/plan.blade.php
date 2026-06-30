@@ -168,11 +168,13 @@
         }
 
         .dispatch-modal .dispatch-editor-user,
-        .dispatch-modal .dispatch-editor-context {
+        .dispatch-modal .dispatch-editor-context,
+        .dispatch-modal .dispatch-editor-comments {
             font-size: 14px;
         }
 
-        .dispatch-modal .dispatch-editor-context {
+        .dispatch-modal .dispatch-editor-context,
+        .dispatch-modal .dispatch-editor-comments {
             min-height: 96px;
             resize: vertical;
         }
@@ -456,6 +458,8 @@
                                                     </button>
                                                 @endif
                                                 <div class="plan-executor-hidden-inputs" data-row-key="{{ $key }}">
+                                                    <input type="hidden" name="executor_task_comments[{{ $key }}]"
+                                                        value="{{ $task_data->dispatch_task_comments ?? '' }}">
                                                     @foreach ($task_data->executor_rows as $er)
                                                         <input type="hidden" name="executor_user_ids[{{ $key }}][]"
                                                             value="{{ $er['user_id'] ?? '' }}">
@@ -564,7 +568,7 @@
                             <input type="text" id="completionExecutionTime" class="form-control">
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">任務項目描述</label>
+                            <label class="form-label">派工描述</label>
                             <textarea class="form-control" id="completionComments" rows="4" readonly></textarea>
                         </div>
                         <button type="button" class="btn btn-primary" onclick="submitCompletion()">保存</button>
@@ -583,8 +587,15 @@
             let currentTaskItemId = null;
             let currentDispatchRowKey = null;
             let currentDispatchTaskName = '';
+            let currentDispatchTaskDescription = '';
             let currentConfirmTaskId = null;
             const userNameMap = @json($users->pluck('name', 'id')->toArray());
+            const planTaskMetaByRow = @json(
+                $task_datas->values()->map(fn ($t) => [
+                    'name' => $t->name,
+                    'description' => $t->description ?? '',
+                ])
+            );
 
             function formatIsoDate(d) {
                 const y = d.getFullYear();
@@ -863,13 +874,14 @@
                 });
             }
 
-            function createDispatchEditorEntry(userId, context) {
+            function createDispatchEditorEntry(userId, context, comments) {
                 const options = ['<option value="">請選擇</option>'];
                 Object.keys(userNameMap).forEach(function(id) {
                     const selected = String(userId || '') === String(id) ? ' selected' : '';
                     options.push(`<option value="${id}"${selected}>${userNameMap[id]}</option>`);
                 });
                 const safeContext = $('<div/>').text(context || '').html();
+                const safeComments = $('<div/>').text(comments || '').html();
                 return `
                     <div class="dispatch-editor-entry border rounded p-3 mb-3 bg-light">
                         <div class="d-flex justify-content-end mb-2">
@@ -881,23 +893,33 @@
                             <label class="d-block small text-muted mb-1">執行人員</label>
                             <select class="form-select w-100 dispatch-editor-user">${options.join('')}</select>
                         </div>
+                        <div class="mb-3">
+                            <label class="d-block small text-muted mb-1">派工項目</label>
+                            <textarea class="form-control w-100 dispatch-editor-context" rows="4" placeholder="派工項目（自動帶入項目名稱，可修改）">${safeContext}</textarea>
+                        </div>
                         <div>
-                            <label class="d-block small text-muted mb-1">執行內容</label>
-                            <textarea class="form-control w-100 dispatch-editor-context" rows="4" placeholder="執行內容（自動帶入派工項目名稱，可修改）">${safeContext}</textarea>
+                            <label class="d-block small text-muted mb-1">派工描述</label>
+                            <textarea class="form-control w-100 dispatch-editor-comments" rows="4" placeholder="派工描述（自動帶入項目說明，可修改）">${safeComments}</textarea>
                         </div>
                     </div>
                 `;
             }
 
-            function openDispatchModal(rowKey, stageLabel, taskName) {
+            function openDispatchModal(rowKey, stageLabel, taskName, taskDescription) {
                 currentDispatchRowKey = rowKey;
                 currentDispatchTaskName = taskName || '';
+                currentDispatchTaskDescription = taskDescription || '';
                 const modal = new bootstrap.Modal(document.getElementById('dispatchModal'));
                 const editor = document.getElementById('dispatchEditorRows');
                 const stageTitle = document.getElementById('dispatchStageTitle');
                 const hiddenWrap = document.querySelector(`.plan-executor-hidden-inputs[data-row-key="${rowKey}"]`);
                 const userInputs = hiddenWrap ? hiddenWrap.querySelectorAll(`input[name="executor_user_ids[${rowKey}][]"]`) : [];
                 const contextInputs = hiddenWrap ? hiddenWrap.querySelectorAll(`input[name="executor_contexts[${rowKey}][]"]`) : [];
+                const commentsInput = hiddenWrap ? hiddenWrap.querySelector(`input[name="executor_task_comments[${rowKey}]"]`) : null;
+                let taskComments = commentsInput ? commentsInput.value : '';
+                if (!String(taskComments || '').trim() && currentDispatchTaskDescription) {
+                    taskComments = currentDispatchTaskDescription;
+                }
 
                 if (stageTitle) {
                     stageTitle.textContent = stageLabel ? `－ ${stageLabel}` : '';
@@ -911,7 +933,7 @@
                     if (!String(context || '').trim() && currentDispatchTaskName) {
                         context = currentDispatchTaskName;
                     }
-                    editor.insertAdjacentHTML('beforeend', createDispatchEditorEntry(userId, context));
+                    editor.insertAdjacentHTML('beforeend', createDispatchEditorEntry(userId, context, taskComments));
                 }
 
                 modal.show();
@@ -923,16 +945,35 @@
                 }
 
                 const rowKey = currentDispatchRowKey;
+                const rows = document.querySelectorAll('#dispatchEditorRows .dispatch-editor-entry');
+                const selectedUserIds = Array.from(rows).map(function(entry) {
+                    return String(entry.querySelector('.dispatch-editor-user')?.value || '').trim();
+                }).filter(Boolean);
+
+                if (selectedUserIds.length === 0) {
+                    alert('必須要有選執行人員，才可以進行儲存');
+                    const firstUserSelect = document.querySelector('#dispatchEditorRows .dispatch-editor-user');
+                    if (firstUserSelect) {
+                        firstUserSelect.focus();
+                    }
+                    return;
+                }
+
                 const hiddenWrap = document.querySelector(`.plan-executor-hidden-inputs[data-row-key="${rowKey}"]`);
                 if (!hiddenWrap) {
                     return;
                 }
 
                 hiddenWrap.innerHTML = '';
-                const rows = document.querySelectorAll('#dispatchEditorRows .dispatch-editor-entry');
+                let taskComments = '';
                 rows.forEach(function(entry) {
                     const userId = entry.querySelector('.dispatch-editor-user').value || '';
                     const context = entry.querySelector('.dispatch-editor-context').value || '';
+                    const commentsEl = entry.querySelector('.dispatch-editor-comments');
+                    const commentsVal = commentsEl ? String(commentsEl.value || '').trim() : '';
+                    if (commentsVal && !taskComments) {
+                        taskComments = commentsEl.value;
+                    }
 
                     const userInput = document.createElement('input');
                     userInput.type = 'hidden';
@@ -946,6 +987,12 @@
                     contextInput.value = context;
                     hiddenWrap.appendChild(contextInput);
                 });
+
+                const commentsInput = document.createElement('input');
+                commentsInput.type = 'hidden';
+                commentsInput.name = `executor_task_comments[${rowKey}]`;
+                commentsInput.value = taskComments;
+                hiddenWrap.appendChild(commentsInput);
 
                 if (hiddenWrap.querySelectorAll(`input[name="executor_user_ids[${rowKey}][]"]`).length === 0) {
                     const userInput = document.createElement('input');
@@ -1074,8 +1121,10 @@
             $(document).on('click', '.open-dispatch-modal', function() {
                 const rowKey = $(this).data('row-key');
                 const stageLabel = $(this).data('stage-label');
-                const taskName = $(this).data('task-name') || '';
-                openDispatchModal(rowKey, stageLabel, taskName);
+                const meta = planTaskMetaByRow[rowKey] || {};
+                const taskName = meta.name || $(this).data('task-name') || '';
+                const taskDescription = meta.description || '';
+                openDispatchModal(rowKey, stageLabel, taskName, taskDescription);
             });
 
             $(document).on('click', '.open-confirm-dispatch-modal', function() {
@@ -1085,7 +1134,18 @@
             });
 
             $(document).on('click', '#addDispatchEditorRow', function() {
-                $('#dispatchEditorRows').append(createDispatchEditorEntry('', currentDispatchTaskName));
+                const hiddenWrap = currentDispatchRowKey !== null
+                    ? document.querySelector(`.plan-executor-hidden-inputs[data-row-key="${currentDispatchRowKey}"]`)
+                    : null;
+                const commentsInput = hiddenWrap
+                    ? hiddenWrap.querySelector(`input[name="executor_task_comments[${currentDispatchRowKey}]"]`)
+                    : null;
+                let taskComments = commentsInput ? commentsInput.value : '';
+                if (!String(taskComments || '').trim()) {
+                    const firstComments = document.querySelector('#dispatchEditorRows .dispatch-editor-comments');
+                    taskComments = firstComments ? firstComments.value : currentDispatchTaskDescription;
+                }
+                $('#dispatchEditorRows').append(createDispatchEditorEntry('', currentDispatchTaskName, taskComments));
             });
 
             $(document).on('click', '.remove-dispatch-editor-row', function() {

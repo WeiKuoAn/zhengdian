@@ -102,7 +102,7 @@
                                     </p>
                                     <div class="clearfix"></div>
                                     @if (isset($task->task_data->task_template_data))
-                                        <p class="font-13 mt-1 mb-0"><i class="mdi mdi-tooltip"></i>任務項目：
+                                        <p class="font-13 mt-1 mb-0"><i class="mdi mdi-tooltip"></i>派工項目：
                                             {{ $task->task_data->task_template_data->name }}
                                         </p>
                                     @endif
@@ -129,7 +129,7 @@
                                                     data-bs-toggle="collapse" href="#collapseFive{{ $task->id }}"
                                                     aria-expanded="false" aria-controls="collapseFive{{ $task->id }}"
                                                     onclick="event.stopPropagation();">
-                                                    任務項目描述 <i class="mdi mdi-menu-down "></i>
+                                                    派工描述 <i class="mdi mdi-menu-down "></i>
                                                 </a>
                                             </h5>
                                         </div>
@@ -185,7 +185,7 @@
                                     </p>
                                     <div class="clearfix"></div>
                                     @if (isset($task->task_data->task_template_data))
-                                        <p class="font-13 mt-1 mb-0"><i class="mdi mdi-tooltip"></i>任務項目：
+                                        <p class="font-13 mt-1 mb-0"><i class="mdi mdi-tooltip"></i>派工項目：
                                             {{ $task->task_data->task_template_data->name }}
                                         </p>
                                     @endif
@@ -212,7 +212,7 @@
                                                     data-bs-toggle="collapse" href="#collapseFive{{ $task->id }}"
                                                     aria-expanded="false" aria-controls="collapseFive{{ $task->id }}"
                                                     onclick="event.stopPropagation();">
-                                                    任務項目描述 <i class="mdi mdi-menu-down "></i>
+                                                    派工描述 <i class="mdi mdi-menu-down "></i>
                                                 </a>
                                             </h5>
                                         </div>
@@ -268,7 +268,7 @@
                                     </p>
                                     <div class="clearfix"></div>
                                     @if (isset($task->task_data->task_template_data))
-                                        <p class="font-13 mt-1 mb-0"><i class="mdi mdi-tooltip"></i>任務項目：
+                                        <p class="font-13 mt-1 mb-0"><i class="mdi mdi-tooltip"></i>派工項目：
                                             {{ $task->task_data->task_template_data->name }}
                                         </p>
                                     @endif
@@ -295,7 +295,7 @@
                                                     data-bs-toggle="collapse" href="#collapseFive{{ $task->id }}"
                                                     aria-expanded="false" aria-controls="collapseFive{{ $task->id }}"
                                                     onclick="event.stopPropagation();">
-                                                    任務項目描述 <i class="mdi mdi-menu-down "></i>
+                                                    派工描述 <i class="mdi mdi-menu-down "></i>
                                                 </a>
                                             </h5>
                                         </div>
@@ -351,7 +351,7 @@
                                     </p>
                                     <div class="clearfix"></div>
                                     @if (isset($task->task_data->task_template_data))
-                                        <p class="font-13 mt-1 mb-0"><i class="mdi mdi-tooltip"></i>任務項目：
+                                        <p class="font-13 mt-1 mb-0"><i class="mdi mdi-tooltip"></i>派工項目：
                                             {{ $task->task_data->task_template_data->name }}
                                         </p>
                                     @endif
@@ -378,7 +378,7 @@
                                                     data-bs-toggle="collapse" href="#collapseFive{{ $task->id }}"
                                                     aria-expanded="false" aria-controls="collapseFive{{ $task->id }}"
                                                     onclick="event.stopPropagation();">
-                                                    任務項目描述 <i class="mdi mdi-menu-down "></i>
+                                                    派工描述 <i class="mdi mdi-menu-down "></i>
                                                 </a>
                                             </h5>
                                         </div>
@@ -403,12 +403,12 @@
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title">任務詳情</h5>
+                        <h5 class="modal-title">派工詳情</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
                         {{-- <div class="mb-3">
-                            <label for="taskContent" class="form-label">任務項目描述</label>
+                            <label for="taskContent" class="form-label">派工描述</label>
                             <input name="taskComments" id="taskComments" class="form-control" disabled></textarea>
                         </div> --}}
 
@@ -438,7 +438,11 @@
                                 <input type="text" id="executionTime" class="form-control">
                             </div>
                             <div class="mb-3">
-                                <label class="form-label">任務項目描述</label>
+                                <label class="form-label">派工項目</label>
+                                <textarea class="form-control" id="taskContext" rows="3" readonly></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">派工描述</label>
                                 <textarea class="form-control" id="taskComments" name="taskComments" rows="4" readonly></textarea>
                             </div>
                             <button type="button" class="btn btn-primary" onclick="updateTaskStatus()">保存</button>
@@ -479,13 +483,8 @@
                 type: 'GET',
                 success: function(response) {
                     if (response.status === 'success') {
-                        if (response.comments === null) {
-                            // 如果回傳的 comments 是 null，顯示查無資料
-                            $('#taskComments').html('查無任務資料');
-                        } else {
-                            // 如果有資料，顯示任務描述
-                            $('#taskComments').html(response.comments);
-                        }
+                        $('#taskContext').val(response.context || '查無資料');
+                        $('#taskComments').val(response.comments || '查無資料');
                     } else {
                         console.error('未找到任務資料');
                     }
