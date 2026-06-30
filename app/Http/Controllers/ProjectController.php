@@ -961,7 +961,34 @@ class ProjectController extends Controller
                 'duration_hours' => $durationHours,
                 'duration_minutes' => $durationMinutes,
                 'link_days' => $linkDays,
+                '_template' => $task,
             ];
+        });
+
+        $previousPlanEnd = null;
+        foreach ($task_datas->values() as $index => $row) {
+            $template = $row->_template ?? null;
+            $orderDate = trim((string) ($row->order_date ?? ''));
+            if (! $template || $orderDate === '') {
+                continue;
+            }
+
+            $resolved = $this->resolvePlanEstimatedEndDatetime(
+                $template,
+                $orderDate,
+                $row->linked_task_estimated_end ?: null,
+                $previousPlanEnd,
+                $index
+            );
+            $previousPlanEnd = Carbon::parse($resolved);
+            $row->dispatch_estimated_end = Carbon::parse($resolved)->format('Y/m/d H:i');
+            $row->linked_task_estimated_end = $resolved;
+        }
+
+        $task_datas = $task_datas->map(function ($row) {
+            unset($row->_template);
+
+            return $row;
         });
 
         $planTaskMetaByRow = $task_datas->values()->map(function ($t) {
@@ -1008,6 +1035,14 @@ class ProjectController extends Controller
 
         $project = CustProject::with('user_data')->where('id', $id)->firstOrFail();
 
+        $previousPlanEnd = null;
+
+        $normalizeDate = static function ($value): ?string {
+            $text = trim((string) ($value ?? ''));
+
+            return $text === '' ? null : $text;
+        };
+
         foreach ($milestone_types as $index => $milestone_type) {
             if ($milestone_type === null || $milestone_type === '') {
                 continue;
@@ -1022,7 +1057,7 @@ class ProjectController extends Controller
                 ? (int) $linked_task_ids[$index]
                 : ($existing ? ($existing->linked_task_id ?? null) : null);
 
-            $formalDateValue = $formal_dates[$index] ?? null;
+            $formalDateValue = $normalizeDate($formal_dates[$index] ?? null);
             if ($priorLinkedId) {
                 $linkedTaskForFormal = Task::with('items')->find($priorLinkedId);
                 if ($linkedTaskForFormal && $linkedTaskForFormal->items->isNotEmpty()) {
@@ -1036,9 +1071,9 @@ class ProjectController extends Controller
             }
 
             $payload = [
-                'order_date' => $order_dates[$index] ?? null,
-                'milestone_date' => $milestone_dates[$index] ?? null,
-                'formal_date' => $formalDateValue,
+                'order_date' => $normalizeDate($order_dates[$index] ?? null),
+                'milestone_date' => $normalizeDate($milestone_dates[$index] ?? null),
+                'formal_date' => $normalizeDate($formalDateValue),
                 'category_id' => $existing ? ($existing->category_id ?? '1') : '1',
             ];
             if ($hasLinkedTaskColumn) {
@@ -1049,6 +1084,22 @@ class ProjectController extends Controller
                 ['project_id' => $id, 'milestone_type' => $milestone_type],
                 $payload
             );
+
+            $resolvedEstimatedEnd = null;
+            if ($template) {
+                $resolvedEstimatedEnd = $this->resolvePlanEstimatedEndDatetime(
+                    $template,
+                    $order_dates[$index] ?? null,
+                    $dispatch_estimated_end_datetimes[$index] ?? null,
+                    $previousPlanEnd,
+                    $index
+                );
+                $previousPlanEnd = Carbon::parse($resolvedEstimatedEnd);
+
+                if ($priorLinkedId) {
+                    Task::where('id', $priorLinkedId)->update(['estimated_end' => $resolvedEstimatedEnd]);
+                }
+            }
 
             $userRows = array_values(array_filter(
                 (array) $request->input('executor_user_ids.'.$index, []),
@@ -1067,7 +1118,7 @@ class ProjectController extends Controller
                     $milestone_dates[$index] ?? null,
                     $order_dates[$index] ?? null,
                     $taskComments,
-                    $dispatch_estimated_end_datetimes[$index] ?? null
+                    $resolvedEstimatedEnd
                 );
                 if ($newTaskId !== null) {
                     if ($hasLinkedTaskColumn) {
@@ -1122,8 +1173,17 @@ class ProjectController extends Controller
             return $linkedTaskId ? (int) $linkedTaskId : null;
         }
 
-        // 沒有日期時仍要能儲存派工，避免「有指派但存不進去」。
         $dateStr = $milestoneDateStr ?: $orderDateStr ?: now()->format('Y-m-d');
+        $estimatedEnd = trim((string) ($estimatedEndDatetime ?? ''));
+        if ($estimatedEnd === '') {
+            $estimatedEnd = $dateStr.' 17:00:00';
+        } else {
+            try {
+                $estimatedEnd = Carbon::parse($estimatedEnd)->format('Y-m-d H:i:s');
+            } catch (\Throwable $e) {
+                $estimatedEnd = $dateStr.' 17:00:00';
+            }
+        }
 
         while (count($contexts) < count($userIds)) {
             $contexts[] = '';
@@ -1168,16 +1228,7 @@ class ProjectController extends Controller
         $task->template_id = $template->id;
         $task->check_status_id = $template->check_status_id;
         $task->created_by = Auth::id();
-        if (! empty($estimatedEndDatetime)) {
-            try {
-                $task->estimated_end = Carbon::parse($estimatedEndDatetime)->format('Y-m-d H:i:s');
-            } catch (\Throwable $e) {
-                $task->estimated_end = $dateStr.' 17:00:00';
-            }
-        } else {
-            // 後備：未帶入計算時間時沿用表訂日期 17:00
-            $task->estimated_end = $dateStr.' 17:00:00';
-        }
+        $task->estimated_end = $estimatedEnd;
         $task->priority = 2;
         if (! $task->exists) {
             $task->status = '1';
@@ -1232,6 +1283,46 @@ class ProjectController extends Controller
         }
 
         return (int) $task->id;
+    }
+
+    /**
+     * 依表訂時間與執行時數計算派工預計完成時間（與排程頁前端邏輯一致）。
+     */
+    protected function resolvePlanEstimatedEndDatetime(
+        ?TaskTemplate $template,
+        ?string $orderDateStr,
+        ?string $submittedDatetime,
+        ?Carbon $previousEnd,
+        int $rowIndex
+    ): string {
+        $orderDateStr = trim((string) ($orderDateStr ?? ''));
+
+        if (! $template || $orderDateStr === '') {
+            return now()->format('Y-m-d').' 17:00:00';
+        }
+
+        $submitted = trim((string) $submittedDatetime);
+        if ($submitted !== '') {
+            try {
+                $parsed = Carbon::parse($submitted);
+                $isLegacyDefault = $parsed->format('H:i:s') === '17:00:00'
+                    && $parsed->format('Y-m-d') === Carbon::parse($orderDateStr)->format('Y-m-d');
+                if (! $isLegacyDefault) {
+                    return $parsed->format('Y-m-d H:i:s');
+                }
+            } catch (\Throwable $e) {
+                // 改用後端計算
+            }
+        }
+
+        $durationMinutes = (int) round(max(0, (float) ($template->duration_hours ?? 0)) * 60);
+        if ($rowIndex <= 0 || $previousEnd === null) {
+            $start = Carbon::parse($orderDateStr)->setTime(9, 0, 0);
+        } else {
+            $start = $previousEnd->copy();
+        }
+
+        return $this->addWorkingMinutesSkippingLunch($start, $durationMinutes)->format('Y-m-d H:i:s');
     }
 
     /**

@@ -1007,6 +1007,35 @@
                 modal.show();
             }
 
+            function slashDateTimeToIso(value) {
+                const text = String(value || '').trim();
+                if (!text || text === '尚未建立') {
+                    return '';
+                }
+                const normalized = text.replace(/\//g, '-');
+                const match = normalized.match(/^(\d{4}-\d{2}-\d{2})\s+(\d{2}:\d{2})(?::\d{2})?$/);
+                if (!match) {
+                    return '';
+                }
+                return match[1] + ' ' + match[2] + ':00';
+            }
+
+            function syncCurrentRowEstimatedEndHidden(rowKey) {
+                const row = document.querySelector(`.plan-milestone-row[data-row-index="${rowKey}"]`);
+                if (!row) {
+                    return;
+                }
+                const estimatedEndInput = row.querySelector('input[name="dispatch_estimated_end_datetimes[]"]');
+                if (!estimatedEndInput) {
+                    return;
+                }
+                const scheduleInfo = getRowDispatchScheduleInfo(rowKey);
+                const isoEnd = slashDateTimeToIso(scheduleInfo.estimatedEnd);
+                if (isoEnd) {
+                    estimatedEndInput.value = isoEnd;
+                }
+            }
+
             function saveDispatchModal() {
                 if (currentDispatchRowKey === null) {
                     return;
@@ -1085,6 +1114,7 @@
 
                 const planForm = document.getElementById('plan-form');
                 if (planForm) {
+                    syncCurrentRowEstimatedEndHidden(rowKey);
                     if (typeof syncPlanMilestoneDates === 'function') {
                         syncPlanMilestoneDates();
                     }
