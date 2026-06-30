@@ -188,6 +188,11 @@
             font-weight: 600;
         }
 
+        .dispatch-modal .dispatch-modal-schedule-foot .form-control[readonly] {
+            background-color: #fff;
+            color: #344054;
+        }
+
         .dispatch-modal .modal-footer .btn {
             font-size: 14px;
         }
@@ -470,6 +475,8 @@
                                             </div>
                                             <input type="hidden" name="milestone_dates[]"
                                                 value="{{ $task_data->milestone_date }}">
+                                            <input type="hidden" name="dispatch_estimated_end_datetimes[]"
+                                                value="{{ $task_data->linked_task_estimated_end ?? '' }}">
                                             <div class="col-lg-2 mb-2 mb-lg-0 plan-date-col plan-equal-col">
                                                 <label class="d-lg-none small text-muted">實際完成時間</label>
                                                 <input type="date" class="form-control form-control-sm"
@@ -512,6 +519,21 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
+                    <div id="dispatchScheduleSection" class="dispatch-modal-schedule-foot border rounded p-3 mb-2 bg-light">
+                        <div class="row g-2">
+                            <div class="col-md-6">
+                                <label class="d-block small text-muted mb-1">預計完成時間</label>
+                                <input type="text" class="form-control form-control-sm" id="dispatchEstimatedEndDisplay"
+                                    readonly placeholder="尚未建立">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="d-block small text-muted mb-1">時長（小時）</label>
+                                <input type="text" class="form-control form-control-sm" id="dispatchDurationDisplay"
+                                    readonly placeholder="—">
+                            </div>
+                        </div>
+                    </div>
+                    <p class="form-text mb-3" id="dispatchScheduleNote">依表訂時間與執行時數自動計算。</p>
                     <div id="dispatchEditorRows"></div>
                     <button type="button" class="btn btn-link p-0 mt-1" id="addDispatchEditorRow">+ 新增執行人員</button>
                 </div>
@@ -590,18 +612,19 @@
             let currentDispatchTaskDescription = '';
             let currentConfirmTaskId = null;
             const userNameMap = @json($users->pluck('name', 'id')->toArray());
-            const planTaskMetaByRow = @json(
-                $task_datas->values()->map(fn ($t) => [
-                    'name' => $t->name,
-                    'description' => $t->description ?? '',
-                ])
-            );
+            const planTaskMetaByRow = @json($planTaskMetaByRow);
 
             function formatIsoDate(d) {
                 const y = d.getFullYear();
                 const m = String(d.getMonth() + 1).padStart(2, '0');
                 const day = String(d.getDate()).padStart(2, '0');
                 return y + '-' + m + '-' + day;
+            }
+
+            function formatIsoDateTime(d) {
+                const hh = String(d.getHours()).padStart(2, '0');
+                const mm = String(d.getMinutes()).padStart(2, '0');
+                return formatIsoDate(d) + ' ' + hh + ':' + mm + ':00';
             }
 
             function isWeekend(d) {
@@ -807,11 +830,15 @@
                     document.querySelectorAll('.plan-milestone-row').forEach(function(row) {
                         const orderInput = row.querySelector('.plan-order-date');
                         const milestoneInput = row.querySelector('input[name="milestone_dates[]"]');
+                        const estimatedEndInput = row.querySelector('input[name="dispatch_estimated_end_datetimes[]"]');
                         if (!orderInput || !milestoneInput) {
                             return;
                         }
                         const estimated = getEstimatedEndDateTime(orderInput);
                         milestoneInput.value = estimated ? formatIsoDate(estimated) : (orderInput.value || '');
+                        if (estimatedEndInput) {
+                            estimatedEndInput.value = estimated ? formatIsoDateTime(estimated) : '';
+                        }
                     });
                 };
 
@@ -835,6 +862,7 @@
                 });
 
                 refreshAllEstimatedEnds();
+                syncPlanMilestoneDates();
 
                 const planForm = document.getElementById('plan-form');
                 if (planForm) {
@@ -874,6 +902,36 @@
                 });
             }
 
+            function formatDurationNumber(hours) {
+                const n = Number(hours);
+                if (!Number.isFinite(n)) {
+                    return '—';
+                }
+                return parseFloat(n.toFixed(2)).toString();
+            }
+
+            function getRowDispatchScheduleInfo(rowKey) {
+                const row = document.querySelector(`.plan-milestone-row[data-row-index="${rowKey}"]`);
+                const meta = planTaskMetaByRow[rowKey] || {};
+                let estimatedEnd = meta.dispatchEstimatedEnd || '尚未建立';
+                let duration = formatDurationNumber(meta.durationHours);
+
+                if (row) {
+                    const estimatedLabel = row.querySelector('.plan-dispatch-estimated-end');
+                    if (estimatedLabel) {
+                        const text = estimatedLabel.textContent.replace(/^派工表訂完成：\s*/, '').trim();
+                        if (text && text !== '尚未建立') {
+                            estimatedEnd = text;
+                        }
+                    }
+                }
+
+                return {
+                    estimatedEnd: estimatedEnd || '尚未建立',
+                    duration: duration || '—',
+                };
+            }
+
             function createDispatchEditorEntry(userId, context, comments) {
                 const options = ['<option value="">請選擇</option>'];
                 Object.keys(userNameMap).forEach(function(id) {
@@ -897,7 +955,7 @@
                             <label class="d-block small text-muted mb-1">派工項目</label>
                             <textarea class="form-control w-100 dispatch-editor-context" rows="4" placeholder="派工項目（自動帶入項目名稱，可修改）">${safeContext}</textarea>
                         </div>
-                        <div>
+                        <div class="mb-0">
                             <label class="d-block small text-muted mb-1">派工描述</label>
                             <textarea class="form-control w-100 dispatch-editor-comments" rows="4" placeholder="派工描述（自動帶入項目說明，可修改）">${safeComments}</textarea>
                         </div>
@@ -923,6 +981,16 @@
 
                 if (stageTitle) {
                     stageTitle.textContent = stageLabel ? `－ ${stageLabel}` : '';
+                }
+
+                const scheduleInfo = getRowDispatchScheduleInfo(rowKey);
+                const estimatedEndDisplay = document.getElementById('dispatchEstimatedEndDisplay');
+                const durationDisplay = document.getElementById('dispatchDurationDisplay');
+                if (estimatedEndDisplay) {
+                    estimatedEndDisplay.value = scheduleInfo.estimatedEnd;
+                }
+                if (durationDisplay) {
+                    durationDisplay.value = scheduleInfo.duration;
                 }
 
                 editor.innerHTML = '';

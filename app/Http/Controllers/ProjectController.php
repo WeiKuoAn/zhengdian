@@ -947,6 +947,9 @@ class ProjectController extends Controller
                 'dispatch_status_text' => $linkedTask ? $linkedTask->status() : '未建立派工',
                 'dispatch_status_value' => $linkedTask->status ?? null,
                 'dispatch_estimated_end' => $dispatchEstimatedEnd,
+                'linked_task_estimated_end' => ($linkedTask && ! empty($linkedTask->estimated_end))
+                    ? Carbon::parse($linkedTask->estimated_end)->format('Y-m-d H:i:s')
+                    : '',
                 'executor_rows' => $executorRows,
                 'dispatch_task_comments' => $linkedTask ? ($linkedTask->comments ?? '') : '',
                 'dispatch_comments' => $myTaskItem->context ?? ($linkedTask->comments ?? ''),
@@ -961,10 +964,22 @@ class ProjectController extends Controller
             ];
         });
 
+        $planTaskMetaByRow = $task_datas->values()->map(function ($t) {
+            $durationHours = max(0, (float) ($t->duration_hours ?? 0));
+
+            return [
+                'name' => $t->name,
+                'description' => $t->description ?? '',
+                'durationHours' => $durationHours,
+                'dispatchEstimatedEnd' => $t->dispatch_estimated_end ?? '',
+            ];
+        })->values();
+
         return view('project.plan', [
             'data' => $data,
             'request' => $request,
             'task_datas' => $task_datas,
+            'planTaskMetaByRow' => $planTaskMetaByRow,
             'users' => $users,
             'is_level_two' => $isLevelTwo,
         ]);
@@ -988,6 +1003,7 @@ class ProjectController extends Controller
         $formal_dates = $request->formal_dates ?? [];
         $order_dates = $request->order_dates ?? [];
         $linked_task_ids = $request->linked_task_ids ?? [];
+        $dispatch_estimated_end_datetimes = $request->dispatch_estimated_end_datetimes ?? [];
         $hasLinkedTaskColumn = Schema::hasColumn('project_milestones', 'linked_task_id');
 
         $project = CustProject::with('user_data')->where('id', $id)->firstOrFail();
@@ -1050,7 +1066,8 @@ class ProjectController extends Controller
                     $contextRows,
                     $milestone_dates[$index] ?? null,
                     $order_dates[$index] ?? null,
-                    $taskComments
+                    $taskComments,
+                    $dispatch_estimated_end_datetimes[$index] ?? null
                 );
                 if ($newTaskId !== null) {
                     if ($hasLinkedTaskColumn) {
@@ -1097,7 +1114,8 @@ class ProjectController extends Controller
         array $contexts,
         ?string $milestoneDateStr,
         ?string $orderDateStr,
-        ?string $taskComments = null
+        ?string $taskComments = null,
+        ?string $estimatedEndDatetime = null
     ): ?int {
         $userIds = array_values(array_filter($userIds, fn ($v) => $v !== null && $v !== ''));
         if (count($userIds) === 0) {
@@ -1150,8 +1168,16 @@ class ProjectController extends Controller
         $task->template_id = $template->id;
         $task->check_status_id = $template->check_status_id;
         $task->created_by = Auth::id();
-        // 僅保留原本派工列表的表訂時間寫法；排程頁灰字預估由前端即時計算。
-        $task->estimated_end = $dateStr.' 17:00:00';
+        if (! empty($estimatedEndDatetime)) {
+            try {
+                $task->estimated_end = Carbon::parse($estimatedEndDatetime)->format('Y-m-d H:i:s');
+            } catch (\Throwable $e) {
+                $task->estimated_end = $dateStr.' 17:00:00';
+            }
+        } else {
+            // 後備：未帶入計算時間時沿用表訂日期 17:00
+            $task->estimated_end = $dateStr.' 17:00:00';
+        }
         $task->priority = 2;
         if (! $task->exists) {
             $task->status = '1';
