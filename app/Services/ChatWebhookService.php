@@ -203,8 +203,11 @@ class ChatWebhookService
         array $result,
         int $projectId,
         ?int $executorUserId = null,
-        ?string $taskName = null
+        ?string $taskName = null,
+        string $status = 'processed'
     ): ChatWebhookEvent {
+        $success = ($result['success'] ?? false);
+
         return ChatWebhookEvent::query()->create([
             'provider' => (string) config('chat_webhook.provider', 'synology_chat'),
             'event_type' => 'dispatch_notify',
@@ -223,10 +226,29 @@ class ChatWebhookService
             'headers_json' => ['source' => 'project:dispatch-notify'],
             'verified' => true,
             'verify_reason' => 'internal dispatch notify',
-            'status' => ($result['success'] ?? false) ? 'processed' : 'failed',
+            'status' => $status === 'ignored' ? 'ignored' : ($success ? 'processed' : 'failed'),
             'processed_at' => Carbon::now(),
-            'error_message' => ($result['success'] ?? false) ? null : ((string) ($result['message'] ?? 'send failed')),
+            'error_message' => $success ? null : ((string) ($result['message'] ?? 'send failed')),
         ]);
+    }
+
+    public function logDispatchNotificationSkipped(
+        string $executorName,
+        int $projectId,
+        ?int $executorUserId = null,
+        ?string $taskName = null
+    ): ChatWebhookEvent {
+        $message = '執行人「' . $executorName . '」未設定 Synology Chat ID，略過發送';
+
+        return $this->logDispatchNotification(
+            $message,
+            [],
+            ['success' => false, 'message' => $message],
+            $projectId,
+            $executorUserId,
+            $taskName,
+            'ignored'
+        );
     }
 
     public function handleSlash(ChatWebhookEvent $event, Request $request): array

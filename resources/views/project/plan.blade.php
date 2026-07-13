@@ -301,6 +301,9 @@
                         @if (session('success'))
                             <div class="alert alert-success mt-2">{{ session('success') }}</div>
                         @endif
+                        @if (session('warning'))
+                            <div class="alert alert-warning mt-2">{{ session('warning') }}</div>
+                        @endif
                         @if (session('error'))
                             <div class="alert alert-danger mt-2">{{ session('error') }}</div>
                         @endif
@@ -1132,18 +1135,22 @@
                             'Accept': 'application/json'
                         }
                     }).then(async function(response) {
+                        let data = null;
+                        try {
+                            data = await response.json();
+                        } catch (e) {
+                            // ignore parse error
+                        }
                         if (response.ok) {
+                            if (data && data.warning) {
+                                alert(data.warning);
+                            }
                             location.reload();
                             return;
                         }
                         let message = '派工儲存失敗，請稍後再試。';
-                        try {
-                            const data = await response.json();
-                            if (data && data.message) {
-                                message = data.message;
-                            }
-                        } catch (e) {
-                            // ignore parse error
+                        if (data && data.message) {
+                            message = data.message;
                         }
                         throw new Error(message);
                     }).catch(function(err) {

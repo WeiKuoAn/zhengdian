@@ -151,6 +151,16 @@
 
         @include('layouts.shared.page-title', ['title' => '派工列表', 'subtitle' => '派工管理'])
 
+        @if (session('success'))
+            <div class="alert alert-success">{{ session('success') }}</div>
+        @endif
+        @if (session('warning'))
+            <div class="alert alert-warning">{{ session('warning') }}</div>
+        @endif
+        @if (session('error'))
+            <div class="alert alert-danger">{{ session('error') }}</div>
+        @endif
+
         <div class="row">
             <div class="col-12">
                 <div class="card">

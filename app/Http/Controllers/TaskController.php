@@ -11,11 +11,95 @@ use App\Models\CheckStatus;
 use App\Models\CustProject;
 use App\Models\ProjectMilestones;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 use Carbon\Carbon;
+use App\Services\DispatchNotificationService;
 
 class TaskController extends Controller
 {
+    protected ?DispatchNotificationService $dispatchNotificationService = null;
+
+    protected function dispatchNotification(): DispatchNotificationService
+    {
+        return $this->dispatchNotificationService ??= app(DispatchNotificationService::class);
+    }
+
+    /** @return array<int, array{id: int, name: string}> */
+    protected function buildExecutorsFromUserIds(array $userIds): array
+    {
+        $executors = [];
+        foreach ($userIds as $userId) {
+            $user = User::find($userId);
+            if ($user && !empty($user->name)) {
+                $executors[] = ['id' => $user->id, 'name' => $user->name];
+            }
+        }
+
+        return $executors;
+    }
+
+    protected function sendTaskDispatchNotification(
+        Request $request,
+        Task $task,
+        array $executors,
+        bool $shouldSend
+    ): void {
+        if (!$shouldSend || $executors === []) {
+            return;
+        }
+
+        $project = CustProject::find($request->project_id ?? $task->project_id);
+        if (!$project) {
+            return;
+        }
+
+        try {
+            $scheduledDate = trim((string) $request->input('estimated_end_date', ''));
+            if ($scheduledDate === '' && !empty($task->estimated_end)) {
+                $scheduledDate = Carbon::parse($task->estimated_end)->format('Y-m-d');
+            }
+            if ($scheduledDate === '') {
+                $scheduledDate = Carbon::now()->format('Y-m-d');
+            }
+
+            $template = TaskTemplate::find($request->template_id ?? $task->template_id);
+            $dispatchContent = trim((string) ($request->comments ?? $task->comments ?? ''));
+            if ($dispatchContent === '') {
+                $dispatchContent = (string) ($template->description ?? $template->name ?? $task->name);
+            }
+
+            $dispatchItem = $template
+                ? $this->dispatchNotification()->buildDispatchItemLabel($template)
+                : (string) $task->name;
+
+            $this->dispatchNotification()->sendForProject(
+                $project,
+                $dispatchItem,
+                $scheduledDate,
+                $dispatchContent,
+                $executors
+            );
+        } catch (\Throwable $e) {
+            Log::warning('dispatch_webhook_send_failed', [
+                'project_id' => $project->id,
+                'task_id' => $task->id,
+                'message' => $e->getMessage(),
+            ]);
+        }
+    }
+
+    protected function redirectToTaskList(string $successMessage)
+    {
+        $redirect = redirect()->route('task')->with('success', $successMessage);
+        $warning = $this->dispatchNotification()->skippedWarningMessage();
+        if ($warning !== null) {
+            $redirect->with('warning', $warning);
+        }
+
+        return $redirect;
+    }
+
     protected function syncMilestoneLinkedTask(Task $task, ?int $oldProjectId = null, ?int $oldTemplateId = null): void
     {
         if (!Schema::hasColumn('project_milestones', 'linked_task_id')) {
@@ -248,6 +332,8 @@ class TaskController extends Controller
 
     public function store(Request $request)
     {
+        $this->dispatchNotification()->resetSkipped();
+
         $data = new Task;
         $data->type = 'group';
         $data->name = $request->name;
@@ -277,7 +363,11 @@ class TaskController extends Controller
                 'start_time' => Carbon::now()->locale('zh-tw'),
             ]);
         }
-        return redirect()->route('task');
+
+        $executors = $this->buildExecutorsFromUserIds($user_ids);
+        $this->sendTaskDispatchNotification($request, $data, $executors, true);
+
+        return $this->redirectToTaskList('派工已新增');
     }
 
     /**
@@ -317,7 +407,17 @@ class TaskController extends Controller
      */
     public function update(Request $request, $id)
     {
+        $this->dispatchNotification()->resetSkipped();
+
         $data = Task::findOrFail($id);
+        $data->loadMissing('items.user_data');
+        $oldDate = !empty($data->estimated_end) ? Carbon::parse($data->estimated_end)->format('Y-m-d') : null;
+        $oldContent = (string) ($data->comments ?? '');
+        $oldExecutors = $data->items->map(fn ($item) => [
+            'id' => (int) $item->user_id,
+            'name' => (string) (optional($item->user_data)->name ?? ''),
+        ])->all();
+
         $oldProjectId = (int) ($data->project_id ?? 0);
         $oldTemplateId = (int) ($data->template_id ?? 0);
         $data->type = 'group';
@@ -380,8 +480,23 @@ class TaskController extends Controller
             }
         }
 
+        $user_ids = $request->input('user_ids', []);
+        $executors = $this->buildExecutorsFromUserIds($user_ids);
+        $scheduledDate = trim((string) $request->input('estimated_end_date', ''));
+        if ($scheduledDate === '') {
+            $scheduledDate = Carbon::now()->format('Y-m-d');
+        }
+        $shouldSend = $this->dispatchNotification()->shouldSend(
+            $oldDate,
+            $oldContent,
+            $oldExecutors,
+            $scheduledDate,
+            (string) ($request->comments ?? ''),
+            $executors
+        );
+        $this->sendTaskDispatchNotification($request, $data, $executors, $shouldSend);
 
-        return redirect()->route('task')->with('success', '任務已更新成功');
+        return $this->redirectToTaskList('任務已更新成功');
     }
 
     public function check(Request $request)
@@ -527,6 +642,8 @@ class TaskController extends Controller
      */
     public function copyData(Request $request, $id)
     {
+        $this->dispatchNotification()->resetSkipped();
+
         $data = new Task;
         $data->type = 'group';
         $data->name = $request->name;
@@ -556,6 +673,10 @@ class TaskController extends Controller
                 'start_time' => Carbon::now()->locale('zh-tw'),
             ]);
         }
-        return redirect()->route('task');
+
+        $executors = $this->buildExecutorsFromUserIds($user_ids);
+        $this->sendTaskDispatchNotification($request, $data, $executors, true);
+
+        return $this->redirectToTaskList('派工已複製');
     }
 }

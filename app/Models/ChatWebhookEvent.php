@@ -144,6 +144,16 @@ class ChatWebhookEvent extends Model
             $labels[] = '頻道（' . $channelId . '）';
         }
 
+        if ($labels === [] && (string) $this->status === 'ignored') {
+            $externalUserId = (int) ($this->user_id_external ?? 0);
+            if ($externalUserId > 0) {
+                $name = trim((string) User::query()->where('id', $externalUserId)->value('name'));
+                if ($name !== '') {
+                    return $name . '（未設定 Chat ID）';
+                }
+            }
+        }
+
         return $labels === [] ? '-' : implode('、', $labels);
     }
 
