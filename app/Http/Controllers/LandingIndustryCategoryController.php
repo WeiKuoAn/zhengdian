@@ -12,15 +12,15 @@ class LandingIndustryCategoryController extends Controller
 {
     protected function ensureCanManageLanding(): void
     {
-        if ((int) (Auth::user()->level ?? 2) === 2) {
-            abort(403, '一般使用者無法管理官網內容');
+        if (! in_array((int) (Auth::user()->level ?? 2), [0, 1], true)) {
+            abort(403, '僅管理者可管理官網內容');
         }
     }
 
     protected function ensureCanDelete(): void
     {
-        if ((int) (Auth::user()->level ?? 2) === 2) {
-            abort(403, '一般使用者無法刪除設定資料');
+        if (! in_array((int) (Auth::user()->level ?? 2), [0, 1], true)) {
+            abort(403, '僅管理者可刪除官網內容');
         }
     }
 

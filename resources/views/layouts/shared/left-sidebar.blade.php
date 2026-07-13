@@ -291,6 +291,7 @@
                 </div> --}}
                     </li>
 
+                    @if (in_array((int) (Auth::user()->level ?? 2), [0, 1], true))
                     <li class="menu-item">
                         <a class="menu-link" href="#frontend" data-bs-toggle="collapse">
                             <span class="menu-icon"><i data-feather="globe"></i></span>
@@ -300,20 +301,16 @@
                         <div class="collapse {{ request()->routeIs('landing.*') ? 'show' : '' }}" id="frontend">
                             <ul class="sub-menu">
                                 <li class="menu-item">
-                                    <a class="menu-link {{ request()->routeIs('landing.settings') ? 'active' : '' }}"
-                                        href="{{ route('landing.settings') }}"><span class="menu-text">官網基本內容</span></a>
+                                    <a class="menu-link {{ request()->routeIs('landing.dashboard') ? 'active' : '' }}"
+                                        href="{{ route('landing.dashboard') }}"><span class="menu-text">官網總覽</span></a>
                                 </li>
                                 <li class="menu-item">
-                                    <a class="menu-link {{ request()->routeIs('landing.content-items*') ? 'active' : '' }}"
-                                        href="{{ route('landing.content-items', ['type' => 'stat']) }}"><span class="menu-text">區塊項目</span></a>
+                                    <a class="menu-link {{ request()->routeIs('landing.sections*') || request()->routeIs('landing.content-items*') ? 'active' : '' }}"
+                                        href="{{ route('landing.sections') }}"><span class="menu-text">編輯官網</span></a>
                                 </li>
                                 <li class="menu-item">
-                                    <a class="menu-link {{ request()->routeIs('landing.industry-categories*') ? 'active' : '' }}"
-                                        href="{{ route('landing.industry-categories') }}"><span class="menu-text">產業類別</span></a>
-                                </li>
-                                <li class="menu-item">
-                                    <a class="menu-link {{ request()->routeIs('landing.brand-clients*') ? 'active' : '' }}"
-                                        href="{{ route('landing.brand-clients') }}"><span class="menu-text">合作客戶 Logo</span></a>
+                                    <a class="menu-link {{ request()->routeIs('landing.industry-categories*') || request()->routeIs('landing.brand-clients*') ? 'active' : '' }}"
+                                        href="{{ route('landing.industry-categories') }}"><span class="menu-text">產業類別與客戶 Logo</span></a>
                                 </li>
                                 <li class="menu-item">
                                     <a class="menu-link" href="{{ route('landing.test') }}" target="_blank" rel="noopener">
@@ -323,6 +320,7 @@
                             </ul>
                         </div>
                     </li>
+                    @endif
 
                     <li class="menu-item">
                         <a class="menu-link" href="#webhook" data-bs-toggle="collapse">

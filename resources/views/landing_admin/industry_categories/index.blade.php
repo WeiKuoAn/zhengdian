@@ -1,12 +1,18 @@
-@extends('layouts.vertical', ['title' => '官網產業類別'])
+@extends('layouts.vertical', ['title' => '產業類別與客戶 Logo'])
 
 @section('content')
     <div class="container-fluid">
-        @include('layouts.shared.page-title', ['title' => '產業類別', 'subtitle' => '前端管理'])
-        <div class="row mb-3">
-            <div class="col-12">
-                <a href="{{ route('landing.industry-categories.create') }}" class="btn btn-danger btn-sm"><i class="mdi mdi-plus-circle me-1"></i>新增產業類別</a>
-            </div>
+        @include('layouts.shared.page-title', ['title' => '產業類別與客戶 Logo', 'subtitle' => '前端管理'])
+
+        @include('landing_admin.partials.preview_bar')
+
+        <div class="alert alert-light border mb-3 small">
+            先建立<strong>產業類別</strong>，再點每列的 <i class="mdi mdi-view-grid"></i> 圖示上傳該產業下的客戶 Logo。
+            區塊標題請到 <a href="{{ route('landing.sections', ['section' => 'cases']) }}">編輯官網 → 產業案例</a> 修改。
+        </div>
+        <div class="d-flex flex-wrap gap-2 mb-3">
+            <a href="{{ route('landing.industry-categories.create') }}" class="btn btn-danger btn-sm"><i class="mdi mdi-plus-circle me-1"></i>新增產業類別</a>
+            <a href="{{ route('landing.sections', ['section' => 'cases']) }}" class="btn btn-outline-secondary btn-sm"><i class="mdi mdi-arrow-left me-1"></i>回產業案例文案</a>
         </div>
         <div class="row">
             <div class="col-12">

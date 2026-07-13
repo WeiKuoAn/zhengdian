@@ -18,6 +18,9 @@ return Application::configure(
 ->withMiddleware(function (MiddlewareConfigurator $middleware) {
     // 把 TrustProxies 放到全域 middleware 的最前面
     // $middleware->prepend(TrustProxies::class);
+    $middleware->alias([
+        'landing.admin' => \App\Http\Middleware\EnsureLandingAdmin::class,
+    ]);
 })
 ->withExceptions(function (Exceptions $exceptions) {
     //

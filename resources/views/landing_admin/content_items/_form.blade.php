@@ -1,6 +1,9 @@
 <form action="{{ $action }}" method="POST">
     @csrf
     <input type="hidden" name="type" value="{{ $type }}">
+    @if (!empty($sectionKey))
+        <input type="hidden" name="section" value="{{ $sectionKey }}">
+    @endif
 
     <div class="mb-3">
         <label class="form-label">類型</label>
@@ -49,6 +52,10 @@
 
     <div class="text-center">
         <button type="submit" class="btn btn-success m-1"><i class="fe-check-circle me-1"></i>儲存</button>
-        <button type="button" class="btn btn-secondary m-1" onclick="history.go(-1)"><i class="fe-x me-1"></i>回上一頁</button>
+        @if (!empty($sectionKey))
+            <a href="{{ route('landing.sections', ['section' => $sectionKey]) }}" class="btn btn-secondary m-1"><i class="fe-x me-1"></i>回編輯官網</a>
+        @else
+            <button type="button" class="btn btn-secondary m-1" onclick="history.go(-1)"><i class="fe-x me-1"></i>回上一頁</button>
+        @endif
     </div>
 </form>

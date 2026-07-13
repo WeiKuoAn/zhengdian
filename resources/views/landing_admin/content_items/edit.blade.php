@@ -11,6 +11,7 @@
                         @include('landing_admin.content_items._form', [
                             'action' => route('landing.content-items.edit.data', $data->id),
                             'type' => $data->type,
+                            'sectionKey' => $sectionKey ?? null,
                             'data' => $data,
                             'typeLabels' => $typeLabels,
                         ])

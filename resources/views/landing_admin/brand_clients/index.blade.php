@@ -4,6 +4,12 @@
     <div class="container-fluid">
         @include('layouts.shared.page-title', ['title' => '合作客戶 Logo', 'subtitle' => '前端管理'])
 
+        @include('landing_admin.partials.preview_bar')
+
+        <div class="mb-3 small">
+            <a href="{{ route('landing.industry-categories') }}" class="text-muted"><i class="mdi mdi-arrow-left"></i> 回產業類別列表</a>
+        </div>
+
         <div class="row mb-3">
             <div class="col-md-8">
                 <form method="GET" class="d-flex gap-2">

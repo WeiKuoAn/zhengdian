@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\LandingContentItem;
+use App\Support\LandingSectionRegistry;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -12,15 +13,15 @@ class LandingContentItemController extends Controller
 {
     protected function ensureCanManageLanding(): void
     {
-        if ((int) (Auth::user()->level ?? 2) === 2) {
-            abort(403, '一般使用者無法管理官網內容');
+        if (! in_array((int) (Auth::user()->level ?? 2), [0, 1], true)) {
+            abort(403, '僅管理者可管理官網內容');
         }
     }
 
     protected function ensureCanDelete(): void
     {
-        if ((int) (Auth::user()->level ?? 2) === 2) {
-            abort(403, '一般使用者無法刪除設定資料');
+        if (! in_array((int) (Auth::user()->level ?? 2), [0, 1], true)) {
+            abort(403, '僅管理者可刪除官網內容');
         }
     }
 
@@ -33,30 +34,32 @@ class LandingContentItemController extends Controller
         return $type;
     }
 
-    public function index(Request $request): View
+    protected function sectionReturnUrl(?string $type = null, ?string $section = null): string
     {
-        $this->ensureCanManageLanding();
-        $type = $this->validateType((string) $request->input('type', 'stat'));
-        $datas = LandingContentItem::query()
-            ->where('type', $type)
-            ->orderBy('seq')
-            ->orderBy('id')
-            ->get();
+        $section = $section ?: ($type ? LandingSectionRegistry::sectionForContentType($type) : LandingSectionRegistry::defaultKey());
 
-        return view('landing_admin.content_items.index', [
-            'datas' => $datas,
-            'type' => $type,
-            'typeLabels' => LandingContentItem::typeLabels(),
-        ]);
+        return route('landing.sections', ['section' => $section]);
+    }
+
+    public function index(Request $request)
+    {
+        return redirect()->to($this->sectionReturnUrl(
+            (string) $request->input('type', 'stat'),
+            (string) $request->input('section', '')
+        ));
     }
 
     public function create(Request $request): View
     {
         $this->ensureCanManageLanding();
         $type = $this->validateType((string) $request->input('type', 'stat'));
+        $sectionKey = LandingSectionRegistry::normalizeKey(
+            (string) $request->input('section', LandingSectionRegistry::sectionForContentType($type))
+        );
 
         return view('landing_admin.content_items.create', [
             'type' => $type,
+            'sectionKey' => $sectionKey,
             'typeLabels' => LandingContentItem::typeLabels(),
         ]);
     }
@@ -77,16 +80,21 @@ class LandingContentItemController extends Controller
             'status' => $request->input('status', 'up'),
         ]);
 
-        return redirect()->route('landing.content-items', ['type' => $type])->with('success', '內容已新增');
+        return redirect()->to($this->sectionReturnUrl($type, (string) $request->input('section')))
+            ->with('success', '內容已新增');
     }
 
-    public function show($id): View
+    public function show(Request $request, $id): View
     {
         $this->ensureCanManageLanding();
         $data = LandingContentItem::findOrFail($id);
+        $sectionKey = LandingSectionRegistry::normalizeKey(
+            (string) $request->input('section', LandingSectionRegistry::sectionForContentType($data->type))
+        );
 
         return view('landing_admin.content_items.edit', [
             'data' => $data,
+            'sectionKey' => $sectionKey,
             'typeLabels' => LandingContentItem::typeLabels(),
         ]);
     }
@@ -106,27 +114,33 @@ class LandingContentItemController extends Controller
         ]);
         $data->save();
 
-        return redirect()->route('landing.content-items', ['type' => $data->type])->with('success', '內容已更新');
+        return redirect()->to($this->sectionReturnUrl($data->type, (string) $request->input('section')))
+            ->with('success', '內容已更新');
     }
 
-    public function delete($id): View
+    public function delete(Request $request, $id): View
     {
         $this->ensureCanDelete();
         $data = LandingContentItem::findOrFail($id);
+        $sectionKey = LandingSectionRegistry::normalizeKey(
+            (string) $request->input('section', LandingSectionRegistry::sectionForContentType($data->type))
+        );
 
         return view('landing_admin.content_items.del', [
             'data' => $data,
+            'sectionKey' => $sectionKey,
             'typeLabels' => LandingContentItem::typeLabels(),
         ]);
     }
 
-    public function destroy($id): RedirectResponse
+    public function destroy(Request $request, $id): RedirectResponse
     {
         $this->ensureCanDelete();
         $data = LandingContentItem::findOrFail($id);
         $type = $data->type;
         $data->delete();
 
-        return redirect()->route('landing.content-items', ['type' => $type])->with('success', '內容已刪除');
+        return redirect()->to($this->sectionReturnUrl($type, (string) $request->input('section')))
+            ->with('success', '內容已刪除');
     }
 }
