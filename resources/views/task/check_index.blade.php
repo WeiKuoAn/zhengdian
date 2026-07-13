@@ -76,8 +76,11 @@
                                         <tr>
                                             <td>{{ $key + 1 }}</td>
                                             <td width="20%">
-                                                @if (isset($data->project_data))
-                                                    {{ $data->project_data->user_data->name }}{{ $data->project_data->name }}
+                                                @if ($data->project_data)
+                                                    @if ($data->project_data->user_data)
+                                                        {{ $data->project_data->user_data->name }}
+                                                    @endif
+                                                    {{ $data->project_data->name }}
                                                 @endif
                                             </td>
                                             <td>
@@ -98,7 +101,7 @@
                                             </td>
                                             <td>
                                                 @foreach ($data->items as $item)
-                                                    <span class="badge bg-primary p-1 mb-1">{{ $item->user_data->name }}
+                                                    <span class="badge bg-primary p-1 mb-1">{{ $item->user_data->name ?? '（帳號不存在）' }}
                                                         @if (isset($item->context))
                                                             （{{ $item->context }}）
                                                         @endif
@@ -123,13 +126,13 @@
                                                     <button type="button" class="btn btn-white"
                                                         data-bs-container="#tooltip-container" data-bs-toggle="tooltip"
                                                         data-bs-placement="top"
-                                                        title="@foreach ($data->items as $item) {{ $item->user_data->name }}（{{ $item->status() }}）、 @endforeach">
+                                                        title="@foreach ($data->items as $item) {{ $item->user_data->name ?? '（帳號不存在）' }}（{{ $item->status() }}）、 @endforeach">
                                                         {{ $data->status() }}
                                                     </button>
                                                 </div>
                                             </td>
                                             <td>{{ $data->estimated_end }}</td>
-                                            <td>{{ $data->user_data->name }}</td>
+                                            <td>{{ $data->user_data->name ?? '（帳號不存在）' }}</td>
                                             <td>
                                                 @if (Auth::user()->id == $data->created_by)
                                                     <a href="{{ route('task.check', $data->id) }}">
