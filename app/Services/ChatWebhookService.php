@@ -197,6 +197,38 @@ class ChatWebhookService
         ];
     }
 
+    public function logDispatchNotification(
+        string $text,
+        array $userIds,
+        array $result,
+        int $projectId,
+        ?int $executorUserId = null,
+        ?string $taskName = null
+    ): ChatWebhookEvent {
+        return ChatWebhookEvent::query()->create([
+            'provider' => (string) config('chat_webhook.provider', 'synology_chat'),
+            'event_type' => 'dispatch_notify',
+            'request_id' => (string) Str::uuid(),
+            'user_id_external' => $executorUserId ? (string) $executorUserId : null,
+            'username' => 'dispatch-notify',
+            'channel_id' => (string) config('chat_webhook.synology_dispatch_channel_id', ''),
+            'command' => '/dispatch-notify',
+            'text' => $text,
+            'payload_json' => [
+                'user_ids' => $userIds,
+                'project_id' => $projectId,
+                'task_name' => $taskName,
+                'result' => $result,
+            ],
+            'headers_json' => ['source' => 'project:dispatch-notify'],
+            'verified' => true,
+            'verify_reason' => 'internal dispatch notify',
+            'status' => ($result['success'] ?? false) ? 'processed' : 'failed',
+            'processed_at' => Carbon::now(),
+            'error_message' => ($result['success'] ?? false) ? null : ((string) ($result['message'] ?? 'send failed')),
+        ]);
+    }
+
     public function handleSlash(ChatWebhookEvent $event, Request $request): array
     {
         $payload = $this->extractPayload($request);

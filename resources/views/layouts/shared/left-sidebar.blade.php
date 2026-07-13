@@ -292,6 +292,39 @@
                     </li>
 
                     <li class="menu-item">
+                        <a class="menu-link" href="#frontend" data-bs-toggle="collapse">
+                            <span class="menu-icon"><i data-feather="globe"></i></span>
+                            <span class="menu-text"> 前端管理 </span>
+                            <span class="menu-arrow"></span>
+                        </a>
+                        <div class="collapse {{ request()->routeIs('landing.*') ? 'show' : '' }}" id="frontend">
+                            <ul class="sub-menu">
+                                <li class="menu-item">
+                                    <a class="menu-link {{ request()->routeIs('landing.settings') ? 'active' : '' }}"
+                                        href="{{ route('landing.settings') }}"><span class="menu-text">官網基本內容</span></a>
+                                </li>
+                                <li class="menu-item">
+                                    <a class="menu-link {{ request()->routeIs('landing.content-items*') ? 'active' : '' }}"
+                                        href="{{ route('landing.content-items', ['type' => 'stat']) }}"><span class="menu-text">區塊項目</span></a>
+                                </li>
+                                <li class="menu-item">
+                                    <a class="menu-link {{ request()->routeIs('landing.industry-categories*') ? 'active' : '' }}"
+                                        href="{{ route('landing.industry-categories') }}"><span class="menu-text">產業類別</span></a>
+                                </li>
+                                <li class="menu-item">
+                                    <a class="menu-link {{ request()->routeIs('landing.brand-clients*') ? 'active' : '' }}"
+                                        href="{{ route('landing.brand-clients') }}"><span class="menu-text">合作客戶 Logo</span></a>
+                                </li>
+                                <li class="menu-item">
+                                    <a class="menu-link" href="{{ route('landing.test') }}" target="_blank" rel="noopener">
+                                        <span class="menu-text">預覽官網</span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </li>
+
+                    <li class="menu-item">
                         <a class="menu-link" href="#webhook" data-bs-toggle="collapse">
                             <span class="menu-icon"><i data-feather="send"></i></span>
                             <span class="menu-text"> Webhook 管理 </span>

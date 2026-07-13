@@ -115,6 +115,7 @@ class ProjectController extends Controller
                 return [
                     'mention' => '@' . $name,
                     'chat_id' => $chatUserId,
+                    'user_id' => $userId,
                 ];
             });
 
@@ -141,6 +142,14 @@ class ProjectController extends Controller
             $text = implode("\n", array_merge($textLines, $bodyLines));
 
             $result = $chat->sendIncomingToSynology($text, [$chatUserId]);
+            $chat->logDispatchNotification(
+                $text,
+                [$chatUserId],
+                $result,
+                (int) $project->id,
+                (int) ($executor['user_id'] ?? 0) ?: null,
+                $taskName
+            );
             if (!($result['success'] ?? false)) {
                 Log::warning('dispatch_webhook_send_failed', [
                     'project_id' => $project->id,

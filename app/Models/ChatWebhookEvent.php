@@ -43,6 +43,7 @@ class ChatWebhookEvent extends Model
             'auto_due_pre' => '自動提醒－繳交前',
             'auto_overdue' => '自動提醒－遲交',
             'auto_due_overdue' => '自動提醒－遲交',
+            'dispatch_notify' => '派工通知',
             default => (string) ($eventType ?? '-'),
         };
     }
@@ -84,6 +85,7 @@ class ChatWebhookEvent extends Model
             'auto_due' => '自動提醒－繳交',
             'auto_due_pre' => '自動提醒－繳交前',
             'auto_overdue' => '自動提醒－遲交',
+            'dispatch_notify' => '派工通知',
         ];
     }
 

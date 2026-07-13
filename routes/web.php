@@ -11,6 +11,11 @@ use App\Http\Controllers\CustomerProjectController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DispatchReminderSettingController;
 use App\Http\Controllers\JobController;
+use App\Http\Controllers\LandingBrandClientController;
+use App\Http\Controllers\LandingContentItemController;
+use App\Http\Controllers\LandingIndustryCategoryController;
+use App\Http\Controllers\LandingPageController;
+use App\Http\Controllers\LandingSettingController;
 use App\Http\Controllers\MeetDataController;
 use App\Http\Controllers\PersonTaskController;
 use App\Http\Controllers\PresonCustomerController;
@@ -51,6 +56,31 @@ Route::middleware(['auth'])->group(function () {
     Route::get('dispatch-reminder-settings', [DispatchReminderSettingController::class, 'index'])->name('dispatch-reminder-settings');
     Route::post('dispatch-reminder-settings', [DispatchReminderSettingController::class, 'update'])->name('dispatch-reminder-settings.update');
     Route::post('dispatch-reminder-settings/test', [DispatchReminderSettingController::class, 'sendTest'])->name('dispatch-reminder-settings.test');
+
+    /* 官網內容管理 */
+    Route::get('landing/settings', [LandingSettingController::class, 'edit'])->name('landing.settings');
+    Route::post('landing/settings', [LandingSettingController::class, 'update'])->name('landing.settings.update');
+    Route::get('landing/content-items', [LandingContentItemController::class, 'index'])->name('landing.content-items');
+    Route::get('landing/content-items/create', [LandingContentItemController::class, 'create'])->name('landing.content-items.create');
+    Route::post('landing/content-items/create', [LandingContentItemController::class, 'store'])->name('landing.content-items.create.data');
+    Route::get('landing/content-items/edit/{id}', [LandingContentItemController::class, 'show'])->name('landing.content-items.edit');
+    Route::post('landing/content-items/edit/{id}', [LandingContentItemController::class, 'update'])->name('landing.content-items.edit.data');
+    Route::get('landing/content-items/del/{id}', [LandingContentItemController::class, 'delete'])->name('landing.content-items.del');
+    Route::post('landing/content-items/del/{id}', [LandingContentItemController::class, 'destroy'])->name('landing.content-items.del.data');
+    Route::get('landing/industry-categories', [LandingIndustryCategoryController::class, 'index'])->name('landing.industry-categories');
+    Route::get('landing/industry-categories/create', [LandingIndustryCategoryController::class, 'create'])->name('landing.industry-categories.create');
+    Route::post('landing/industry-categories/create', [LandingIndustryCategoryController::class, 'store'])->name('landing.industry-categories.create.data');
+    Route::get('landing/industry-categories/edit/{id}', [LandingIndustryCategoryController::class, 'show'])->name('landing.industry-categories.edit');
+    Route::post('landing/industry-categories/edit/{id}', [LandingIndustryCategoryController::class, 'update'])->name('landing.industry-categories.edit.data');
+    Route::get('landing/industry-categories/del/{id}', [LandingIndustryCategoryController::class, 'delete'])->name('landing.industry-categories.del');
+    Route::post('landing/industry-categories/del/{id}', [LandingIndustryCategoryController::class, 'destroy'])->name('landing.industry-categories.del.data');
+    Route::get('landing/brand-clients', [LandingBrandClientController::class, 'index'])->name('landing.brand-clients');
+    Route::get('landing/brand-clients/create', [LandingBrandClientController::class, 'create'])->name('landing.brand-clients.create');
+    Route::post('landing/brand-clients/create', [LandingBrandClientController::class, 'store'])->name('landing.brand-clients.create.data');
+    Route::get('landing/brand-clients/edit/{id}', [LandingBrandClientController::class, 'show'])->name('landing.brand-clients.edit');
+    Route::post('landing/brand-clients/edit/{id}', [LandingBrandClientController::class, 'update'])->name('landing.brand-clients.edit.data');
+    Route::get('landing/brand-clients/del/{id}', [LandingBrandClientController::class, 'delete'])->name('landing.brand-clients.del');
+    Route::post('landing/brand-clients/del/{id}', [LandingBrandClientController::class, 'destroy'])->name('landing.brand-clients.del.data');
 
     /**/
     Route::get('/get-customer-account/{id}', [ProjectController::class, 'getCustomerAccount']);
@@ -376,3 +406,5 @@ Route::get('', function () {
 
 Route::get('public/project-calendar/{uuid}', [ProjectMilestonesController::class, 'publicCalendar'])->name('projectMilestones.publicCalendar');
 Route::get('public/api/calendar/events/{uuid}', [CalendarController::class, 'getPublicEvents'])->name('calendar.public.events');
+
+Route::get('test', [LandingPageController::class, 'show'])->name('landing.test');
