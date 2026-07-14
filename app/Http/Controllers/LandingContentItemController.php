@@ -4,9 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Models\LandingContentItem;
 use App\Support\LandingSectionRegistry;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class LandingContentItemController extends Controller
@@ -41,6 +43,41 @@ class LandingContentItemController extends Controller
         return route('landing.sections', ['section' => $section]);
     }
 
+    protected function itemPayload(LandingContentItem $data, ?string $section = null): array
+    {
+        $section = LandingSectionRegistry::normalizeKey(
+            $section ?: LandingSectionRegistry::sectionForContentType($data->type)
+        );
+
+        $sub = trim((string) ($data->subtitle ?: $data->icon));
+        if ($data->extra) {
+            $sub = $sub === '' ? (string) $data->extra : $sub.' / '.$data->extra;
+        }
+
+        return [
+            'id' => $data->id,
+            'type' => $data->type,
+            'typeLabel' => LandingContentItem::typeLabels()[$data->type] ?? $data->type,
+            'title' => (string) $data->title,
+            'subtitle' => (string) ($data->subtitle ?? ''),
+            'icon' => (string) ($data->icon ?? ''),
+            'extra' => (string) ($data->extra ?? ''),
+            'body' => (string) ($data->body ?? ''),
+            'seq' => (int) $data->seq,
+            'status' => (string) $data->status,
+            'sub_display' => $sub,
+            'body_preview' => Str::limit((string) $data->body, 48),
+            'status_up' => $data->status === 'up',
+            'del_url' => route('landing.content-items.del', ['id' => $data->id, 'section' => $section]),
+            'can_delete' => in_array((int) (Auth::user()->level ?? 2), [0, 1], true),
+        ];
+    }
+
+    protected function wantsJson(Request $request): bool
+    {
+        return $request->expectsJson() || $request->ajax();
+    }
+
     public function index(Request $request)
     {
         return redirect()->to($this->sectionReturnUrl(
@@ -64,12 +101,12 @@ class LandingContentItemController extends Controller
         ]);
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request): RedirectResponse|JsonResponse
     {
         $this->ensureCanManageLanding();
         $type = $this->validateType((string) $request->input('type'));
 
-        LandingContentItem::create([
+        $data = LandingContentItem::create([
             'type' => $type,
             'title' => $request->input('title'),
             'subtitle' => $request->input('subtitle'),
@@ -79,6 +116,14 @@ class LandingContentItemController extends Controller
             'seq' => (int) $request->input('seq', 0),
             'status' => $request->input('status', 'up'),
         ]);
+
+        if ($this->wantsJson($request)) {
+            return response()->json([
+                'success' => true,
+                'message' => '內容已新增',
+                'item' => $this->itemPayload($data, (string) $request->input('section')),
+            ]);
+        }
 
         return redirect()->to($this->sectionReturnUrl($type, (string) $request->input('section')))
             ->with('success', '內容已新增');
@@ -99,7 +144,7 @@ class LandingContentItemController extends Controller
         ]);
     }
 
-    public function update(Request $request, $id): RedirectResponse
+    public function update(Request $request, $id): RedirectResponse|JsonResponse
     {
         $this->ensureCanManageLanding();
         $data = LandingContentItem::findOrFail($id);
@@ -113,6 +158,14 @@ class LandingContentItemController extends Controller
             'status' => $request->input('status', 'up'),
         ]);
         $data->save();
+
+        if ($this->wantsJson($request)) {
+            return response()->json([
+                'success' => true,
+                'message' => '內容已更新',
+                'item' => $this->itemPayload($data, (string) $request->input('section')),
+            ]);
+        }
 
         return redirect()->to($this->sectionReturnUrl($data->type, (string) $request->input('section')))
             ->with('success', '內容已更新');

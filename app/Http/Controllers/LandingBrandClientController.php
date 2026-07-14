@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\LandingBrandClient;
 use App\Models\LandingIndustryCategory;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -24,6 +25,29 @@ class LandingBrandClientController extends Controller
         if (! in_array((int) (Auth::user()->level ?? 2), [0, 1], true)) {
             abort(403, '僅管理者可刪除官網內容');
         }
+    }
+
+    protected function wantsJson(Request $request): bool
+    {
+        return $request->expectsJson() || $request->ajax();
+    }
+
+    protected function itemPayload(LandingBrandClient $data): array
+    {
+        $data->loadMissing('category');
+
+        return [
+            'id' => $data->id,
+            'category_id' => $data->category_id,
+            'category_name' => $data->category->name ?? '—',
+            'name' => (string) $data->name,
+            'seq' => (int) $data->seq,
+            'status' => (string) $data->status,
+            'status_label' => $data->status === 'up' ? '啟用' : '停用',
+            'logo_url' => $data->logoUrl(),
+            'del_url' => route('landing.brand-clients.del', $data->id),
+            'can_delete' => in_array((int) (Auth::user()->level ?? 2), [0, 1], true),
+        ];
     }
 
     public function index(Request $request): View
@@ -52,7 +76,7 @@ class LandingBrandClientController extends Controller
         ]);
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request): RedirectResponse|JsonResponse
     {
         $this->ensureCanManageLanding();
 
@@ -69,6 +93,14 @@ class LandingBrandClientController extends Controller
 
         $data->save();
 
+        if ($this->wantsJson($request)) {
+            return response()->json([
+                'success' => true,
+                'message' => '合作客戶已新增',
+                'item' => $this->itemPayload($data),
+            ]);
+        }
+
         return redirect()->route('landing.brand-clients', ['category_id' => $data->category_id])
             ->with('success', '合作客戶已新增');
     }
@@ -82,7 +114,7 @@ class LandingBrandClientController extends Controller
         return view('landing_admin.brand_clients.edit', compact('data', 'categories'));
     }
 
-    public function update(Request $request, $id): RedirectResponse
+    public function update(Request $request, $id): RedirectResponse|JsonResponse
     {
         $this->ensureCanManageLanding();
         $data = LandingBrandClient::findOrFail($id);
@@ -107,6 +139,14 @@ class LandingBrandClientController extends Controller
         }
 
         $data->save();
+
+        if ($this->wantsJson($request)) {
+            return response()->json([
+                'success' => true,
+                'message' => '合作客戶已更新',
+                'item' => $this->itemPayload($data),
+            ]);
+        }
 
         return redirect()->route('landing.brand-clients', ['category_id' => $data->category_id])
             ->with('success', '合作客戶已更新');
