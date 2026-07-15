@@ -182,9 +182,12 @@
                                         <th scope="col" class="col-actions">操作</th>
                                     </tr>
                                 </thead>
-                                <tbody>
+                                <tbody id="taskTemplateTbody">
                                     @foreach ($datas as $key => $data)
-                                        <tr class="{{ ($data->status ?? 'up') === 'down' ? 'is-down' : '' }}">
+                                        <tr class="{{ ($data->status ?? 'up') === 'down' ? 'is-down' : '' }}"
+                                            data-id="{{ $data->id }}"
+                                            data-parent-seq="{{ optional($data->check_status_parent_data)->seq ?? '' }}"
+                                            data-stage-seq="{{ optional($data->check_status_data)->seq ?? '' }}">
                                             @if ((int) (Auth::user()->level ?? 2) !== 2)
                                                 <td class="col-check">
                                                     <input type="checkbox" class="form-check-input task-template-check"
@@ -372,6 +375,102 @@
             }
 
             syncBatchControls();
+
+            function showToast(message, isError) {
+                const existing = document.getElementById('taskTemplateToast');
+                if (existing) existing.remove();
+                const el = document.createElement('div');
+                el.id = 'taskTemplateToast';
+                el.className = 'alert ' + (isError ? 'alert-danger' : 'alert-success') + ' shadow-sm';
+                el.style.cssText = 'position:fixed;top:80px;right:24px;z-index:2000;min-width:220px;';
+                el.textContent = message;
+                document.body.appendChild(el);
+                setTimeout(function () { el.remove(); }, 2500);
+            }
+
+            function naturalCompare(a, b) {
+                return String(a || '').localeCompare(String(b || ''), undefined, {
+                    numeric: true,
+                    sensitivity: 'base',
+                });
+            }
+
+            function reorderTableBySort() {
+                const tbody = document.getElementById('taskTemplateTbody');
+                if (!tbody) return;
+
+                const rows = Array.from(tbody.querySelectorAll('tr[data-id]'));
+                rows.sort(function (a, b) {
+                    const parentCompare = naturalCompare(
+                        a.getAttribute('data-parent-seq'),
+                        b.getAttribute('data-parent-seq')
+                    );
+                    if (parentCompare !== 0) return parentCompare;
+
+                    const stageCompare = naturalCompare(
+                        a.getAttribute('data-stage-seq'),
+                        b.getAttribute('data-stage-seq')
+                    );
+                    if (stageCompare !== 0) return stageCompare;
+
+                    const aSeq = (a.querySelector('.seq-input') || {}).value || a.querySelector('.col-seq')?.textContent || '';
+                    const bSeq = (b.querySelector('.seq-input') || {}).value || b.querySelector('.col-seq')?.textContent || '';
+                    return naturalCompare(aSeq.trim(), bSeq.trim());
+                });
+
+                rows.forEach(function (row, index) {
+                    tbody.appendChild(row);
+                    const noCell = row.querySelector('.col-no');
+                    if (noCell) noCell.textContent = String(index + 1);
+                });
+            }
+
+            const sortForm = document.getElementById('sortTaskTemplateForm');
+            const sortSubmitBtn = document.querySelector('button[form="sortTaskTemplateForm"]');
+            if (sortForm) {
+                sortForm.addEventListener('submit', function (event) {
+                    event.preventDefault();
+
+                    if (sortSubmitBtn) {
+                        sortSubmitBtn.disabled = true;
+                        sortSubmitBtn.innerHTML = '<i class="mdi mdi-loading mdi-spin me-1"></i> 儲存中…';
+                    }
+
+                    fetch(sortForm.action, {
+                        method: 'POST',
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'Accept': 'application/json',
+                        },
+                        body: new FormData(sortForm),
+                        credentials: 'same-origin',
+                    })
+                    .then(function (res) {
+                        return res.json().then(function (data) {
+                            if (!res.ok) throw data;
+                            return data;
+                        });
+                    })
+                    .then(function (data) {
+                        if (!data.success) throw data;
+                        reorderTableBySort();
+                        showToast(data.message || '排序已儲存');
+                    })
+                    .catch(function (err) {
+                        let msg = (err && err.message) ? err.message : '排序儲存失敗，請再試一次';
+                        if (err && err.errors) {
+                            msg = Object.values(err.errors).flat().join('、');
+                        }
+                        showToast(msg, true);
+                    })
+                    .finally(function () {
+                        if (sortSubmitBtn) {
+                            sortSubmitBtn.disabled = false;
+                            sortSubmitBtn.innerHTML = '<i class="mdi mdi-sort me-1"></i> 儲存排序';
+                        }
+                    });
+                });
+            }
         });
     </script>
 @endsection

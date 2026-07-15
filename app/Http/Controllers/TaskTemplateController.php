@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\TaskTemplate;
 use App\Services\TaskTemplateImportService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use App\Models\CheckStatus;
@@ -294,7 +295,7 @@ class TaskTemplateController extends Controller
             ->with('success', '已批次刪除 ' . $count . ' 筆派工項目');
     }
 
-    public function updateSort(Request $request): RedirectResponse
+    public function updateSort(Request $request): RedirectResponse|JsonResponse
     {
         $this->ensureCanManageSetting();
 
@@ -312,6 +313,13 @@ class TaskTemplateController extends Controller
         $statusFilter = $request->input('status_filter', 'up');
         if (! in_array($statusFilter, ['all', 'up', 'down'], true)) {
             $statusFilter = 'up';
+        }
+
+        if ($request->expectsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => '排序已儲存',
+            ]);
         }
 
         return redirect()
