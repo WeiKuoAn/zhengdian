@@ -71,11 +71,18 @@ class TaskTemplateController extends Controller
             $statusFilter = 'up';
         }
 
-        $datas = TaskTemplate::sortByScheduleOrder(
-            TaskTemplate::with(['check_status_parent_data', 'check_status_data'])
-                ->byListStatusFilter($statusFilter)
-                ->get()
-        );
+        $datas = TaskTemplate::with(['check_status_parent_data', 'check_status_data'])
+            ->byListStatusFilter($statusFilter)
+            ->get()
+            ->sort(function (TaskTemplate $a, TaskTemplate $b) {
+                $seqCompare = strnatcmp((string) ($a->seq ?? ''), (string) ($b->seq ?? ''));
+                if ($seqCompare !== 0) {
+                    return $seqCompare;
+                }
+
+                return TaskTemplate::compareScheduleOrder($a, $b);
+            })
+            ->values();
 
         return view('task_template.index')
             ->with('datas', $datas)

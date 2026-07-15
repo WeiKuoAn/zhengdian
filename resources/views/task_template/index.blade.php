@@ -151,7 +151,7 @@
                         </div>
 
                         <p class="text-muted small mb-2">
-                            排序數字愈小愈前面；同專案階段內依排序顯示。可支援 1、1-2、1-10 這類自然排序。
+                            此列表依「排序」由小到大排列；數字相同時再依專案狀態／階段排序。可支援 1、1-2、1-10 這類自然排序。
                         </p>
 
                         <form method="POST" id="batchActionForm">
@@ -401,21 +401,26 @@
 
                 const rows = Array.from(tbody.querySelectorAll('tr[data-id]'));
                 rows.sort(function (a, b) {
+                    const aSeq = (a.querySelector('.seq-input') || {}).value
+                        || (a.querySelector('.col-seq') || {}).textContent
+                        || '';
+                    const bSeq = (b.querySelector('.seq-input') || {}).value
+                        || (b.querySelector('.col-seq') || {}).textContent
+                        || '';
+
+                    const seqCompare = naturalCompare(String(aSeq).trim(), String(bSeq).trim());
+                    if (seqCompare !== 0) return seqCompare;
+
                     const parentCompare = naturalCompare(
                         a.getAttribute('data-parent-seq'),
                         b.getAttribute('data-parent-seq')
                     );
                     if (parentCompare !== 0) return parentCompare;
 
-                    const stageCompare = naturalCompare(
+                    return naturalCompare(
                         a.getAttribute('data-stage-seq'),
                         b.getAttribute('data-stage-seq')
                     );
-                    if (stageCompare !== 0) return stageCompare;
-
-                    const aSeq = (a.querySelector('.seq-input') || {}).value || a.querySelector('.col-seq')?.textContent || '';
-                    const bSeq = (b.querySelector('.seq-input') || {}).value || b.querySelector('.col-seq')?.textContent || '';
-                    return naturalCompare(aSeq.trim(), bSeq.trim());
                 });
 
                 rows.forEach(function (row, index) {
