@@ -37,6 +37,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 use App\Models\MeetData;
 use App\Services\DispatchNotificationService;
+use App\Support\PlanOrderDateCascade;
 
 class ProjectController extends Controller
 {
@@ -822,6 +823,9 @@ class ProjectController extends Controller
         $loginUserId = (int) Auth::id();
         $isLevelTwo = (int) ($loginUser->level ?? 0) === 2;
 
+        // 有表訂錨點時，自動補齊後方空白表訂（不回推、不覆蓋已有值）
+        PlanOrderDateCascade::fillEmptyOrderDates((int) $id);
+
         $task_templates = TaskTemplate::sortByScheduleOrder(
             TaskTemplate::with(['check_status_parent_data', 'check_status_data'])
                 ->listed()
@@ -835,7 +839,9 @@ class ProjectController extends Controller
         $task_datas = $task_templates->map(function ($task) use ($project_milestones, $loginUserId) {
             $milestone = $project_milestones->get($task->id);
             $linkedTaskId = $milestone ? ($milestone->linked_task_id ?? null) : null;
-            $linkedTask = $linkedTaskId ? Task::with('items.user_data')->find($linkedTaskId) : null;
+            $linkedTask = $linkedTaskId
+                ? Task::with(['items.user_data', 'estimated_end_adjustments' => fn ($q) => $q->orderBy('id')])->find($linkedTaskId)
+                : null;
             $myTaskItem = $linkedTask ? $linkedTask->items->firstWhere('user_id', $loginUserId) : null;
             $dispatchEstimatedEnd = null;
             if (!empty(optional($linkedTask)->estimated_end)) {
@@ -857,14 +863,41 @@ class ProjectController extends Controller
                 }
             }
 
-            // 實際完成時間以「最後一位派工人員」的完成日期為準（例如 3 位時抓第 3 位）。
+            // 實際完成時間：優先最後一位派工人員完成時刻 → milestone.formal_date → task.actual_end
             $formalDateFromAssignee = null;
             if ($linkedTask && $linkedTask->items->isNotEmpty()) {
                 $lastAssigneeItem = $linkedTask->items->sortBy('id')->last();
                 $lastEndTime = optional($lastAssigneeItem)->end_time;
                 $lastStatus = (int) (optional($lastAssigneeItem)->status ?? 0);
-                if (!empty($lastEndTime) && $lastStatus === 9) {
-                    $formalDateFromAssignee = Carbon::parse($lastEndTime)->format('Y-m-d');
+                if (! empty($lastEndTime) && in_array($lastStatus, [8, 9], true)) {
+                    $formalDateFromAssignee = Carbon::parse($lastEndTime)->format('Y-m-d H:i:s');
+                }
+            }
+            $formalDateFallback = null;
+            if ($linkedTask && ! empty($linkedTask->actual_end)) {
+                try {
+                    $formalDateFallback = Carbon::parse($linkedTask->actual_end)->format('Y-m-d H:i:s');
+                } catch (\Throwable $e) {
+                    $formalDateFallback = null;
+                }
+            }
+
+            $formalRaw = $formalDateFromAssignee
+                ?? ($milestone ? ($milestone->formal_date ?? null) : null)
+                ?? $formalDateFallback;
+            $formalDateValue = null;
+            $formalDatetimeDisplay = null;
+            $formalDatetimeValue = null;
+            if (! empty($formalRaw)) {
+                try {
+                    $formalCarbon = Carbon::parse($formalRaw);
+                    $formalDateValue = $formalCarbon->format('Y-m-d');
+                    $formalDatetimeDisplay = $formalCarbon->format('Y/m/d H:i:s');
+                    $formalDatetimeValue = $formalCarbon->format('Y-m-d H:i:s');
+                } catch (\Throwable $e) {
+                    $formalDateValue = null;
+                    $formalDatetimeDisplay = null;
+                    $formalDatetimeValue = null;
                 }
             }
 
@@ -874,6 +907,28 @@ class ProjectController extends Controller
             $durationMinutes = (int) round(max($durationHours, 0) * 60);
             $linkDays = (int) (optional($task->check_status_data)->duration_days ?? 0);
 
+            $adjustments = [];
+            if ($linkedTask && $linkedTask->relationLoaded('estimated_end_adjustments')) {
+                foreach ($linkedTask->estimated_end_adjustments as $idx => $adj) {
+                    $adjustments[] = [
+                        'times' => $idx + 1,
+                        'note' => trim((string) ($adj->note ?? '')),
+                        'adjusted_estimated_end' => ! empty($adj->adjusted_estimated_end)
+                            ? Carbon::parse($adj->adjusted_estimated_end)->format('Y/m/d H:i')
+                            : null,
+                        'created_at' => optional($adj->created_at)->format('Y/m/d H:i'),
+                    ];
+                }
+            }
+            $adjustedEstimatedEndDisplay = null;
+            if ($linkedTask && ! empty($linkedTask->adjusted_estimated_end)) {
+                try {
+                    $adjustedEstimatedEndDisplay = Carbon::parse($linkedTask->adjusted_estimated_end)->format('Y/m/d H:i');
+                } catch (\Throwable $e) {
+                    $adjustedEstimatedEndDisplay = null;
+                }
+            }
+
             return (object) [
                 'id' => $task->id,
                 'name' => $task->name,
@@ -881,7 +936,9 @@ class ProjectController extends Controller
                 'check_status_data' => $task->check_status_data,
                 'milestone_date' => $milestone ? ($milestone->milestone_date ?? null) : null,
                 'order_date' => $milestone ? ($milestone->order_date ?? null) : null,
-                'formal_date' => $formalDateFromAssignee ?? ($milestone ? ($milestone->formal_date ?? null) : null),
+                'formal_date' => $formalDateValue,
+                'formal_datetime_display' => $formalDatetimeDisplay,
+                'formal_datetime_value' => $formalDatetimeValue,
                 'linked_task_id' => $linkedTaskId,
                 'dispatch_status_text' => $linkedTask ? $linkedTask->status() : '未建立派工',
                 'dispatch_status_value' => $linkedTask->status ?? null,
@@ -889,6 +946,8 @@ class ProjectController extends Controller
                 'linked_task_estimated_end' => ($linkedTask && ! empty($linkedTask->estimated_end))
                     ? Carbon::parse($linkedTask->estimated_end)->format('Y-m-d H:i:s')
                     : '',
+                'adjusted_estimated_end_display' => $adjustedEstimatedEndDisplay,
+                'adjustments' => $adjustments,
                 'executor_rows' => $executorRows,
                 'dispatch_task_comments' => $linkedTask ? ($linkedTask->comments ?? '') : '',
                 'dispatch_comments' => $myTaskItem->context ?? ($linkedTask->comments ?? ''),
@@ -912,10 +971,23 @@ class ProjectController extends Controller
                 continue;
             }
 
+            $linkedEstimated = trim((string) ($row->linked_task_estimated_end ?? ''));
+            // 已有派工預計完成：顯示與連動基準都用派工時間；其餘才用表訂日＋時數（09–18）推算
+            if ($linkedEstimated !== '') {
+                try {
+                    $previousPlanEnd = Carbon::parse($linkedEstimated);
+                    $row->dispatch_estimated_end = $previousPlanEnd->format('Y/m/d H:i');
+                    $row->linked_task_estimated_end = $previousPlanEnd->format('Y-m-d H:i:s');
+                    continue;
+                } catch (\Throwable $e) {
+                    // fall through to calculated
+                }
+            }
+
             $resolved = $this->resolvePlanEstimatedEndDatetime(
                 $template,
                 $orderDate,
-                $row->linked_task_estimated_end ?: null,
+                null,
                 $previousPlanEnd,
                 $index
             );
@@ -938,6 +1010,9 @@ class ProjectController extends Controller
                 'description' => $t->description ?? '',
                 'durationHours' => $durationHours,
                 'dispatchEstimatedEnd' => $t->dispatch_estimated_end ?? '',
+                'dispatchStatusValue' => (string) ($t->dispatch_status_value ?? ''),
+                'adjustedEstimatedEnd' => $t->adjusted_estimated_end_display ?? '',
+                'adjustments' => $t->adjustments ?? [],
             ];
         })->values();
 
@@ -1005,8 +1080,8 @@ class ProjectController extends Controller
                     $lastAssigneeItem = $linkedTaskForFormal->items->sortBy('id')->last();
                     $lastEndTime = optional($lastAssigneeItem)->end_time;
                     $lastStatus = (int) (optional($lastAssigneeItem)->status ?? 0);
-                    if (!empty($lastEndTime) && $lastStatus === 9) {
-                        $formalDateValue = Carbon::parse($lastEndTime)->format('Y-m-d');
+                    if (! empty($lastEndTime) && in_array($lastStatus, [8, 9], true)) {
+                        $formalDateValue = Carbon::parse($lastEndTime)->format('Y-m-d H:i:s');
                     }
                 }
             }
@@ -1014,7 +1089,7 @@ class ProjectController extends Controller
             $payload = [
                 'order_date' => $normalizeDate($order_dates[$index] ?? null),
                 'milestone_date' => $normalizeDate($milestone_dates[$index] ?? null),
-                'formal_date' => $normalizeDate($formalDateValue),
+                'formal_date' => $formalDateValue,
                 'category_id' => $existing ? ($existing->category_id ?? '1') : '1',
             ];
             if ($hasLinkedTaskColumn) {
@@ -1073,7 +1148,7 @@ class ProjectController extends Controller
                         $lastEndTime = optional($lastAssigneeItem)->end_time;
                         $lastStatus = (int) (optional($lastAssigneeItem)->status ?? 0);
                         if (!empty($lastEndTime) && $lastStatus === 9) {
-                            $milestoneRow->formal_date = Carbon::parse($lastEndTime)->format('Y-m-d');
+                            $milestoneRow->formal_date = Carbon::parse($lastEndTime)->format('Y-m-d H:i:s');
                         }
                     }
                     $milestoneRow->save();
@@ -1183,7 +1258,8 @@ class ProjectController extends Controller
         $task->created_by = Auth::id();
         $task->estimated_end = $estimatedEnd;
         $task->priority = 2;
-        if (! $task->exists) {
+        // 新建，或對已完成／待確認任務再派工時重開；避免 task=完成但 item=待接收的孤兒狀態
+        if (! $task->exists || in_array((string) $task->status, ['8', '9'], true)) {
             $task->status = '1';
         }
         $task->comments = $comments;
@@ -1269,22 +1345,22 @@ class ProjectController extends Controller
         }
 
         $durationMinutes = (int) round(max(0, (float) ($template->duration_hours ?? 0)) * 60);
-        if ($rowIndex <= 0 || $previousEnd === null) {
+        $fromChain = $rowIndex > 0 && $previousEnd !== null;
+        if (! $fromChain) {
             $start = Carbon::parse($orderDateStr)->setTime(9, 0, 0);
         } else {
             $start = $previousEnd->copy();
         }
 
-        return $this->addWorkingMinutesSkippingLunch($start, $durationMinutes)->format('Y-m-d H:i:s');
+        return $this->addWorkingMinutesSkippingLunch($start, $durationMinutes, ! $fromChain)->format('Y-m-d H:i:s');
     }
 
     /**
      * 以工作時段推進時間：
-     * - 工作時間：09:00–12:00、13:00–18:00
-     * - 午休：12:00–13:00（會自動跳過）
-     * - 超過 18:00 會順延隔天 09:00 繼續
+     * - 無前段：從表訂日 09:00 起算
+     * - 承接前段：可從實際完成時刻續算（例 08:00+0.5h=08:30），仍跳過午休、超過 18:00 順延隔天 09:00
      */
-    protected function addWorkingMinutesSkippingLunch(Carbon $startAt, int $minutes): Carbon
+    protected function addWorkingMinutesSkippingLunch(Carbon $startAt, int $minutes, bool $clampToWorkStart = true): Carbon
     {
         $minutes = max($minutes, 0);
         $t = $startAt->copy();
@@ -1295,7 +1371,7 @@ class ProjectController extends Controller
             $lunchEnd = $t->copy()->setTime(13, 0, 0);
             $workEnd = $t->copy()->setTime(18, 0, 0);
 
-            if ($t->lt($workStart)) {
+            if ($clampToWorkStart && $t->lt($workStart)) {
                 $t = $workStart;
                 continue;
             }
@@ -1353,6 +1429,8 @@ class ProjectController extends Controller
         $data->comments = $request->comments;
         $data->save();
 
+        ProjectMilestones::syncLinkedTaskFromDispatch($data);
+
         $user_ids = $request->input('user_ids');
         $contexts = $request->input('contexts');
 
@@ -1406,6 +1484,8 @@ class ProjectController extends Controller
             'id' => (int) $item->user_id,
             'name' => (string) (optional($item->user_data)->name ?? ''),
         ])->all();
+        $oldProjectId = (int) ($data->project_id ?? 0);
+        $oldTemplateId = (int) ($data->template_id ?? 0);
 
         $data->project_id = $request->project_id;
         $data->type = 'group';
@@ -1417,6 +1497,8 @@ class ProjectController extends Controller
         $data->status = $request->status;
         $data->comments = $request->comments;
         $data->save();
+
+        ProjectMilestones::syncLinkedTaskFromDispatch($data, $oldProjectId, $oldTemplateId);
 
         // 定義 Task 狀態對應到 TaskItem 狀態的映射
         $statusMapping = [

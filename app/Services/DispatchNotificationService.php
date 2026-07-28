@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\CustProject;
+use App\Models\DispatchReminderSetting;
 use App\Models\TaskTemplate;
 use App\Models\User;
 use Illuminate\Support\Facades\Log;
@@ -165,6 +166,109 @@ class DispatchNotificationService
             );
             if (!($result['success'] ?? false)) {
                 Log::warning('dispatch_webhook_send_failed', [
+                    'project_id' => $project->id,
+                    'task_name' => $taskName,
+                    'synology_user_id' => $chatUserId,
+                    'message' => $result['message'] ?? 'unknown error',
+                ]);
+            }
+        }
+    }
+
+    /**
+     * 派工確認「需調整」通知（不改動原派工表訂完成時間）。
+     *
+     * @param  array<int, array{id?: int, name?: string}>  $executors
+     */
+    public function sendAdjustmentForProject(
+        CustProject $project,
+        string $taskName,
+        string $originalScheduledAt,
+        string $adjustedScheduledAt,
+        string $dispatchContent,
+        array $executors,
+        ?string $note = null
+    ): void {
+        $hasSynologyUserId = Schema::hasColumn('users', 'synology_user_id');
+
+        $executorData = collect($executors)
+            ->filter(fn ($row) => !empty($row['name']))
+            ->unique('id')
+            ->values()
+            ->map(function ($row) use ($hasSynologyUserId) {
+                $name = (string) $row['name'];
+                $userId = (int) ($row['id'] ?? 0);
+                $chatUserId = null;
+                if ($hasSynologyUserId) {
+                    if ($userId > 0) {
+                        $chatUserId = User::where('id', $userId)->value('synology_user_id');
+                    }
+                    if ($chatUserId === null && $name !== '') {
+                        $chatUserId = User::where('name', $name)
+                            ->whereNotNull('synology_user_id')
+                            ->value('synology_user_id');
+                    }
+                }
+
+                return [
+                    'mention' => '@' . $name,
+                    'chat_id' => $chatUserId,
+                    'user_id' => $userId,
+                    'name' => $name,
+                ];
+            });
+
+        $setting = DispatchReminderSetting::query()->first();
+        $template = trim((string) ($setting?->adjust_template ?? ''));
+        if ($template === '') {
+            $template = (string) config('dispatch_reminder.adjust_template', '');
+        }
+
+        $noteText = trim((string) ($note ?? ''));
+        $chat = app(ChatWebhookService::class);
+        foreach ($executorData as $executor) {
+            $chatUserId = (int) ($executor['chat_id'] ?? 0);
+            $executorName = (string) ($executor['name'] ?? '');
+            $executorUserId = (int) ($executor['user_id'] ?? 0) ?: null;
+
+            if ($chatUserId <= 0) {
+                if ($executorName !== '') {
+                    $this->skipped[] = $executorName;
+                    $chat->logDispatchNotificationSkipped(
+                        $executorName,
+                        (int) $project->id,
+                        $executorUserId,
+                        $taskName
+                    );
+                }
+                continue;
+            }
+
+            $text = strtr($template, [
+                '{mentions}' => trim((string) ($executor['mention'] ?? '')),
+                '{project_name}' => (string) ($project->name ?? ''),
+                '{task_name}' => $taskName,
+                '{task_url}' => route('project.plan', $project->id),
+                '{due_time}' => $originalScheduledAt,
+                '{adjusted_time}' => $adjustedScheduledAt,
+                '{adjustment_note}' => $noteText,
+                '{task_content}' => $dispatchContent,
+            ]);
+            $text = trim(preg_replace("/\n{3,}/", "\n\n", $text) ?? $text);
+
+            $result = $chat->sendIncomingToSynology($text, [$chatUserId]);
+            $chat->logDispatchNotification(
+                $text,
+                [$chatUserId],
+                $result,
+                (int) $project->id,
+                $executorUserId,
+                $taskName,
+                'processed',
+                'dispatch_adjust'
+            );
+            if (!($result['success'] ?? false)) {
+                Log::warning('dispatch_adjust_webhook_send_failed', [
                     'project_id' => $project->id,
                     'task_name' => $taskName,
                     'synology_user_id' => $chatUserId,

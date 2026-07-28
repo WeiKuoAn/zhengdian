@@ -24,5 +24,5 @@ return [
     'accept_template' => env('DISPATCH_REMINDER_ACCEPT_TEMPLATE', "{mentions}\n【派工接收提醒】\n專案名稱：{project_name}\n工作項目：{task_name}\n派工列表：{task_url}\n提醒：派工後 1 小時內請接收，未接收將每小時提醒一次。"),
     'due_template' => env('DISPATCH_REMINDER_DUE_TEMPLATE', "{mentions}\n【繳交提醒】\n專案名稱：{project_name}\n工作項目：{task_name}\n表定時間：{due_time}\n提醒：此工作項目即將到期。"),
     'overdue_template' => env('DISPATCH_REMINDER_OVERDUE_TEMPLATE', "{mentions}\n【遲交提醒】\n專案名稱：{project_name}\n工作項目：{task_name}\n表定時間：{due_time}\n提醒：目前已逾期，將每 2 小時提醒一次（超過 {cutoff_time} 不再提醒）。"),
+    'adjust_template' => env('DISPATCH_REMINDER_ADJUST_TEMPLATE', "{mentions}\n【需調整】\n專案名稱：{project_name}\n工作項目：{task_name}\n專案網址：{task_url}\n原派工表訂完成：{due_time}\n須調整完的預計時間：{adjusted_time}\n調整說明：{adjustment_note}\n派工內容：{task_content}"),
 ];
-

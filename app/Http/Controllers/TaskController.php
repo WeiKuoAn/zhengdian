@@ -10,9 +10,9 @@ use App\Models\User;
 use App\Models\CheckStatus;
 use App\Models\CustProject;
 use App\Models\ProjectMilestones;
+use App\Models\TaskEstimatedEndAdjustment;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Schema;
 use Carbon\Carbon;
 use App\Services\DispatchNotificationService;
 
@@ -89,6 +89,64 @@ class TaskController extends Controller
         }
     }
 
+    protected function sendTaskAdjustmentNotification(Task $task, string $adjustedEnd, ?string $note = null): void
+    {
+        $this->dispatchNotification()->resetSkipped();
+
+        $task->loadMissing(['items.user_data', 'task_template_data', 'project_data']);
+        $project = $task->project_data;
+        if (! $project) {
+            return;
+        }
+
+        $executors = $task->items
+            ->map(fn ($item) => [
+                'id' => (int) $item->user_id,
+                'name' => (string) (optional($item->user_data)->name ?? ''),
+            ])
+            ->filter(fn ($row) => $row['id'] > 0 && $row['name'] !== '')
+            ->unique('id')
+            ->values()
+            ->all();
+
+        if ($executors === []) {
+            return;
+        }
+
+        try {
+            $template = $task->task_template_data;
+            $dispatchItem = $template
+                ? $this->dispatchNotification()->buildDispatchItemLabel($template)
+                : (string) $task->name;
+
+            $dispatchContent = trim((string) ($task->comments ?? ''));
+            if ($dispatchContent === '') {
+                $dispatchContent = (string) ($template->description ?? $template->name ?? $task->name);
+            }
+
+            $originalScheduledAt = ! empty($task->estimated_end)
+                ? Carbon::parse($task->estimated_end)->format('Y/m/d H:i')
+                : '尚未設定';
+            $adjustedScheduledAt = Carbon::parse($adjustedEnd)->format('Y/m/d H:i');
+
+            $this->dispatchNotification()->sendAdjustmentForProject(
+                $project,
+                $dispatchItem,
+                $originalScheduledAt,
+                $adjustedScheduledAt,
+                $dispatchContent,
+                $executors,
+                $note
+            );
+        } catch (\Throwable $e) {
+            Log::warning('dispatch_adjust_webhook_send_failed', [
+                'project_id' => $project->id,
+                'task_id' => $task->id,
+                'message' => $e->getMessage(),
+            ]);
+        }
+    }
+
     protected function redirectToTaskList(string $successMessage)
     {
         $redirect = redirect()->route('task')->with('success', $successMessage);
@@ -102,36 +160,13 @@ class TaskController extends Controller
 
     protected function syncMilestoneLinkedTask(Task $task, ?int $oldProjectId = null, ?int $oldTemplateId = null): void
     {
-        if (!Schema::hasColumn('project_milestones', 'linked_task_id')) {
-            return;
-        }
+        ProjectMilestones::syncLinkedTaskFromDispatch($task, $oldProjectId, $oldTemplateId);
+    }
 
-        $projectId = (int) ($task->project_id ?? 0);
-        $templateId = (int) ($task->template_id ?? 0);
-        if ($projectId <= 0 || $templateId <= 0) {
-            return;
-        }
-
-        // 若任務變更了專案或模板，先清理舊里程碑對應，避免殘留錯誤關聯。
-        if (($oldProjectId && $oldProjectId !== $projectId) || ($oldTemplateId && $oldTemplateId !== $templateId)) {
-            ProjectMilestones::query()
-                ->where('project_id', $oldProjectId ?: $projectId)
-                ->where('milestone_type', $oldTemplateId ?: $templateId)
-                ->where('linked_task_id', $task->id)
-                ->update(['linked_task_id' => null]);
-        }
-
-        $row = ProjectMilestones::query()
-            ->firstOrNew([
-                'project_id' => $projectId,
-                'milestone_type' => $templateId,
-            ]);
-
-        if (empty($row->category_id)) {
-            $row->category_id = '1';
-        }
-        $row->linked_task_id = $task->id;
-        $row->save();
+    /** 任務確認完成後，同步專案排程實際完成時間。 */
+    protected function syncMilestoneFormalDate(Task $task): void
+    {
+        ProjectMilestones::syncFormalDateFromTask($task);
     }
 
     public function getTaskDetails($id)
@@ -231,10 +266,20 @@ class TaskController extends Controller
             } elseif (count(array_unique($allStatuses)) === 1 && $allStatuses[0] == 9) {
                 // **所有** taskItems 的 status 都是 9，則整體為「已完成」
                 $newTaskStatus = 9;
-                Task::where('id', $taskId)->update(['actual_end' => Carbon::now()]);
+                $parentTask = Task::find($taskId);
+                if ($parentTask) {
+                    if (empty($parentTask->actual_end)) {
+                        $parentTask->actual_end = Carbon::now();
+                    }
+                    $parentTask->status = 9;
+                    $parentTask->save();
+                    $this->syncMilestoneFormalDate($parentTask);
+                }
             } elseif (count(array_unique($allStatuses)) === 1 && $allStatuses[0] == 8) {
                 // **所有** taskItems 的 status 都是 8，則進入「人員已完成，待確認」狀態
                 $newTaskStatus = 8;
+            } elseif (count(array_unique($allStatuses)) === 1 && (int) $allStatuses[0] === 7) {
+                $newTaskStatus = 7;
             } elseif (count(array_diff($allStatuses, [8, 9])) === 0 && in_array(8, $allStatuses)) {
                 // 若為 8/9 混合，尚有待確認，維持「待確認」
                 $newTaskStatus = 8;
@@ -538,7 +583,9 @@ class TaskController extends Controller
     public function check_show($id)
     {
         $cust_projects = CustProject::get();
-        $data = Task::where('id', $id)->first();
+        $data = Task::with(['items.user_data', 'estimated_end_adjustments.creator', 'user_data', 'project_data.user_data'])
+            ->where('id', $id)
+            ->firstOrFail();
         $task_templates = TaskTemplate::get();
         $check_statuss = CheckStatus::where('status', 'up')->orderby('seq', 'asc')->whereNull('parent_id')->get();
         $users = User::where('status', 1)->where('group_id', 1)->get();
@@ -546,9 +593,62 @@ class TaskController extends Controller
         return view('task.check')->with('data', $data)->with('task_templates', $task_templates)->with('cust_projects', $cust_projects)->with('check_statuss', $check_statuss)->with('users', $users);
     }
 
-    public function check_update($id, Request  $request)
+    public function check_update($id, Request $request)
     {
-        $data = Task::findOrFail($id);
+        $data = Task::with('items')->findOrFail($id);
+        $action = (string) $request->input('confirm_action', 'confirm');
+
+        if ($action === 'adjust') {
+            $request->validate([
+                'adjusted_estimated_end_date' => 'required|date',
+                'adjusted_estimated_end_time' => 'required|string',
+                'adjustment_note' => 'required|string|max:2000',
+            ], [
+                'adjusted_estimated_end_date.required' => '請填寫須調整完的預計日期',
+                'adjusted_estimated_end_time.required' => '請填寫須調整完的預計時間',
+                'adjustment_note.required' => '請填寫調整說明',
+            ]);
+
+            $adjustedEnd = Carbon::parse(
+                $request->input('adjusted_estimated_end_date').' '.$request->input('adjusted_estimated_end_time')
+            )->format('Y-m-d H:i:s');
+
+            TaskEstimatedEndAdjustment::create([
+                'task_id' => $data->id,
+                'adjusted_estimated_end' => $adjustedEnd,
+                'previous_adjusted_estimated_end' => $data->adjusted_estimated_end,
+                'note' => trim((string) $request->input('adjustment_note', '')) ?: null,
+                'created_by' => Auth::id(),
+            ]);
+
+            // 不覆寫原本的 estimated_end（派工表訂完成）
+            $data->adjusted_estimated_end = $adjustedEnd;
+            $data->status = 7;
+            $data->save();
+
+            foreach ($data->items as $item) {
+                $item->status = 7;
+                $item->save();
+            }
+
+            $data->loadMissing(['items.user_data', 'task_template_data', 'project_data']);
+            $this->sendTaskAdjustmentNotification(
+                $data,
+                $adjustedEnd,
+                trim((string) $request->input('adjustment_note', '')) ?: null
+            );
+
+            $redirect = redirect()
+                ->route('task.check.index')
+                ->with('success', '已設為需調整，並留下調整紀錄');
+            $warning = $this->dispatchNotification()->skippedWarningMessage();
+            if ($warning !== null) {
+                $redirect->with('warning', $warning);
+            }
+
+            return $redirect;
+        }
+
         $data->status = 9;
         $data->actual_end = Carbon::now();
         $data->save();
@@ -556,22 +656,16 @@ class TaskController extends Controller
         $items = TaskItem::where('task_id', $id)->get();
         foreach ($items as $item) {
             $item->status = 9;
+            if (empty($item->end_time)) {
+                $item->end_time = $data->actual_end;
+            }
             $item->save();
         }
 
-        // $end_time_dates = $request->input('end_time_dates');
-        // $end_time_times = $request->input('end_time_times');
-        // dd($end_time_dates, $end_time_times);
-        // foreach ($user_ids as $index => $user_id) {
-        //     TaskItem::create([
-        //         'user_id' => $user_id,
-        //         'context' => $contexts[$index],
-        //         'end_time' => $end_time_dates[$index] . ' ' . $end_time_times[$index] . ':00',
-        //         'status' => $taskItemStatus, // 確保新建的 TaskItem 也同步狀態
-        //     ]);
-        // }
+        $data->load('items');
+        $this->syncMilestoneFormalDate($data);
 
-        return redirect()->route('task.check.index');
+        return redirect()->route('task.check.index')->with('success', '派工已確認完成');
     }
 
     public function ok(Request $request)

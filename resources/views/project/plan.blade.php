@@ -363,6 +363,7 @@
                                                         '1' => '送出派工',
                                                         '2' => '已接收',
                                                         '3' => '執行中',
+                                                        '7' => '需調整',
                                                         '8' => '待確認',
                                                         '9' => '已完成',
                                                         default => '未派工',
@@ -370,6 +371,8 @@
                                                     $statusBadgeClass = match ((string) ($task_data->dispatch_status_value ?? '')) {
                                                         '1' => 'bg-primary',   // 送出派工
                                                         '2' => 'bg-info',      // 已接收
+                                                        '3' => 'bg-info',
+                                                        '7' => 'bg-warning text-dark', // 需調整
                                                         '8' => 'bg-warning',   // 待確認
                                                         '9' => 'bg-success',   // 已完成
                                                         default => 'bg-secondary',
@@ -391,6 +394,9 @@
                                                     data-row="{{ $key }}"
                                                     data-link-days="{{ (int) ($task_data->link_days ?? 0) }}"
                                                     data-duration-minutes="{{ (int) ($task_data->duration_minutes ?? 0) }}"
+                                                    @if (!empty($task_data->linked_task_estimated_end))
+                                                        data-fixed-estimated-end="{{ $task_data->linked_task_estimated_end }}"
+                                                    @endif
                                                     @if ($isLevelTwo) readonly @endif>
                                                 <div class="small text-muted mt-1 plan-dispatch-estimated-end">
                                                     派工表訂完成：
@@ -485,7 +491,12 @@
                                                 <input type="date" class="form-control form-control-sm"
                                                     name="formal_dates[]"
                                                     value="{{ $task_data->formal_date }}"
-                                                    placeholder="正式時間" @if ($isLevelTwo) readonly @endif>
+                                                    placeholder="日期" @if ($isLevelTwo) readonly @endif>
+                                                <div class="small text-muted mt-1 plan-formal-actual">
+                                                    @if ((string) ($task_data->dispatch_status_value ?? '') === '9' && !empty($task_data->formal_datetime_display))
+                                                        實際完成：{{ $task_data->formal_datetime_display }}
+                                                    @endif
+                                                </div>
                                             </div>
                                         </div>
                                     @endforeach
@@ -524,19 +535,31 @@
                 <div class="modal-body">
                     <div id="dispatchScheduleSection" class="dispatch-modal-schedule-foot border rounded p-3 mb-2 bg-light">
                         <div class="row g-2">
-                            <div class="col-md-6">
+                            <div class="col-md-8">
                                 <label class="d-block small text-muted mb-1">預計完成時間</label>
-                                <input type="text" class="form-control form-control-sm" id="dispatchEstimatedEndDisplay"
-                                    readonly placeholder="尚未建立">
+                                <div class="input-group input-group-sm">
+                                    <input type="date" class="form-control" id="dispatchEstimatedEndDate"
+                                        placeholder="日期">
+                                    <input type="time" class="form-control" id="dispatchEstimatedEndTime"
+                                        placeholder="時間">
+                                </div>
                             </div>
-                            <div class="col-md-6">
+                            <div class="col-md-4">
                                 <label class="d-block small text-muted mb-1">時長（小時）</label>
                                 <input type="text" class="form-control form-control-sm" id="dispatchDurationDisplay"
                                     readonly placeholder="—">
                             </div>
                         </div>
                     </div>
-                    <p class="form-text mb-3" id="dispatchScheduleNote">依表訂時間與執行時數自動計算。</p>
+                    <p class="form-text mb-3" id="dispatchScheduleNote">預設依表訂時間與執行時數計算，可自行修改預計完成時間。</p>
+                    <div id="dispatchAdjustmentBox" class="border border-warning rounded p-3 mb-3 bg-warning-subtle" style="display: none;">
+                        <div class="d-flex align-items-center gap-2 mb-2">
+                            <span class="badge bg-warning text-dark">需調整</span>
+                            <strong class="text-warning-emphasis">調整內容</strong>
+                        </div>
+                        <div class="small mb-2" id="dispatchAdjustmentSchedule"></div>
+                        <div id="dispatchAdjustmentNotes" class="small"></div>
+                    </div>
                     <div id="dispatchEditorRows"></div>
                     <button type="button" class="btn btn-link p-0 mt-1" id="addDispatchEditorRow">+ 新增執行人員</button>
                 </div>
@@ -681,10 +704,12 @@
                     return `${y}/${m}/${day} ${hh}:${mm}`;
                 }
 
-                function addWorkingMinutesFromDateTime(startAt, minutes) {
+                function addWorkingMinutesFromDateTime(startAt, minutes, options) {
                     if (!startAt || isNaN(startAt.getTime())) {
                         return null;
                     }
+                    // 承接前一段時 clampToWorkStart=false，允許 08:00+0.5h=08:30
+                    const clampToWorkStart = !options || options.clampToWorkStart !== false;
                     let remain = Number(minutes || 0);
                     if (!Number.isFinite(remain) || remain < 0) {
                         remain = 0;
@@ -697,7 +722,7 @@
                         const lunchEnd = new Date(t.getFullYear(), t.getMonth(), t.getDate(), 13, 0, 0, 0);
                         const workEnd = new Date(t.getFullYear(), t.getMonth(), t.getDate(), 18, 0, 0, 0);
 
-                        if (t < workStart) {
+                        if (clampToWorkStart && t < workStart) {
                             t = workStart;
                             continue;
                         }
@@ -737,14 +762,30 @@
 
                     // 第一階段：表訂日當天 09:00 起算。
                     const startAt = new Date(y, m - 1, d, 9, 0, 0, 0);
-                    return addWorkingMinutesFromDateTime(startAt, minutes);
+                    return addWorkingMinutesFromDateTime(startAt, minutes, { clampToWorkStart: true });
                 }
 
                 function isManualOrder(input) {
                     return input.getAttribute('data-manual-order') === '1';
                 }
 
+                function parseDateTimeString(value) {
+                    const raw = String(value || '').trim();
+                    if (!raw) {
+                        return null;
+                    }
+                    const normalized = raw.includes('T') ? raw : raw.replace(' ', 'T');
+                    const d = new Date(normalized);
+                    return isNaN(d.getTime()) ? null : d;
+                }
+
                 function getEstimatedEndDateTime(input) {
+                    // 已有派工預計完成時間：直接採用，不再用表訂日 09:00 + 時數重算
+                    const fixed = parseDateTimeString(input.getAttribute('data-fixed-estimated-end'));
+                    if (fixed) {
+                        return fixed;
+                    }
+
                     const row = parseInt(input.getAttribute('data-row'), 10);
                     const orderDate = String(input.value || '').trim();
                     const durationMinutes = parseInt(input.getAttribute('data-duration-minutes') || '0', 10);
@@ -753,7 +794,7 @@
                         return null;
                     }
 
-                    // 第一列，或使用者手動改表訂日：從該日 09:00 起算。
+                    // 第一列，或使用者手動改表訂日：從該日 09:00 起算（工作時段 09–18）。
                     if (isNaN(row) || row <= 0 || isManualOrder(input)) {
                         return addWorkingMinutesSkippingLunch(orderDate, durationMinutes);
                     }
@@ -768,25 +809,27 @@
                         return addWorkingMinutesSkippingLunch(orderDate, durationMinutes);
                     }
 
-                    // 第二列起：自前一段完成時刻累加本列執行時數。
-                    return addWorkingMinutesFromDateTime(prevEnd, durationMinutes);
+                    // 第二列起：自前一段完成時刻累加本列執行時數（承接前段，不強制拉到 09:00）
+                    return addWorkingMinutesFromDateTime(prevEnd, durationMinutes, { clampToWorkStart: false });
                 }
 
                 function refreshDispatchEstimatedEnd(input) {
                     const row = input.closest('.plan-order-col');
                     const label = row ? row.querySelector('.plan-dispatch-estimated-end') : null;
-                    if (!label) {
-                        return;
-                    }
 
                     const orderDate = String(input.value || '').trim();
                     if (!orderDate) {
-                        label.textContent = '派工表訂完成：尚未建立';
+                        if (label) {
+                            label.textContent = '派工表訂完成：尚未建立';
+                        }
                         return;
                     }
 
                     const estimated = getEstimatedEndDateTime(input);
-                    label.textContent = '派工表訂完成：' + (estimated ? toSlashDateTime(estimated) : '尚未建立');
+                    const text = estimated ? toSlashDateTime(estimated) : '尚未建立';
+                    if (label) {
+                        label.textContent = '派工表訂完成：' + text;
+                    }
                 }
 
                 // 第二筆起：表訂日對齊前一段完成日（＋專案階段表訂連動天數）。
@@ -829,6 +872,23 @@
                     refreshAllEstimatedEnds();
                 }
 
+                // 載入時：只填空白列；已有表訂日的列當錨點，不回推、不覆蓋
+                function fillEmptyCascade() {
+                    const n = inputs.length;
+                    for (let j = 1; j < n; j++) {
+                        if (String(inputs[j].value || '').trim() !== '') {
+                            continue;
+                        }
+                        const prevInput = inputs[j - 1];
+                        if (!prevInput || !String(prevInput.value || '').trim()) {
+                            continue;
+                        }
+                        const linkDays = parseInt(inputs[j].getAttribute('data-link-days') || '0', 10);
+                        inputs[j].value = computeNextOrderDateFromPrevious(prevInput, linkDays);
+                    }
+                    refreshAllEstimatedEnds();
+                }
+
                 syncPlanMilestoneDates = function() {
                     document.querySelectorAll('.plan-milestone-row').forEach(function(row) {
                         const orderInput = row.querySelector('.plan-order-date');
@@ -860,10 +920,12 @@
                             input.removeAttribute('data-manual-order');
                         }
 
+                        // 改第一筆：重算後面全部；改中間列：只往下算，不回推前面
                         cascadeFromRow(row);
                     });
                 });
 
+                fillEmptyCascade();
                 refreshAllEstimatedEnds();
                 syncPlanMilestoneDates();
 
@@ -987,13 +1049,53 @@
                 }
 
                 const scheduleInfo = getRowDispatchScheduleInfo(rowKey);
-                const estimatedEndDisplay = document.getElementById('dispatchEstimatedEndDisplay');
+                const estimatedEndDate = document.getElementById('dispatchEstimatedEndDate');
+                const estimatedEndTime = document.getElementById('dispatchEstimatedEndTime');
                 const durationDisplay = document.getElementById('dispatchDurationDisplay');
-                if (estimatedEndDisplay) {
-                    estimatedEndDisplay.value = scheduleInfo.estimatedEnd;
+                const parsedEstimated = parseSlashOrIsoDateTime(scheduleInfo.estimatedEnd);
+                if (estimatedEndDate) {
+                    estimatedEndDate.value = parsedEstimated ? parsedEstimated.date : '';
+                }
+                if (estimatedEndTime) {
+                    estimatedEndTime.value = parsedEstimated ? parsedEstimated.time : '';
                 }
                 if (durationDisplay) {
                     durationDisplay.value = scheduleInfo.duration;
+                }
+
+                const meta = planTaskMetaByRow[rowKey] || {};
+                const adjustmentBox = document.getElementById('dispatchAdjustmentBox');
+                const adjustmentSchedule = document.getElementById('dispatchAdjustmentSchedule');
+                const adjustmentNotes = document.getElementById('dispatchAdjustmentNotes');
+                const adjustments = Array.isArray(meta.adjustments) ? meta.adjustments : [];
+                const isNeedsAdjust = String(meta.dispatchStatusValue || '') === '7' || adjustments.length > 0;
+                if (adjustmentBox && adjustmentSchedule && adjustmentNotes) {
+                    if (isNeedsAdjust) {
+                        const origEnd = meta.dispatchEstimatedEnd || '尚未建立';
+                        const adjEnd = meta.adjustedEstimatedEnd || '';
+                        let scheduleHtml = `<div>原派工表訂完成：${escapeHtml(origEnd)}</div>`;
+                        if (adjEnd) {
+                            scheduleHtml += `<div class="mt-1"><strong>須調整完的預計時間：${escapeHtml(adjEnd)}</strong></div>`;
+                        }
+                        adjustmentSchedule.innerHTML = scheduleHtml;
+                        adjustmentNotes.innerHTML = adjustments.length
+                            ? adjustments.map(function(row) {
+                                const note = row.note ? escapeHtml(row.note) : '（未填寫）';
+                                const due = row.adjusted_estimated_end
+                                    ? `<div class="text-muted">期限：${escapeHtml(row.adjusted_estimated_end)}</div>`
+                                    : '';
+                                const when = row.created_at
+                                    ? `<div class="text-muted">記錄時間：${escapeHtml(row.created_at)}</div>`
+                                    : '';
+                                return `<div class="mb-2 pb-2 border-bottom border-warning-subtle"><strong>第${row.times}次調整說明：</strong>${note}${due}${when}</div>`;
+                            }).join('')
+                            : '<div class="text-muted">尚無調整說明</div>';
+                        adjustmentBox.style.display = 'block';
+                    } else {
+                        adjustmentBox.style.display = 'none';
+                        adjustmentSchedule.innerHTML = '';
+                        adjustmentNotes.innerHTML = '';
+                    }
                 }
 
                 editor.innerHTML = '';
@@ -1010,20 +1112,89 @@
                 modal.show();
             }
 
-            function slashDateTimeToIso(value) {
+            function escapeHtml(value) {
+                return $('<div/>').text(String(value || '')).html();
+            }
+
+            function parseSlashOrIsoDateTime(value) {
                 const text = String(value || '').trim();
                 if (!text || text === '尚未建立') {
-                    return '';
+                    return null;
                 }
                 const normalized = text.replace(/\//g, '-');
-                const match = normalized.match(/^(\d{4}-\d{2}-\d{2})\s+(\d{2}:\d{2})(?::\d{2})?$/);
+                const match = normalized.match(/^(\d{4}-\d{2}-\d{2})(?:[ T](\d{2}:\d{2})(?::\d{2})?)?$/);
                 if (!match) {
+                    return null;
+                }
+                return {
+                    date: match[1],
+                    time: match[2] || '09:00',
+                };
+            }
+
+            function slashDateTimeToIso(value) {
+                const parsed = parseSlashOrIsoDateTime(value);
+                if (!parsed) {
                     return '';
                 }
-                return match[1] + ' ' + match[2] + ':00';
+                return parsed.date + ' ' + parsed.time + ':00';
+            }
+
+            function getModalEstimatedEndIso() {
+                const dateEl = document.getElementById('dispatchEstimatedEndDate');
+                const timeEl = document.getElementById('dispatchEstimatedEndTime');
+                const dateVal = String(dateEl?.value || '').trim();
+                const timeVal = String(timeEl?.value || '').trim();
+                if (!dateVal || !timeVal) {
+                    return '';
+                }
+                return dateVal + ' ' + timeVal + ':00';
+            }
+
+            function formatIsoToSlashDateTime(iso) {
+                const parsed = parseSlashOrIsoDateTime(iso);
+                if (!parsed) {
+                    return '';
+                }
+                return parsed.date.replace(/-/g, '/') + ' ' + parsed.time;
+            }
+
+            function applyModalEstimatedEndToRow(rowKey) {
+                const row = document.querySelector(`.plan-milestone-row[data-row-index="${rowKey}"]`);
+                if (!row) {
+                    return false;
+                }
+                const isoEnd = getModalEstimatedEndIso();
+                if (!isoEnd) {
+                    return false;
+                }
+
+                const estimatedEndInput = row.querySelector('input[name="dispatch_estimated_end_datetimes[]"]');
+                if (estimatedEndInput) {
+                    estimatedEndInput.value = isoEnd;
+                }
+
+                const orderInput = row.querySelector('.plan-order-date');
+                if (orderInput) {
+                    orderInput.setAttribute('data-fixed-estimated-end', isoEnd);
+                    const datePart = isoEnd.slice(0, 10);
+                    if (datePart && !String(orderInput.value || '').trim()) {
+                        orderInput.value = datePart;
+                    }
+                }
+
+                const label = row.querySelector('.plan-dispatch-estimated-end');
+                if (label) {
+                    label.textContent = '派工表訂完成：' + formatIsoToSlashDateTime(isoEnd);
+                }
+
+                return true;
             }
 
             function syncCurrentRowEstimatedEndHidden(rowKey) {
+                if (applyModalEstimatedEndToRow(rowKey)) {
+                    return;
+                }
                 const row = document.querySelector(`.plan-milestone-row[data-row-index="${rowKey}"]`);
                 if (!row) {
                     return;
@@ -1055,6 +1226,16 @@
                     const firstUserSelect = document.querySelector('#dispatchEditorRows .dispatch-editor-user');
                     if (firstUserSelect) {
                         firstUserSelect.focus();
+                    }
+                    return;
+                }
+
+                const modalEstimatedIso = getModalEstimatedEndIso();
+                if (!modalEstimatedIso) {
+                    alert('請填寫預計完成日期與時間');
+                    const dateEl = document.getElementById('dispatchEstimatedEndDate');
+                    if (dateEl) {
+                        dateEl.focus();
                     }
                     return;
                 }

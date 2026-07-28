@@ -45,7 +45,13 @@ class PersonTaskController extends Controller
 
         // 執行查詢並獲取結果
         $datas = $datas->orderBy('task.estimated_end', 'asc')
-            ->select('task_item.*', 'task.estimated_end') // 確保選擇需要的欄位
+            ->select('task_item.*', 'task.estimated_end')
+            ->with([
+                'task_data.project_data.user_data',
+                'task_data.task_template_data',
+                'task_data.user_data',
+                'task_data.estimated_end_adjustments',
+            ])
             ->get();
 
         // 計算個人待辦數量
@@ -231,16 +237,32 @@ class PersonTaskController extends Controller
      */
     public function show($id)
     {
-        $task = TaskItem::findOrFail($id);
+        $task = TaskItem::with([
+            'task_data.estimated_end_adjustments' => fn ($q) => $q->orderBy('id'),
+        ])->findOrFail($id);
 
-        // 檢查是否存在 end_time，並分離日期和時間部分
         $endTime = $task->getAttribute('end_time') ? Carbon::parse($task->getAttribute('end_time')) : null;
+        $parent = $task->task_data;
+        $adjustments = ($parent?->estimated_end_adjustments ?? collect())
+            ->values()
+            ->map(function ($row, $index) {
+                return [
+                    'times' => $index + 1,
+                    'adjusted_estimated_end' => optional($row->adjusted_estimated_end)->format('Y-m-d H:i'),
+                    'note' => trim((string) ($row->note ?? '')),
+                    'created_at' => optional($row->created_at)->format('Y-m-d H:i'),
+                ];
+            })
+            ->all();
 
         return response()->json([
             'status' => (int) ($task->getAttribute('status') ?? 0),
-            'end_date' => $endTime ? $endTime->format('Y-m-d') : null, // 提取日期部分
-            'end_time' => $endTime ? $endTime->format('H:i') : null,   // 提取時間部分
-            'execution_time' => $task->getAttribute('done_time'), // 執行時間
+            'end_date' => $endTime ? $endTime->format('Y-m-d') : null,
+            'end_time' => $endTime ? $endTime->format('H:i') : null,
+            'execution_time' => $task->getAttribute('done_time'),
+            'estimated_end' => $parent?->estimated_end,
+            'adjusted_estimated_end' => $parent?->adjusted_estimated_end,
+            'adjustments' => $adjustments,
         ]);
     }
 

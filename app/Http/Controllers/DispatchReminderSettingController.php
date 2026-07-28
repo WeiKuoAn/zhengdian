@@ -27,6 +27,7 @@ class DispatchReminderSettingController extends Controller
                 'accept_template' => (string) config('dispatch_reminder.accept_template', ''),
                 'due_template' => (string) config('dispatch_reminder.due_template', ''),
                 'overdue_template' => (string) config('dispatch_reminder.overdue_template', ''),
+                'adjust_template' => (string) config('dispatch_reminder.adjust_template', ''),
                 'remind_on_holidays' => (bool) config('dispatch_reminder.remind_on_holidays', false),
                 'synology_chat_host' => (string) config('chat_webhook.synology_host', ''),
             ]);
@@ -50,6 +51,7 @@ class DispatchReminderSettingController extends Controller
             'accept_template' => ['nullable', 'string'],
             'due_template' => ['nullable', 'string'],
             'overdue_template' => ['nullable', 'string'],
+            'adjust_template' => ['nullable', 'string'],
             'remind_on_holidays' => ['sometimes', 'boolean'],
             'synology_chat_host' => ['nullable', 'string', 'max:500'],
         ]);
@@ -110,6 +112,10 @@ class DispatchReminderSettingController extends Controller
             }
         }
 
+        if (! Schema::hasColumn('dispatch_reminder_settings', 'adjust_template') && trim((string) $request->input('adjust_template', '')) !== '') {
+            $missing[] = '2026_07_28_100000_add_adjust_template_to_dispatch_reminder_settings_table.php';
+        }
+
         if (! Schema::hasColumn('dispatch_reminder_settings', 'remind_on_holidays') && $request->boolean('remind_on_holidays')) {
             $missing[] = '2026_05_20_100000_add_remind_on_holidays_to_dispatch_reminder_settings_table.php';
         }
@@ -142,6 +148,9 @@ class DispatchReminderSettingController extends Controller
             '{task_name}' => '測試工作項目',
             '{task_url}' => 'https://zhengdian.com.tw/task',
             '{due_time}' => now()->addHours(2)->format('Y-m-d H:i'),
+            '{adjusted_time}' => now()->addHours(4)->format('Y-m-d H:i'),
+            '{adjustment_note}' => '測試調整說明',
+            '{task_content}' => '測試派工內容',
             '{cutoff_time}' => (string) ($setting?->overdue_cutoff_time ?? config('dispatch_reminder.overdue_cutoff_time', '18:00')),
         ];
 
@@ -149,6 +158,7 @@ class DispatchReminderSettingController extends Controller
             (string) ($setting?->accept_template ?? config('dispatch_reminder.accept_template', '')),
             (string) ($setting?->due_template ?? config('dispatch_reminder.due_template', '')),
             (string) ($setting?->overdue_template ?? config('dispatch_reminder.overdue_template', '')),
+            (string) ($setting?->adjust_template ?? config('dispatch_reminder.adjust_template', '')),
         ];
 
         $messages = array_map(function (string $tpl) use ($vars) {

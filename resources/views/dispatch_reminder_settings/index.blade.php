@@ -94,7 +94,7 @@
 
                             <hr>
                             <h5 class="mb-3">提醒訊息模板（可手動調整）</h5>
-                            <p class="text-muted mb-2">可用變數：<code>{mentions}</code> <code>{project_name}</code> <code>{task_name}</code> <code>{task_url}</code> <code>{due_time}</code> <code>{cutoff_time}</code></p>
+                            <p class="text-muted mb-2">可用變數：<code>{mentions}</code> <code>{project_name}</code> <code>{task_name}</code> <code>{task_url}</code> <code>{due_time}</code> <code>{cutoff_time}</code> <code>{adjusted_time}</code> <code>{adjustment_note}</code> <code>{task_content}</code></p>
                             <div class="mb-3">
                                 <label class="form-label">1) 派工接收提醒模板</label>
                                 <textarea name="accept_template" class="form-control" rows="5">{{ old('accept_template', (string) $setting->accept_template) }}</textarea>
@@ -106,6 +106,10 @@
                             <div class="mb-3">
                                 <label class="form-label">3) 遲交提醒模板</label>
                                 <textarea name="overdue_template" class="form-control" rows="5">{{ old('overdue_template', (string) $setting->overdue_template) }}</textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">4) 需調整提醒模板</label>
+                                <textarea name="adjust_template" class="form-control" rows="6">{{ old('adjust_template', (string) ($setting->adjust_template ?: config('dispatch_reminder.adjust_template', ''))) }}</textarea>
                             </div>
 
                             <button class="btn btn-primary" type="submit">儲存設定</button>

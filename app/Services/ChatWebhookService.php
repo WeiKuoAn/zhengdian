@@ -204,18 +204,20 @@ class ChatWebhookService
         int $projectId,
         ?int $executorUserId = null,
         ?string $taskName = null,
-        string $status = 'processed'
+        string $status = 'processed',
+        string $eventType = 'dispatch_notify'
     ): ChatWebhookEvent {
         $success = ($result['success'] ?? false);
+        $isAdjust = $eventType === 'dispatch_adjust';
 
         return ChatWebhookEvent::query()->create([
             'provider' => (string) config('chat_webhook.provider', 'synology_chat'),
-            'event_type' => 'dispatch_notify',
+            'event_type' => $eventType,
             'request_id' => (string) Str::uuid(),
             'user_id_external' => $executorUserId ? (string) $executorUserId : null,
-            'username' => 'dispatch-notify',
+            'username' => $isAdjust ? 'dispatch-adjust' : 'dispatch-notify',
             'channel_id' => (string) config('chat_webhook.synology_dispatch_channel_id', ''),
-            'command' => '/dispatch-notify',
+            'command' => $isAdjust ? '/dispatch-adjust' : '/dispatch-notify',
             'text' => $text,
             'payload_json' => [
                 'user_ids' => $userIds,
@@ -223,9 +225,9 @@ class ChatWebhookService
                 'task_name' => $taskName,
                 'result' => $result,
             ],
-            'headers_json' => ['source' => 'project:dispatch-notify'],
+            'headers_json' => ['source' => $isAdjust ? 'task:dispatch-adjust' : 'project:dispatch-notify'],
             'verified' => true,
-            'verify_reason' => 'internal dispatch notify',
+            'verify_reason' => $isAdjust ? 'internal dispatch adjust' : 'internal dispatch notify',
             'status' => $status === 'ignored' ? 'ignored' : ($success ? 'processed' : 'failed'),
             'processed_at' => Carbon::now(),
             'error_message' => $success ? null : ((string) ($result['message'] ?? 'send failed')),

@@ -60,6 +60,10 @@ class SendDispatchReminders extends Command
             ->where('status', '0')
             ->whereNotNull('start_time')
             ->where('start_time', '>=', $lowerBound)
+            // 任務已完成／待確認完成時，不再發送「未接收」提醒
+            ->whereHas('task_data', function ($q) {
+                $q->whereNotIn('status', ['8', '9', 8, 9]);
+            })
             ->with([
                 'user_data',
                 'task_data.project_data.user_data',
@@ -100,12 +104,17 @@ class SendDispatchReminders extends Command
                 ? ('https://zhengdian.com.tw/project/plan/' . $projectId)
                 : 'https://zhengdian.com.tw/task';
 
-            $userIds = $this->buildRecipientUserIds($task->items);
+            // 未接收提醒只通知「這筆尚未接收的執行人」，不要廣播給同任務其他成員
+            $pendingItems = collect([$item]);
+            $userIds = $this->buildRecipientUserIds($pendingItems);
             $bucketKey = implode(',', $userIds);
+            if ($bucketKey === '') {
+                continue;
+            }
             if (!isset($buckets[$bucketKey])) {
                 $buckets[$bucketKey] = ['user_ids' => $userIds, 'entries' => [], 'mentions' => []];
             }
-            foreach ($this->buildMentionNames($task->items) as $mentionName) {
+            foreach ($this->buildMentionNames($pendingItems) as $mentionName) {
                 if (!in_array($mentionName, $buckets[$bucketKey]['mentions'], true)) {
                     $buckets[$bucketKey]['mentions'][] = $mentionName;
                 }
@@ -137,11 +146,19 @@ class SendDispatchReminders extends Command
 
         $tasks = Task::query()
             ->whereNotIn('status', ['8', '9', 8, 9])
-            ->whereNotNull('estimated_end')
-            ->where('estimated_end', '>=', $lowerBound)
+            ->where(function ($q) use ($lowerBound) {
+                $q->where(function ($inner) use ($lowerBound) {
+                    $inner->whereNotNull('adjusted_estimated_end')
+                        ->where('adjusted_estimated_end', '>=', $lowerBound);
+                })->orWhere(function ($inner) use ($lowerBound) {
+                    $inner->whereNull('adjusted_estimated_end')
+                        ->whereNotNull('estimated_end')
+                        ->where('estimated_end', '>=', $lowerBound);
+                });
+            })
             // 繳交/遲交提醒只針對「已接收」後的派工，避免與未接收提醒重複。
             ->whereHas('items', function ($q) {
-                $q->whereIn('status', ['1', '2', 1, 2]);
+                $q->whereIn('status', ['1', '2', '7', 1, 2, 7]);
             })
             ->with(['project_data.user_data', 'task_template_data', 'items.user_data'])
             ->get();
@@ -150,8 +167,15 @@ class SendDispatchReminders extends Command
         $dueBuckets = [];
         $overdueBuckets = [];
         foreach ($tasks as $task) {
-            $dueAt = $this->asCarbon($task->estimated_end);
+            $dueAt = $this->asCarbon($task->effectiveEstimatedEnd());
             if ($dueAt === null) {
+                continue;
+            }
+
+            $activeItems = $task->items->filter(function ($item) {
+                return in_array((string) ($item->status ?? ''), ['1', '2', '7'], true);
+            })->values();
+            if ($activeItems->isEmpty()) {
                 continue;
             }
 
@@ -160,30 +184,12 @@ class SendDispatchReminders extends Command
             if ($now->greaterThanOrEqualTo($preAt) && $this->isWithinNotifyWindow($preAt)) {
                 $preKey = 'due-pre:' . $task->id . ':' . $preAt->format('YmdHi');
                 if ($this->claimReminder($preKey, 'due_pre', $task->id, null, $preAt)) {
-                    $projectName = $this->buildProjectName($task);
-                    $taskName = (string) (optional($task->task_template_data)->name ?? $task->name ?? '工作項目');
-                    $taskNote = trim((string) ($task->comments ?? ''));
-                    $projectId = (int) ($task->project_id ?? 0);
-                    $projectPlanUrl = $projectId > 0
-                        ? ('https://zhengdian.com.tw/project/plan/' . $projectId)
-                        : 'https://zhengdian.com.tw/task';
-                    $userIds = $this->buildRecipientUserIds($task->items);
-                    $bucketKey = implode(',', $userIds);
-                    if (!isset($dueBuckets[$bucketKey])) {
-                        $dueBuckets[$bucketKey] = ['user_ids' => $userIds, 'entries' => [], 'mentions' => []];
-                    }
-                    foreach ($this->buildMentionNames($task->items) as $mentionName) {
-                        if (!in_array($mentionName, $dueBuckets[$bucketKey]['mentions'], true)) {
-                            $dueBuckets[$bucketKey]['mentions'][] = $mentionName;
-                        }
-                    }
-                    $dueBuckets[$bucketKey]['entries'][] = [
-                        'project_name' => $projectName,
-                        'task_name' => $taskName,
-                        'task_note' => $taskNote,
-                        'project_plan_url' => $projectPlanUrl,
-                        'planned_completion_suffix' => $this->plannedCompletionSuffix($task->estimated_end),
-                    ];
+                    $this->pushReminderBucket(
+                        $dueBuckets,
+                        $task,
+                        $activeItems,
+                        $this->plannedCompletionSuffix($task->effectiveEstimatedEnd())
+                    );
                 }
             }
 
@@ -213,31 +219,12 @@ class SendDispatchReminders extends Command
                 continue;
             }
 
-            $projectName = $this->buildProjectName($task);
-            $taskName = (string) (optional($task->task_template_data)->name ?? $task->name ?? '工作項目');
-            $taskNote = trim((string) ($task->comments ?? ''));
-            $projectId = (int) ($task->project_id ?? 0);
-            $projectPlanUrl = $projectId > 0
-                ? ('https://zhengdian.com.tw/project/plan/' . $projectId)
-                : 'https://zhengdian.com.tw/task';
-
-            $userIds = $this->buildRecipientUserIds($task->items);
-            $bucketKey = implode(',', $userIds);
-            if (!isset($overdueBuckets[$bucketKey])) {
-                $overdueBuckets[$bucketKey] = ['user_ids' => $userIds, 'entries' => [], 'mentions' => []];
-            }
-            foreach ($this->buildMentionNames($task->items) as $mentionName) {
-                if (!in_array($mentionName, $overdueBuckets[$bucketKey]['mentions'], true)) {
-                    $overdueBuckets[$bucketKey]['mentions'][] = $mentionName;
-                }
-            }
-            $overdueBuckets[$bucketKey]['entries'][] = [
-                'project_name' => $projectName,
-                'task_name' => $taskName,
-                'task_note' => $taskNote,
-                'project_plan_url' => $projectPlanUrl,
-                'planned_completion_suffix' => $this->plannedCompletionSuffix($task->estimated_end),
-            ];
+            $this->pushReminderBucket(
+                $overdueBuckets,
+                $task,
+                $activeItems,
+                $this->plannedCompletionSuffix($task->effectiveEstimatedEnd())
+            );
         }
 
         foreach ($dueBuckets as $bucket) {
@@ -271,6 +258,43 @@ class SendDispatchReminders extends Command
         }
 
         return $sent;
+    }
+
+    /**
+     * @param  array<string, array{user_ids: int[], entries: array<int, array<string, mixed>>, mentions: string[]}>  $buckets
+     * @param  Collection<int, TaskItem>  $activeItems
+     */
+    protected function pushReminderBucket(array &$buckets, Task $task, Collection $activeItems, string $plannedSuffix): void
+    {
+        $userIds = $this->buildRecipientUserIds($activeItems);
+        $bucketKey = implode(',', $userIds);
+        if ($bucketKey === '') {
+            return;
+        }
+
+        $projectName = $this->buildProjectName($task);
+        $taskName = (string) (optional($task->task_template_data)->name ?? $task->name ?? '工作項目');
+        $taskNote = trim((string) ($task->comments ?? ''));
+        $projectId = (int) ($task->project_id ?? 0);
+        $projectPlanUrl = $projectId > 0
+            ? ('https://zhengdian.com.tw/project/plan/' . $projectId)
+            : 'https://zhengdian.com.tw/task';
+
+        if (!isset($buckets[$bucketKey])) {
+            $buckets[$bucketKey] = ['user_ids' => $userIds, 'entries' => [], 'mentions' => []];
+        }
+        foreach ($this->buildMentionNames($activeItems) as $mentionName) {
+            if (!in_array($mentionName, $buckets[$bucketKey]['mentions'], true)) {
+                $buckets[$bucketKey]['mentions'][] = $mentionName;
+            }
+        }
+        $buckets[$bucketKey]['entries'][] = [
+            'project_name' => $projectName,
+            'task_name' => $taskName,
+            'task_note' => $taskNote,
+            'project_plan_url' => $projectPlanUrl,
+            'planned_completion_suffix' => $plannedSuffix,
+        ];
     }
 
     protected function sendReminderMessage(

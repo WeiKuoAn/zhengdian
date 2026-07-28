@@ -18,6 +18,7 @@ class Task extends Model
         'status',
         'start_time',
         'estimated_end',
+        'adjusted_estimated_end',
         'actual_end',
         'priority',
         'type',
@@ -46,9 +47,36 @@ class Task extends Model
         return $this->hasOne('App\Models\User', 'id', 'created_by');
     }
 
+    public function estimated_end_adjustments()
+    {
+        return $this->hasMany(TaskEstimatedEndAdjustment::class, 'task_id', 'id')
+            ->orderByDesc('id');
+    }
+
+    /** 顯示／提醒用：有調整後預計則優先，不覆寫原本 estimated_end。 */
+    public function effectiveEstimatedEnd(): ?string
+    {
+        if (! empty($this->adjusted_estimated_end)) {
+            return (string) $this->adjusted_estimated_end;
+        }
+        if (! empty($this->estimated_end)) {
+            return (string) $this->estimated_end;
+        }
+
+        return null;
+    }
+
     public function status()
     {
-        $status = [ '' => '無', '1' => '送出派工', '2' => '已接收' , '3' => '執行中', '8' => '人員已完成，待確認', '9' => '已完成'];
+        $status = [
+            '' => '無',
+            '1' => '送出派工',
+            '2' => '已接收',
+            '3' => '執行中',
+            '7' => '需調整',
+            '8' => '人員已完成，待確認',
+            '9' => '已完成',
+        ];
         $statusValue = (string) $this->getAttribute('status');
         return $status[$statusValue] ?? '未知狀態';
     }
