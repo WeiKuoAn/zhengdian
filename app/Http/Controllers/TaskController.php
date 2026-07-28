@@ -147,9 +147,70 @@ class TaskController extends Controller
         }
     }
 
-    protected function redirectToTaskList(string $successMessage)
+    protected function taskListFilterKeys(): array
     {
-        $redirect = redirect()->route('task')->with('success', $successMessage);
+        return ['project_name', 'task_template_id', 'status', 'user_id', 'page'];
+    }
+
+    /** @return array<string, string> */
+    protected function rememberTaskListFilters(Request $request): array
+    {
+        $filters = [];
+        foreach ($this->taskListFilterKeys() as $key) {
+            $value = $request->query($key, $request->input($key));
+            if ($value === null || $value === '' || $value === 'null') {
+                continue;
+            }
+            $filters[$key] = (string) $value;
+        }
+        session(['task_list_filters' => $filters]);
+
+        return $filters;
+    }
+
+    /** @return array<string, string> */
+    protected function recalledTaskListFilters(?Request $request = null): array
+    {
+        if ($request !== null) {
+            $fromRequest = [];
+            foreach ($this->taskListFilterKeys() as $key) {
+                $value = $request->input($key);
+                if ($value === null || $value === '' || $value === 'null') {
+                    continue;
+                }
+                $fromRequest[$key] = (string) $value;
+            }
+            if ($fromRequest !== []) {
+                session(['task_list_filters' => $fromRequest]);
+
+                return $fromRequest;
+            }
+        }
+
+        $saved = session('task_list_filters', []);
+        if (! is_array($saved)) {
+            return [];
+        }
+
+        $filters = [];
+        foreach ($this->taskListFilterKeys() as $key) {
+            if (! array_key_exists($key, $saved)) {
+                continue;
+            }
+            $value = $saved[$key];
+            if ($value === null || $value === '' || $value === 'null') {
+                continue;
+            }
+            $filters[$key] = (string) $value;
+        }
+
+        return $filters;
+    }
+
+    protected function redirectToTaskList(string $successMessage, ?Request $request = null)
+    {
+        $filters = $this->recalledTaskListFilters($request);
+        $redirect = redirect()->route('task', $filters)->with('success', $successMessage);
         $warning = $this->dispatchNotification()->skippedWarningMessage();
         if ($warning !== null) {
             $redirect->with('warning', $warning);
@@ -305,6 +366,8 @@ class TaskController extends Controller
 
     public function index(Request $request)
     {
+        $this->rememberTaskListFilters($request);
+
         $task_templates = TaskTemplate::get();
         $users = User::where('status', 1)->where('group_id', 1)->get();
         $datas = Task::query()
@@ -366,7 +429,14 @@ class TaskController extends Controller
         $task_templates = TaskTemplate::get();
         $check_statuss = CheckStatus::where('status', 'up')->orderby('seq', 'asc')->whereNull('parent_id')->get();
         $users = User::where('status', 1)->where('group_id', 1)->get();
-        return view('task.create')->with('task_templates', $task_templates)->with('check_statuss', $check_statuss)->with('cust_projects', $cust_projects)->with('users', $users);
+
+        return view('task.create', [
+            'task_templates' => $task_templates,
+            'check_statuss' => $check_statuss,
+            'cust_projects' => $cust_projects,
+            'users' => $users,
+            'listQuery' => $this->recalledTaskListFilters(),
+        ]);
     }
     /**
      * Store a newly created resource in storage.
@@ -412,7 +482,7 @@ class TaskController extends Controller
         $executors = $this->buildExecutorsFromUserIds($user_ids);
         $this->sendTaskDispatchNotification($request, $data, $executors, true);
 
-        return $this->redirectToTaskList('派工已新增');
+        return $this->redirectToTaskList('派工已新增', $request);
     }
 
     /**
@@ -428,7 +498,15 @@ class TaskController extends Controller
         $task_templates = TaskTemplate::get();
         $check_statuss = CheckStatus::where('status', 'up')->orderby('seq', 'asc')->whereNull('parent_id')->get();
         $users = User::where('status', 1)->where('group_id', 1)->get();
-        return view('task.edit')->with('data', $data)->with('task_templates', $task_templates)->with('cust_projects', $cust_projects)->with('check_statuss', $check_statuss)->with('users', $users);
+
+        return view('task.edit', [
+            'data' => $data,
+            'task_templates' => $task_templates,
+            'cust_projects' => $cust_projects,
+            'check_statuss' => $check_statuss,
+            'users' => $users,
+            'listQuery' => $this->recalledTaskListFilters(),
+        ]);
     }
 
 
@@ -541,7 +619,7 @@ class TaskController extends Controller
         );
         $this->sendTaskDispatchNotification($request, $data, $executors, $shouldSend);
 
-        return $this->redirectToTaskList('任務已更新成功');
+        return $this->redirectToTaskList('任務已更新成功', $request);
     }
 
     public function check(Request $request)
@@ -714,14 +792,23 @@ class TaskController extends Controller
         $task_templates = TaskTemplate::get();
         $check_statuss = CheckStatus::where('status', 'up')->orderby('seq', 'asc')->whereNull('parent_id')->get();
         $users = User::where('status', 1)->where('group_id', 1)->get();
-        return view('task.del')->with('data', $data)->with('task_templates', $task_templates)->with('cust_projects', $cust_projects)->with('check_statuss', $check_statuss)->with('users', $users);
+
+        return view('task.del', [
+            'data' => $data,
+            'task_templates' => $task_templates,
+            'cust_projects' => $cust_projects,
+            'check_statuss' => $check_statuss,
+            'users' => $users,
+            'listQuery' => $this->recalledTaskListFilters(),
+        ]);
     }
 
-    public function destroy($id)
+    public function destroy(Request $request, $id)
     {
-        $data = Task::where('id', $id)->delete();
-        $items = TaskItem::where('task_id', $id)->delete();
-        return redirect()->route('task')->with('success', '任務已更新成功');
+        Task::where('id', $id)->delete();
+        TaskItem::where('task_id', $id)->delete();
+
+        return $this->redirectToTaskList('任務已刪除成功', $request);
     }
 
 
@@ -732,7 +819,15 @@ class TaskController extends Controller
         $task_templates = TaskTemplate::get();
         $check_statuss = CheckStatus::where('status', 'up')->orderby('seq', 'asc')->whereNull('parent_id')->get();
         $users = User::where('status', 1)->where('group_id', 1)->get();
-        return view('task.copy')->with('data', $data)->with('task_templates', $task_templates)->with('cust_projects', $cust_projects)->with('check_statuss', $check_statuss)->with('users', $users);
+
+        return view('task.copy', [
+            'data' => $data,
+            'task_templates' => $task_templates,
+            'cust_projects' => $cust_projects,
+            'check_statuss' => $check_statuss,
+            'users' => $users,
+            'listQuery' => $this->recalledTaskListFilters(),
+        ]);
     }
 
 
@@ -780,6 +875,6 @@ class TaskController extends Controller
         $executors = $this->buildExecutorsFromUserIds($user_ids);
         $this->sendTaskDispatchNotification($request, $data, $executors, true);
 
-        return $this->redirectToTaskList('派工已複製');
+        return $this->redirectToTaskList('派工已複製', $request);
     }
 }

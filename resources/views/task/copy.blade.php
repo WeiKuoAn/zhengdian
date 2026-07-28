@@ -18,6 +18,7 @@
                     <div class="card-body">
                         <form action="{{ route('task.copy.data', $data->id) }}" method="POST">
                             @csrf
+                            @include('task.partials.list-filter-hiddens')
                             <div class="row">
                                 <div class="mb-3">
                                     <label for="inputEmail3" class="col-4 col-xl-3 col-form-label">專案名稱：<span class="text-danger">*</span></label>
@@ -114,8 +115,9 @@
                         <div class="col-12 text-center">
                             <button type="submit" class="btn btn-success waves-effect waves-light m-1"><i
                                     class="fe-check-circle me-1"></i>複製派工</button>
-                            <button type="reset" class="btn btn-secondary waves-effect waves-light m-1"
-                                onclick="history.go(-1)"><i class="fe-x me-1"></i>回上一頁</button>
+                            <a href="{{ route('task', $listQuery ?? []) }}" class="btn btn-secondary waves-effect waves-light m-1">
+                                <i class="fe-x me-1"></i>回上一頁
+                            </a>
                         </div>
                     </div>
                     </form>
