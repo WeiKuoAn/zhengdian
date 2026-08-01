@@ -60,9 +60,9 @@ class SendDispatchReminders extends Command
             ->where('status', '0')
             ->whereNotNull('start_time')
             ->where('start_time', '>=', $lowerBound)
-            // 任務已完成／待確認完成時，不再發送「未接收」提醒
+            // 父任務已完成(9)／待確認完成(8) 時，即使子項仍為未接收也不催
             ->whereHas('task_data', function ($q) {
-                $q->whereNotIn('status', ['8', '9', 8, 9]);
+                $q->whereNotIn('status', $this->closedParentTaskStatuses());
             })
             ->with([
                 'user_data',
@@ -75,6 +75,12 @@ class SendDispatchReminders extends Command
         $sent = 0;
         $buckets = [];
         foreach ($items as $item) {
+            $task = $item->task_data;
+            // 雙重保險：查詢後若父任務已關閉，一律跳過（避免孤兒 item 再發 Chat）
+            if ($this->isClosedParentTask($task)) {
+                continue;
+            }
+
             $dispatchAt = $this->asCarbon($item->start_time);
             if ($dispatchAt === null) {
                 continue;
@@ -88,11 +94,6 @@ class SendDispatchReminders extends Command
 
             $key = 'accept:' . $item->id . ':' . $slot->format('YmdHi');
             if (!$this->claimReminder($key, 'accept', $item->task_id, $item->id, $slot)) {
-                continue;
-            }
-
-            $task = $item->task_data;
-            if ($task === null) {
                 continue;
             }
 
@@ -145,7 +146,7 @@ class SendDispatchReminders extends Command
         $lowerBound = Carbon::parse($this->dispatchReminderStartDate);
 
         $tasks = Task::query()
-            ->whereNotIn('status', ['8', '9', 8, 9])
+            ->whereNotIn('status', $this->closedParentTaskStatuses())
             ->where(function ($q) use ($lowerBound) {
                 $q->where(function ($inner) use ($lowerBound) {
                     $inner->whereNotNull('adjusted_estimated_end')
@@ -701,6 +702,26 @@ class SendDispatchReminders extends Command
         } catch (\Throwable $e) {
             return false;
         }
+    }
+
+    /**
+     * 父任務視為「已結束、不應再催未接收／繳交／遲交」的狀態。
+     * 8 = 人員已完成，待確認；9 = 已完成（確認完成）。
+     *
+     * @return list<int|string>
+     */
+    protected function closedParentTaskStatuses(): array
+    {
+        return ['8', '9', 8, 9];
+    }
+
+    protected function isClosedParentTask(?Task $task): bool
+    {
+        if ($task === null) {
+            return true;
+        }
+
+        return in_array((string) $task->status, ['8', '9'], true);
     }
 
     protected function asCarbon($value): ?Carbon
