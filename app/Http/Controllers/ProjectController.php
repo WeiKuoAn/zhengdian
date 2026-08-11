@@ -1112,8 +1112,12 @@ class ProjectController extends Controller
                 );
                 $previousPlanEnd = Carbon::parse($resolvedEstimatedEnd);
 
+                // 已完成／待確認完成的派工不改預計完成日（除非後續因換派工人而重開）
                 if ($priorLinkedId) {
-                    Task::where('id', $priorLinkedId)->update(['estimated_end' => $resolvedEstimatedEnd]);
+                    $linkedForEnd = Task::find($priorLinkedId);
+                    if ($linkedForEnd && ! in_array((string) $linkedForEnd->status, ['8', '9'], true)) {
+                        $linkedForEnd->update(['estimated_end' => $resolvedEstimatedEnd]);
+                    }
                 }
             }
 
@@ -1184,6 +1188,10 @@ class ProjectController extends Controller
 
     /**
      * 由排程作業建立／更新派工（含多位執行人員）。
+     *
+     * 規則：status 8（人員已完成，待確認）／9（已完成）一律不動，
+     * 除非「派工人」有異動（人數或 user_id 變了）才重開再派。
+     * 進行中派工若派工人未變，只同步表頭，不重建 items。
      */
     protected function syncPlanDispatchTask(
         CustProject $project,
@@ -1220,10 +1228,6 @@ class ProjectController extends Controller
         $projectLabel = ($project->user_data->name ?? '').($project->name ?? '');
         $taskName = '【'.$projectLabel.'】'.$template->name;
 
-        $cleanContexts = array_values(array_filter(array_map(
-            fn ($c) => trim((string) $c),
-            array_slice($contexts, 0, count($userIds))
-        )));
         $comments = trim((string) ($taskComments ?? ''));
         if ($comments === '') {
             $comments = (string) ($template->description ?? '');
@@ -1242,13 +1246,40 @@ class ProjectController extends Controller
         $oldContent = null;
         if ($task->exists) {
             $task->loadMissing('items.user_data');
-            $oldDate = !empty($task->estimated_end) ? Carbon::parse($task->estimated_end)->format('Y-m-d') : null;
+            $oldDate = ! empty($task->estimated_end) ? Carbon::parse($task->estimated_end)->format('Y-m-d') : null;
             $oldContent = (string) ($task->comments ?? '');
             $oldExecutors = $task->items->map(fn ($item) => [
                 'id' => (int) $item->user_id,
                 'name' => (string) (optional($item->user_data)->name ?? ''),
             ])->all();
         }
+
+        $isClosed = $task->exists && in_array((string) $task->status, ['8', '9'], true);
+        $usersUnchanged = $task->exists
+            && $this->planExecutorUsersMatch($task->items, $userIds);
+
+        // 已完成／待確認完成：派工人沒換就完全不動（含日期、描述、context）
+        if ($isClosed && $usersUnchanged) {
+            return (int) $task->id;
+        }
+
+        // 進行中：派工人未變 → 只更新表頭，保留原 status／items
+        if ($usersUnchanged) {
+            $task->type = 'group';
+            $task->name = $taskName;
+            $task->project_id = $project->id;
+            $task->template_id = $template->id;
+            $task->check_status_id = $template->check_status_id;
+            $task->estimated_end = $estimatedEnd;
+            $task->priority = 2;
+            $task->comments = $comments;
+            $task->save();
+
+            return (int) $task->id;
+        }
+
+        // 走到這裡＝派工人有異動（或新建）→ 才重建 items；已完成者一併重開
+        $wasCompleted = $isClosed;
 
         $task->type = 'group';
         $task->name = $taskName;
@@ -1258,8 +1289,7 @@ class ProjectController extends Controller
         $task->created_by = Auth::id();
         $task->estimated_end = $estimatedEnd;
         $task->priority = 2;
-        // 新建，或對已完成／待確認任務再派工時重開；避免 task=完成但 item=待接收的孤兒狀態
-        if (! $task->exists || in_array((string) $task->status, ['8', '9'], true)) {
+        if (! $task->exists || $wasCompleted) {
             $task->status = '1';
         }
         $task->comments = $comments;
@@ -1269,7 +1299,7 @@ class ProjectController extends Controller
         $executors = [];
         foreach ($userIds as $index => $user_id) {
             $user = User::find($user_id);
-            if ($user && !empty($user->name)) {
+            if ($user && ! empty($user->name)) {
                 $executors[] = ['id' => $user->id, 'name' => $user->name];
             }
             TaskItem::create([
@@ -1281,7 +1311,7 @@ class ProjectController extends Controller
             ]);
         }
 
-        $shouldSend = !$task->wasRecentlyCreated && $task->exists
+        $shouldSend = ! $task->wasRecentlyCreated && $task->exists
             ? $this->shouldSendDispatchWebhook(
                 $oldDate,
                 $oldContent,
@@ -1291,6 +1321,10 @@ class ProjectController extends Controller
                 $executors
             )
             : true;
+
+        if ($wasCompleted || $task->wasRecentlyCreated) {
+            $shouldSend = true;
+        }
 
         if ($shouldSend) {
             $dispatchContent = $comments !== '' ? $comments : ((string) ($template->description ?? $template->name));
@@ -1312,6 +1346,33 @@ class ProjectController extends Controller
         }
 
         return (int) $task->id;
+    }
+
+    /**
+     * 比對排程表單的派工人（user_id、人數、順序）是否與現有 task_item 相同。
+     * 不比對 context：改派工項目文字不算「移動派工人」。
+     *
+     * @param  \Illuminate\Support\Collection<int, TaskItem>|iterable<int, TaskItem>  $existingItems
+     * @param  array<int, mixed>  $userIds
+     */
+    protected function planExecutorUsersMatch($existingItems, array $userIds): bool
+    {
+        $existing = collect($existingItems)->values();
+        if ($existing->count() !== count($userIds)) {
+            return false;
+        }
+
+        foreach ($userIds as $index => $userId) {
+            $item = $existing->get($index);
+            if ($item === null) {
+                return false;
+            }
+            if ((int) $item->user_id !== (int) $userId) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**
