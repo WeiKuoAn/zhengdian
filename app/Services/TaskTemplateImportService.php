@@ -171,19 +171,14 @@ final class TaskTemplateImportService
         $stageName = trim($stageName);
 
         if ($stageName !== '') {
-            $stageMatches = $childrenByName->get($this->normalizeKey($stageName), collect());
-            if ($stageMatches->isEmpty()) {
-                return ['check_status_parent_id' => null, 'check_status_id' => null, 'error' => '找不到專案階段「' . $stageName . '」'];
-            }
+            $stageKey = $this->normalizeKey($stageName);
+            $stageMatches = $childrenByName->get($stageKey, collect());
 
             if ($parentName !== '') {
-                $parent = $parentsByName->get($this->normalizeKey($parentName));
-                if ($parent === null) {
-                    return ['check_status_parent_id' => null, 'check_status_id' => null, 'error' => '找不到專案狀態「' . $parentName . '」'];
-                }
+                $parent = $this->resolveOrCreateParent($parentName, $parentsByName, $result);
                 $stage = $stageMatches->firstWhere('parent_id', $parent->id);
                 if ($stage === null) {
-                    return ['check_status_parent_id' => null, 'check_status_id' => null, 'error' => '專案階段「' . $stageName . '」不屬於專案狀態「' . $parentName . '」'];
+                    $stage = $this->createStage($stageName, (int) $parent->id, $childrenByName, $result);
                 }
 
                 return [
@@ -193,14 +188,26 @@ final class TaskTemplateImportService
                 ];
             }
 
+            // 未填專案狀態：若階段已存在且唯一 → 直接用；多筆同名 → 需指定狀態
             if ($stageMatches->count() > 1) {
                 return ['check_status_parent_id' => null, 'check_status_id' => null, 'error' => '專案階段「' . $stageName . '」名稱重複，請在 Excel 加上「專案狀態」欄'];
             }
+            if ($stageMatches->count() === 1) {
+                $stage = $stageMatches->first();
 
-            $stage = $stageMatches->first();
+                return [
+                    'check_status_parent_id' => (int) $stage->parent_id,
+                    'check_status_id' => (int) $stage->id,
+                    'error' => null,
+                ];
+            }
+
+            // 階段不存在且未填狀態 → 掛到「未分類」底下並自動建立
+            $parent = $this->resolveOrCreateParent('未分類', $parentsByName, $result);
+            $stage = $this->createStage($stageName, (int) $parent->id, $childrenByName, $result);
 
             return [
-                'check_status_parent_id' => (int) $stage->parent_id,
+                'check_status_parent_id' => (int) $parent->id,
                 'check_status_id' => (int) $stage->id,
                 'error' => null,
             ];
@@ -219,18 +226,10 @@ final class TaskTemplateImportService
             ];
         }
 
+        // 專案狀態欄位其實填的是既有階段名稱
         $childMatches = $childrenByName->get($this->normalizeKey($parentName), collect());
         if ($childMatches->isEmpty()) {
-            $parent = CheckStatus::query()->create([
-                'name' => $parentName,
-                'status' => 'up',
-                'seq' => '0',
-            ]);
-            $parentsByName->put($this->normalizeKey($parent->name), $parent);
-            $label = '專案狀態「' . $parentName . '」';
-            if (!in_array($label, $result['auto_created_statuses'], true)) {
-                $result['auto_created_statuses'][] = $label;
-            }
+            $parent = $this->resolveOrCreateParent($parentName, $parentsByName, $result);
 
             return [
                 'check_status_parent_id' => (int) $parent->id,
@@ -249,6 +248,61 @@ final class TaskTemplateImportService
             'check_status_id' => (int) $child->id,
             'error' => null,
         ];
+    }
+
+    /**
+     * @param \Illuminate\Support\Collection<string, CheckStatus> $parentsByName
+     */
+    protected function resolveOrCreateParent(string $parentName, $parentsByName, array &$result): CheckStatus
+    {
+        $parentName = trim($parentName) !== '' ? trim($parentName) : '未分類';
+        $key = $this->normalizeKey($parentName);
+        $parent = $parentsByName->get($key);
+        if ($parent !== null) {
+            return $parent;
+        }
+
+        $parent = CheckStatus::query()->create([
+            'name' => $parentName,
+            'parent_id' => null,
+            'status' => 'up',
+            'seq' => (string) ((int) CheckStatus::query()->whereNull('parent_id')->max('seq') + 1),
+            'duration_days' => null,
+        ]);
+        $parentsByName->put($key, $parent);
+
+        $label = '專案狀態「'.$parentName.'」';
+        if (! in_array($label, $result['auto_created_statuses'], true)) {
+            $result['auto_created_statuses'][] = $label;
+        }
+
+        return $parent;
+    }
+
+    /**
+     * @param \Illuminate\Support\Collection<string, \Illuminate\Support\Collection<int, CheckStatus>> $childrenByName
+     */
+    protected function createStage(string $stageName, int $parentId, $childrenByName, array &$result): CheckStatus
+    {
+        $seq = (string) ((int) CheckStatus::query()->where('parent_id', $parentId)->max('seq') + 1);
+        $stage = CheckStatus::query()->create([
+            'name' => $stageName,
+            'parent_id' => $parentId,
+            'status' => 'up',
+            'seq' => $seq,
+            'duration_days' => null,
+        ]);
+
+        $key = $this->normalizeKey($stageName);
+        $group = $childrenByName->get($key, collect());
+        $childrenByName->put($key, $group->push($stage)->values());
+
+        $label = '專案階段「'.$stageName.'」';
+        if (! in_array($label, $result['auto_created_statuses'], true)) {
+            $result['auto_created_statuses'][] = $label;
+        }
+
+        return $stage;
     }
 
     protected function parseHours(string $raw): ?float

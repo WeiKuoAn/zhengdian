@@ -250,9 +250,10 @@
                             <div class="modal-body">
                                 <p class="text-muted small mb-3">
                                     請上傳 Excel（.xlsx）。欄位：<strong>派工項目名稱、專案狀態、專案階段、描述、執行時數</strong>。
-                                    專案狀態＝上層、專案階段＝下層，名稱須與系統設定一致；
-                                    <strong>派工項目名稱相同則覆蓋更新</strong>。
-                                    下載檔名應為 <code>派工項目匯入範本_含專案階段.xlsx</code>（不要用舊的 5 欄檔）。
+                                    專案狀態＝上層、專案階段＝下層；
+                                    <strong>若系統尚無對應狀態／階段會自動新增</strong>。
+                                    派工項目名稱相同則覆蓋更新。
+                                    下載檔名應為 <code>派工項目匯入範本_含專案階段.xlsx</code>。
                                 </p>
                                 <div class="mb-3">
                                     <a href="{{ route('TaskTemplate.import.template', ['v' => '3']) }}"
