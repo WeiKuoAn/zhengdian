@@ -252,12 +252,12 @@
                                     請上傳 Excel（.xlsx）。欄位：<strong>派工項目名稱、專案狀態、專案階段、描述、執行時數</strong>。
                                     專案狀態＝上層、專案階段＝下層，名稱須與系統設定一致；
                                     <strong>派工項目名稱相同則覆蓋更新</strong>。
-                                    請重新下載最新範本（需含「專案階段」欄）。
+                                    下載檔名應為 <code>派工項目匯入範本_含專案階段.xlsx</code>（不要用舊的 5 欄檔）。
                                 </p>
                                 <div class="mb-3">
-                                    <a href="{{ route('TaskTemplate.import.template') }}"
+                                    <a href="{{ route('TaskTemplate.import.template', ['v' => '3']) }}"
                                         class="btn btn-outline-secondary btn-sm">
-                                        <i class="mdi mdi-download me-1"></i> 下載匯入範本
+                                        <i class="mdi mdi-download me-1"></i> 下載匯入範本（含專案階段）
                                     </a>
                                 </div>
                                 <div class="mb-0">
