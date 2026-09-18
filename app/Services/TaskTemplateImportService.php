@@ -65,6 +65,7 @@ final class TaskTemplateImportService
             $stageName = $this->cell($row, $map['stage']);
             $description = $this->cellRaw($row, $map['description']);
             $hoursRaw = $this->cell($row, $map['hours']);
+            $seqRaw = $this->cell($row, $map['seq']);
 
             $resolved = $this->resolveStatusIds($parentName, $stageName, $parentsByName, $childrenByName, $result);
             if ($resolved['error'] !== null) {
@@ -80,15 +81,19 @@ final class TaskTemplateImportService
                 continue;
             }
 
-            $stageKey = ($resolved['check_status_id'] ?? 'null') . '|' . ($resolved['check_status_parent_id'] ?? 'null');
-            $seqByStage[$stageKey] = ($seqByStage[$stageKey] ?? 0) + 1;
+            $seq = $this->parseSeq($seqRaw);
+            if ($seq === null) {
+                $stageKey = ($resolved['check_status_id'] ?? 'null').'|'.($resolved['check_status_parent_id'] ?? 'null');
+                $seqByStage[$stageKey] = ($seqByStage[$stageKey] ?? 0) + 1;
+                $seq = (string) $seqByStage[$stageKey];
+            }
 
             $payload = [
                 'check_status_parent_id' => $resolved['check_status_parent_id'],
                 'check_status_id' => $resolved['check_status_id'],
                 'description' => trim($description) !== '' ? $description : null,
                 'duration_hours' => $hours,
-                'seq' => (string) $seqByStage[$stageKey],
+                'seq' => $seq,
             ];
 
             $existing = TaskTemplate::query()->where('name', $name)->first();
@@ -113,7 +118,7 @@ final class TaskTemplateImportService
 
     /**
      * @param list<string> $header
-     * @return array{name:?int, parent:?int, stage:?int, description:?int, hours:?int}
+     * @return array{name:?int, parent:?int, stage:?int, description:?int, hours:?int, seq:?int}
      */
     protected function detectColumns(array $header): array
     {
@@ -123,6 +128,7 @@ final class TaskTemplateImportService
             'stage' => null,
             'description' => null,
             'hours' => null,
+            'seq' => null,
         ];
 
         foreach ($header as $index => $label) {
@@ -149,6 +155,10 @@ final class TaskTemplateImportService
             }
             if ($map['hours'] === null && (str_contains($label, '執行時數') || str_contains($label, '時數'))) {
                 $map['hours'] = $index;
+                continue;
+            }
+            if ($map['seq'] === null && (str_contains($label, '排序') || strcasecmp($label, 'seq') === 0 || strcasecmp($label, 'sort') === 0)) {
+                $map['seq'] = $index;
             }
         }
 
@@ -316,6 +326,36 @@ final class TaskTemplateImportService
         }
 
         return max(0, (float) $raw);
+    }
+
+    /**
+     * Excel「排序」欄：有填就用；空白才退回自動流水號。
+     * 支援 98、1-2、1.10 這類字串。
+     */
+    protected function parseSeq(string $raw): ?string
+    {
+        $raw = trim($raw);
+        if ($raw === '') {
+            return null;
+        }
+
+        // Excel 有時會變成 98.0
+        if (is_numeric($raw)) {
+            $num = (float) $raw;
+            if ($num == (int) $num) {
+                return (string) (int) $num;
+            }
+
+            return rtrim(rtrim(sprintf('%.8F', $num), '0'), '.');
+        }
+
+        // 允許自然排序字串，如 1-2、1-10
+        $normalized = preg_replace('/\s+/u', '', $raw) ?? '';
+        if ($normalized === '' || ! preg_match('/^[\d]+([\-_.][\d]+)*$/', $normalized)) {
+            return null;
+        }
+
+        return $normalized;
     }
 
     /** @param list<string> $row */

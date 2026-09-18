@@ -249,9 +249,10 @@
                             </div>
                             <div class="modal-body">
                                 <p class="text-muted small mb-3">
-                                    請上傳 Excel（.xlsx）。欄位：<strong>派工項目名稱、專案狀態、專案階段、描述、執行時數</strong>。
+                                    請上傳 Excel（.xlsx）。欄位：<strong>派工項目名稱、專案狀態、專案階段、描述、執行時數、排序</strong>。
                                     專案狀態＝上層、專案階段＝下層；
                                     <strong>若系統尚無對應狀態／階段會自動新增</strong>。
+                                    <strong>排序欄有填會依 Excel 寫入</strong>（空白才自動流水號）。
                                     派工項目名稱相同則覆蓋更新。
                                     下載檔名應為 <code>派工項目匯入範本_含專案階段.xlsx</code>。
                                 </p>
