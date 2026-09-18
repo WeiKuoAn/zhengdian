@@ -4,12 +4,15 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\TaskTemplate;
+use App\Services\SimpleXlsxReader;
+use App\Services\SimpleXlsxWriter;
 use App\Services\TaskTemplateImportService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use App\Models\CheckStatus;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use Throwable;
 
 class TaskTemplateController extends Controller
 {
@@ -215,12 +218,136 @@ class TaskTemplateController extends Controller
     {
         $this->ensureCanImportSetting();
 
-        $path = base_path('專案-流程表（更新系統用）.xlsx');
-        if (!is_file($path)) {
-            abort(404, '找不到匯入範本檔');
+        $rows = $this->buildImportTemplateRows();
+        $tmp = tempnam(sys_get_temp_dir(), 'task_template_');
+        if ($tmp === false) {
+            abort(500, '無法建立匯入範本');
+        }
+        $xlsx = $tmp.'.xlsx';
+        @unlink($tmp);
+
+        try {
+            SimpleXlsxWriter::save($xlsx, $rows, '匯入系統表格');
+        } catch (Throwable $e) {
+            @unlink($xlsx);
+            abort(500, '產生匯入範本失敗：'.$e->getMessage());
         }
 
-        return response()->download($path, '派工項目匯入範本.xlsx');
+        return response()
+            ->download($xlsx, '派工項目匯入範本.xlsx')
+            ->deleteFileAfterSend(true);
+    }
+
+    /**
+     * @return list<list<string|int|float|null>>
+     */
+    protected function buildImportTemplateRows(): array
+    {
+        $header = ['派工項目名稱', '專案狀態', '專案階段', '描述', '執行時數（8小時=1天）', '排序'];
+        $source = base_path('專案-流程表（更新系統用）.xlsx');
+
+        if (is_file($source)) {
+            try {
+                $sheet = SimpleXlsxReader::readFirstSheet($source);
+                if ($sheet !== []) {
+                    return $this->normalizeImportTemplateSheet($sheet, $header);
+                }
+            } catch (Throwable $e) {
+                // fall through to sample rows
+            }
+        }
+
+        return [
+            $header,
+            ['開立客戶系統帳號（錚典專案系統）', '提案中', '提案階段', '1.開立客戶系統帳號', '0.5', '1'],
+            ['【會議】專案訪談會議', '提案中', '提案階段', '', '1.5', '2'],
+        ];
+    }
+
+    /**
+     * 確保下載範本一定有「專案階段」欄；舊檔若把階段寫在「專案狀態」會自動挪欄。
+     *
+     * @param  list<list<string>>  $sheet
+     * @param  list<string>  $header
+     * @return list<list<string|int|float|null>>
+     */
+    protected function normalizeImportTemplateSheet(array $sheet, array $header): array
+    {
+        $first = $sheet[0] ?? [];
+        $hasStage = false;
+        $hasStatus = false;
+        $nameIdx = null;
+        $statusIdx = null;
+        $stageIdx = null;
+        $descIdx = null;
+        $hoursIdx = null;
+        $seqIdx = null;
+
+        foreach ($first as $i => $label) {
+            $label = trim((string) $label);
+            if ($label === '') {
+                continue;
+            }
+            if ($nameIdx === null && str_contains($label, '派工項目')) {
+                $nameIdx = $i;
+            } elseif ($stageIdx === null && str_contains($label, '專案階段')) {
+                $stageIdx = $i;
+                $hasStage = true;
+            } elseif ($statusIdx === null && str_contains($label, '專案狀態')) {
+                $statusIdx = $i;
+                $hasStatus = true;
+            } elseif ($descIdx === null && str_contains($label, '描述')) {
+                $descIdx = $i;
+            } elseif ($hoursIdx === null && (str_contains($label, '執行時數') || str_contains($label, '時數'))) {
+                $hoursIdx = $i;
+            } elseif ($seqIdx === null && str_contains($label, '排序')) {
+                $seqIdx = $i;
+            }
+        }
+
+        // 已是正確新格式
+        if ($hasStage && $hasStatus && $nameIdx !== null) {
+            $out = [$header];
+            foreach (array_slice($sheet, 1) as $row) {
+                $out[] = [
+                    (string) ($row[$nameIdx] ?? ''),
+                    (string) ($row[$statusIdx] ?? ''),
+                    (string) ($row[$stageIdx] ?? ''),
+                    (string) ($row[$descIdx] ?? ''),
+                    (string) ($row[$hoursIdx] ?? ''),
+                    (string) ($row[$seqIdx] ?? ''),
+                ];
+            }
+
+            return $out;
+        }
+
+        // 舊格式：只有「專案狀態」，內容其實是階段 → 挪到專案階段
+        $out = [$header];
+        $dataRows = ($nameIdx !== null) ? array_slice($sheet, 1) : $sheet;
+        if ($nameIdx === null) {
+            $nameIdx = 0;
+            $statusIdx = 1;
+            $descIdx = 2;
+            $hoursIdx = 3;
+            $seqIdx = 4;
+        }
+
+        foreach ($dataRows as $row) {
+            $oldStatus = (string) ($row[$statusIdx] ?? '');
+            $stage = $hasStage ? (string) ($row[$stageIdx] ?? '') : $oldStatus;
+            $status = $hasStage ? $oldStatus : '';
+            $out[] = [
+                (string) ($row[$nameIdx] ?? ''),
+                $status,
+                $stage,
+                (string) ($row[$descIdx] ?? ''),
+                (string) ($row[$hoursIdx] ?? ''),
+                (string) ($row[$seqIdx] ?? ''),
+            ];
+        }
+
+        return $out;
     }
 
     public function import(Request $request, TaskTemplateImportService $importService): RedirectResponse

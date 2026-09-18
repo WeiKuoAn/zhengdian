@@ -249,8 +249,10 @@
                             </div>
                             <div class="modal-body">
                                 <p class="text-muted small mb-3">
-                                    請上傳 Excel（.xlsx）。欄位：派工項目名稱、專案狀態、專案階段、描述、執行時數。
-                                    專案狀態／專案階段須與系統設定一致；<strong>派工項目名稱相同則覆蓋更新</strong>（含狀態、階段、描述、時數）。
+                                    請上傳 Excel（.xlsx）。欄位：<strong>派工項目名稱、專案狀態、專案階段、描述、執行時數</strong>。
+                                    專案狀態＝上層、專案階段＝下層，名稱須與系統設定一致；
+                                    <strong>派工項目名稱相同則覆蓋更新</strong>。
+                                    請重新下載最新範本（需含「專案階段」欄）。
                                 </p>
                                 <div class="mb-3">
                                     <a href="{{ route('TaskTemplate.import.template') }}"
