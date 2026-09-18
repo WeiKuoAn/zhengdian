@@ -31,3 +31,8 @@ yarn-error.log
 
 # 最後再放行你要追蹤的 templates
 !/storage/app/templates/
+!/storage/app/templates/**
+
+# 公開下載用範本
+!/public/templates/
+!/public/templates/**

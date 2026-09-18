@@ -4,14 +4,13 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\TaskTemplate;
-use App\Services\SimpleXlsxWriter;
 use App\Services\TaskTemplateImportService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use App\Models\CheckStatus;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
-use Throwable;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class TaskTemplateController extends Controller
 {
@@ -213,40 +212,43 @@ class TaskTemplateController extends Controller
         return redirect()->route('TaskTemplate');
     }
 
-    public function downloadImportTemplate(): BinaryFileResponse
+    public function downloadImportTemplate(): BinaryFileResponse|StreamedResponse
     {
         $this->ensureCanImportSetting();
 
-        // 不依賴舊 xlsx 靜態檔，一律現場產生，避免正式站／快取仍吐 5 欄舊範本
-        $rows = [
-            ['派工項目名稱', '專案狀態', '專案階段', '描述', '執行時數（8小時=1天）', '排序'],
-            ['開立客戶系統帳號（錚典專案系統）', '提案中', '提案階段', '1.開立客戶系統帳號（錚典專案系統）', '0.5', '1'],
-            ['【提供客戶】在Line群組請客戶提供基本資料', '提案中', '提案階段', '1.在Line群組請客戶提供資料', '0.5', '2'],
-            ['【會議】專案訪談會議', '提案中', '提案階段', '', '1.5', '3'],
-            ['準備簽約計畫書', '執行中', '簽約階段', '', '2', '1'],
+        $downloadName = '派工項目匯入範本_含專案階段.xlsx';
+        $candidates = [
+            public_path('templates/派工項目匯入範本_含專案階段.xlsx'),
+            storage_path('app/templates/task_template_import.xlsx'),
+            base_path('專案-流程表（更新系統用）.xlsx'),
         ];
 
-        $tmp = tempnam(sys_get_temp_dir(), 'task_template_');
-        if ($tmp === false) {
-            abort(500, '無法建立匯入範本');
-        }
-        $xlsx = $tmp.'.xlsx';
-        @unlink($tmp);
-
-        try {
-            SimpleXlsxWriter::save($xlsx, $rows, '匯入系統表格');
-        } catch (Throwable $e) {
-            @unlink($xlsx);
-            abort(500, '產生匯入範本失敗：'.$e->getMessage());
+        foreach ($candidates as $path) {
+            if (is_file($path) && is_readable($path) && filesize($path) > 0) {
+                return response()->download($path, $downloadName, [
+                    'Cache-Control' => 'no-store, no-cache, must-revalidate, max-age=0',
+                    'Pragma' => 'no-cache',
+                    'Expires' => '0',
+                ]);
+            }
         }
 
-        return response()
-            ->download($xlsx, '派工項目匯入範本_含專案階段.xlsx', [
-                'Cache-Control' => 'no-store, no-cache, must-revalidate, max-age=0',
-                'Pragma' => 'no-cache',
-                'Expires' => '0',
-            ])
-            ->deleteFileAfterSend(true);
+        // 找不到 xlsx 時退回 CSV，避免 500（欄位一樣含專案階段）
+        $csvName = '派工項目匯入範本_含專案階段.csv';
+
+        return response()->streamDownload(function () {
+            $out = fopen('php://output', 'w');
+            fwrite($out, "\xEF\xBB\xBF");
+            fputcsv($out, ['派工項目名稱', '專案狀態', '專案階段', '描述', '執行時數（8小時=1天）', '排序']);
+            fputcsv($out, ['開立客戶系統帳號（錚典專案系統）', '提案中', '提案階段', '1.開立客戶系統帳號', '0.5', '1']);
+            fputcsv($out, ['準備簽約計畫書', '執行中', '簽約階段', '', '2', '1']);
+            fclose($out);
+        }, $csvName, [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Cache-Control' => 'no-store, no-cache, must-revalidate, max-age=0',
+            'Pragma' => 'no-cache',
+            'Expires' => '0',
+        ]);
     }
 
     public function import(Request $request, TaskTemplateImportService $importService): RedirectResponse
