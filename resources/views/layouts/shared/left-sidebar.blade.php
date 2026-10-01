@@ -128,11 +128,6 @@
                                     class="{{ request()->is('customers') ? 'active' : '' }}"><span
                                         class="menu-text">客戶列表</span></a>
                             </li>
-                            <li class="menu-item">
-                                <a class="menu-link" href="{{ route('company.tax.lookup') }}"
-                                    class="{{ request()->is('company/tax-lookup*') ? 'active' : '' }}"><span
-                                        class="menu-text">統編查詢</span></a>
-                            </li>
                             {{-- <li class="menu-item">
                             <a class="menu-link" href="{{ route('customer.create') }}"
                                 class="{{ request()->is('customer.create') ? 'active' : '' }}"><span
