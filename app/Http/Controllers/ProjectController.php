@@ -1045,6 +1045,7 @@ class ProjectController extends Controller
         $order_dates = $request->order_dates ?? [];
         $linked_task_ids = $request->linked_task_ids ?? [];
         $dispatch_estimated_end_datetimes = $request->dispatch_estimated_end_datetimes ?? [];
+        $dispatchModalRow = $request->filled('dispatch_modal_row') ? (int) $request->input('dispatch_modal_row') : null;
         $hasLinkedTaskColumn = Schema::hasColumn('project_milestones', 'linked_task_id');
 
         $project = CustProject::with('user_data')->where('id', $id)->firstOrFail();
@@ -1112,10 +1113,11 @@ class ProjectController extends Controller
                 );
                 $previousPlanEnd = Carbon::parse($resolvedEstimatedEnd);
 
-                // 已完成／待確認完成的派工不改預計完成日（除非後續因換派工人而重開）
+                // 已完成／待確認完成的派工不改預計完成日，除非是在派工小視窗明確修改該列
                 if ($priorLinkedId) {
                     $linkedForEnd = Task::find($priorLinkedId);
-                    if ($linkedForEnd && ! in_array((string) $linkedForEnd->status, ['8', '9'], true)) {
+                    $isModalRow = $dispatchModalRow !== null && $dispatchModalRow === (int) $index;
+                    if ($linkedForEnd && ($isModalRow || ! in_array((string) $linkedForEnd->status, ['8', '9'], true))) {
                         $linkedForEnd->update(['estimated_end' => $resolvedEstimatedEnd]);
                     }
                 }
@@ -1394,12 +1396,7 @@ class ProjectController extends Controller
         $submitted = trim((string) $submittedDatetime);
         if ($submitted !== '') {
             try {
-                $parsed = Carbon::parse($submitted);
-                $isLegacyDefault = $parsed->format('H:i:s') === '17:00:00'
-                    && $parsed->format('Y-m-d') === Carbon::parse($orderDateStr)->format('Y-m-d');
-                if (! $isLegacyDefault) {
-                    return $parsed->format('Y-m-d H:i:s');
-                }
+                return Carbon::parse($submitted)->format('Y-m-d H:i:s');
             } catch (\Throwable $e) {
                 // 改用後端計算
             }

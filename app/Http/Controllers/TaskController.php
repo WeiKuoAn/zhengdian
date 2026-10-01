@@ -43,7 +43,8 @@ class TaskController extends Controller
         Request $request,
         Task $task,
         array $executors,
-        bool $shouldSend
+        bool $shouldSend,
+        ?string $scheduledDateOverride = null
     ): void {
         if (!$shouldSend || $executors === []) {
             return;
@@ -55,7 +56,7 @@ class TaskController extends Controller
         }
 
         try {
-            $scheduledDate = trim((string) $request->input('estimated_end_date', ''));
+            $scheduledDate = trim((string) ($scheduledDateOverride ?? $request->input('estimated_end_date', '')));
             if ($scheduledDate === '' && !empty($task->estimated_end)) {
                 $scheduledDate = Carbon::parse($task->estimated_end)->format('Y-m-d');
             }
@@ -449,40 +450,111 @@ class TaskController extends Controller
     {
         $this->dispatchNotification()->resetSkipped();
 
-        $data = new Task;
-        $data->type = 'group';
-        $data->name = $request->name;
-        $data->project_id = $request->project_id;
-        $data->template_id = $request->template_id;
-        $data->check_status_id = $request->check_status_id;
-        $data->created_by = Auth::user()->id;
-        $data->estimated_end = $request->estimated_end_date . ' ' . $request->estimated_end_time . ':00';
-        $data->priority = $request->priority;
-        $data->status = $request->status;
-        $data->comments = $request->comments;
-        $data->save();
-        $this->syncMilestoneLinkedTask($data);
-
-        $user_ids = $request->input('user_ids');
-        $contexts = $request->input('contexts');
-
-        // 抓取儲存後的 task_id
-        $task_id = $data->id;
-        foreach ($user_ids as $index => $user_id) {
-            // 儲存資料到資料庫或其他操作
-            TaskItem::create([
-                'user_id' => $user_id,
-                'context' => $contexts[$index],
-                'task_id' => $task_id,  // 假設任務ID已存在
-                'status' => '0',
-                'start_time' => Carbon::now()->locale('zh-tw'),
+        $isRecurring = $request->input('date_mode') === 'recurring';
+        if ($isRecurring) {
+            $request->validate([
+                'recurring_start_date' => ['required', 'date'],
+                'recurring_end_date' => ['required', 'date', 'after_or_equal:recurring_start_date'],
+                'recurring_weekdays' => ['required', 'array', 'min:1'],
+                'recurring_weekdays.*' => ['integer', 'between:0,6'],
+                'estimated_end_time' => ['required'],
+            ], [
+                'recurring_start_date.required' => '請選擇週期開始日期',
+                'recurring_end_date.required' => '請選擇週期結束日期',
+                'recurring_end_date.after_or_equal' => '結束日期不可早於開始日期',
+                'recurring_weekdays.required' => '請至少勾選一個星期',
             ]);
+
+            $dates = $this->recurringDates(
+                $request->input('recurring_start_date'),
+                $request->input('recurring_end_date'),
+                (array) $request->input('recurring_weekdays', [])
+            );
+            if ($dates === []) {
+                return back()->withInput()->withErrors(['recurring_weekdays' => '此日期區間內沒有符合勾選星期的日期']);
+            }
+            if (count($dates) > self::RECURRING_MAX_DATES) {
+                return back()->withInput()->withErrors([
+                    'recurring_end_date' => '一次最多建立 '.self::RECURRING_MAX_DATES.' 筆，請縮短日期區間',
+                ]);
+            }
+        } else {
+            $dates = [(string) $request->input('estimated_end_date')];
         }
 
-        $executors = $this->buildExecutorsFromUserIds($user_ids);
-        $this->sendTaskDispatchNotification($request, $data, $executors, true);
+        $user_ids = (array) $request->input('user_ids', []);
+        $contexts = (array) $request->input('contexts', []);
+        $endTime = (string) $request->input('estimated_end_time');
 
-        return $this->redirectToTaskList('派工已新增', $request);
+        $tasks = [];
+        foreach ($dates as $date) {
+            $data = new Task;
+            $data->type = 'group';
+            $data->name = $request->name;
+            $data->project_id = $request->project_id;
+            $data->template_id = $request->template_id;
+            $data->check_status_id = $request->check_status_id;
+            $data->created_by = Auth::user()->id;
+            $data->estimated_end = $date.' '.$endTime.':00';
+            $data->priority = $request->priority;
+            $data->status = $request->status;
+            $data->comments = $request->comments;
+            $data->save();
+
+            foreach ($user_ids as $index => $user_id) {
+                TaskItem::create([
+                    'user_id' => $user_id,
+                    'context' => $contexts[$index] ?? '',
+                    'task_id' => $data->id,
+                    'status' => '0',
+                    'start_time' => Carbon::now()->locale('zh-tw'),
+                ]);
+            }
+
+            $tasks[] = $data;
+        }
+
+        // 排程只會連結一筆派工：週期派工連結第一筆（最早日期）
+        $this->syncMilestoneLinkedTask($tasks[0]);
+
+        $executors = $this->buildExecutorsFromUserIds($user_ids);
+        $scheduledLabel = $isRecurring
+            ? implode('、', array_map(fn ($d) => Carbon::parse($d)->format('m/d'), $dates)).'（共 '.count($dates).' 次）'
+            : null;
+        // 週期派工合併成一則通知，避免同一人連收多則
+        $this->sendTaskDispatchNotification($request, $tasks[0], $executors, true, $scheduledLabel);
+
+        $message = $isRecurring ? '已新增 '.count($tasks).' 筆週期派工' : '派工已新增';
+
+        return $this->redirectToTaskList($message, $request);
+    }
+
+    private const RECURRING_MAX_DATES = 60;
+
+    /**
+     * 依日期區間與星期（0=日 … 6=六）展開日期。
+     *
+     * @param  array<int, int|string>  $weekdays
+     * @return list<string>
+     */
+    protected function recurringDates(string $start, string $end, array $weekdays): array
+    {
+        $wanted = array_map('intval', $weekdays);
+        $cursor = Carbon::parse($start)->startOfDay();
+        $last = Carbon::parse($end)->startOfDay();
+
+        $dates = [];
+        while ($cursor->lte($last)) {
+            if (in_array($cursor->dayOfWeek, $wanted, true)) {
+                $dates[] = $cursor->format('Y-m-d');
+                if (count($dates) > self::RECURRING_MAX_DATES) {
+                    break;
+                }
+            }
+            $cursor->addDay();
+        }
+
+        return $dates;
     }
 
     /**

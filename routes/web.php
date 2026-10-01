@@ -5,6 +5,7 @@ use App\Http\Controllers\CalendarCategoryController;
 use App\Http\Controllers\CalendarController;
 use App\Http\Controllers\ChatWebhookDashboardController;
 use App\Http\Controllers\CheckStatusController;
+use App\Http\Controllers\CompanyTaxLookupController;
 use App\Http\Controllers\ContractStatusController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\CustomerProjectController;
@@ -118,6 +119,11 @@ Route::middleware(['auth'])->group(function () {
 
     /* 客戶專案管理 */
     Route::get('customer/project/search', [AjaxController::class, 'project_search'])->name('customer.project.search');
+
+    /* 統編查詢（經濟部商工登記） */
+    Route::get('company/tax-lookup', [CompanyTaxLookupController::class, 'index'])->name('company.tax.lookup');
+    Route::post('company/tax-lookup/batch', [CompanyTaxLookupController::class, 'batch'])->name('company.tax.lookup.batch');
+    Route::get('company/tax-lookup/template', [CompanyTaxLookupController::class, 'downloadTemplate'])->name('company.tax.lookup.template');
 
     // Route::get('customer/{id}/introduce-edit', [PresonCustomerController::class, 'IntroduceEdit'])->name('user.introduce.edit');
     // Route::post('customer/{id}/introduce-edit', [PresonCustomerController::class, 'IntroduceUpdate'])->name('user.introduce.update');

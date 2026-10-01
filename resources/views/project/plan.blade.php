@@ -636,6 +636,7 @@
             let currentDispatchRowKey = null;
             let currentDispatchTaskName = '';
             let currentDispatchTaskDescription = '';
+            let currentDispatchOpenedEstimatedIso = '';
             let currentConfirmTaskId = null;
             const userNameMap = @json($users->pluck('name', 'id')->toArray());
             const planTaskMetaByRow = @json($planTaskMetaByRow);
@@ -1059,6 +1060,7 @@
                 if (estimatedEndTime) {
                     estimatedEndTime.value = parsedEstimated ? parsedEstimated.time : '';
                 }
+                currentDispatchOpenedEstimatedIso = getModalEstimatedEndIso();
                 if (durationDisplay) {
                     durationDisplay.value = scheduleInfo.duration;
                 }
@@ -1178,7 +1180,8 @@
                 if (orderInput) {
                     orderInput.setAttribute('data-fixed-estimated-end', isoEnd);
                     const datePart = isoEnd.slice(0, 10);
-                    if (datePart && !String(orderInput.value || '').trim()) {
+                    const timeChanged = isoEnd !== currentDispatchOpenedEstimatedIso;
+                    if (datePart && (timeChanged || !String(orderInput.value || '').trim())) {
                         orderInput.value = datePart;
                     }
                 }
@@ -1308,6 +1311,7 @@
                         saveBtn.textContent = '儲存中...';
                     }
                     const formData = new FormData(planForm);
+                    formData.append('dispatch_modal_row', String(rowKey));
                     fetch(planForm.action, {
                         method: 'POST',
                         body: formData,

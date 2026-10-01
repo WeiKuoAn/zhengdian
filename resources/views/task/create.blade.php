@@ -17,6 +17,15 @@
             <div class="col-xl-6">
                 <div class="card">
                     <div class="card-body">
+                        @if ($errors->any())
+                            <div class="alert alert-danger">
+                                <ul class="mb-0">
+                                    @foreach ($errors->all() as $error)
+                                        <li>{{ $error }}</li>
+                                    @endforeach
+                                </ul>
+                            </div>
+                        @endif
                         <form action="{{ route('task.create.data') }}" method="POST">
                             @csrf
                             @include('task.partials.list-filter-hiddens')
@@ -66,10 +75,44 @@
                                 </div>
                                 <div class="mb-3">
                                     <label class="form-label">預計完成日期：<span class="text-danger">*</span></label>
-                                    <div class="input-group mb-2">
-                                        <input type="date" class="form-control" id="end_date" placeholder="日期" required name="estimated_end_date">
-                                        <input type="time" class="form-control" id="end_time" placeholder="時間" required name="estimated_end_time">
+                                    <div class="mb-2">
+                                        <div class="form-check form-check-inline">
+                                            <input class="form-check-input" type="radio" name="date_mode" id="date_mode_single" value="single"
+                                                {{ old('date_mode', 'single') === 'single' ? 'checked' : '' }}>
+                                            <label class="form-check-label" for="date_mode_single">單一日期</label>
+                                        </div>
+                                        <div class="form-check form-check-inline">
+                                            <input class="form-check-input" type="radio" name="date_mode" id="date_mode_recurring" value="recurring"
+                                                {{ old('date_mode') === 'recurring' ? 'checked' : '' }}>
+                                            <label class="form-check-label" for="date_mode_recurring">週期（區間內每週固定星期）</label>
+                                        </div>
                                     </div>
+
+                                    <div id="single-date-panel" class="mb-2">
+                                        <input type="date" class="form-control" id="end_date" name="estimated_end_date" value="{{ old('estimated_end_date') }}">
+                                    </div>
+
+                                    <div id="recurring-date-panel" class="border rounded p-2 mb-2" style="display: none;">
+                                        <div class="input-group mb-2">
+                                            <span class="input-group-text">從</span>
+                                            <input type="date" class="form-control" id="recurring_start_date" name="recurring_start_date" value="{{ old('recurring_start_date') }}">
+                                            <span class="input-group-text">到</span>
+                                            <input type="date" class="form-control" id="recurring_end_date" name="recurring_end_date" value="{{ old('recurring_end_date') }}">
+                                        </div>
+                                        <div class="mb-1">
+                                            @foreach ([1 => '一', 2 => '二', 3 => '三', 4 => '四', 5 => '五', 6 => '六', 0 => '日'] as $dow => $label)
+                                                <div class="form-check form-check-inline">
+                                                    <input class="form-check-input recurring-weekday" type="checkbox" name="recurring_weekdays[]"
+                                                        id="weekday_{{ $dow }}" value="{{ $dow }}"
+                                                        {{ in_array((string) $dow, array_map('strval', (array) old('recurring_weekdays', [])), true) ? 'checked' : '' }}>
+                                                    <label class="form-check-label" for="weekday_{{ $dow }}">週{{ $label }}</label>
+                                                </div>
+                                            @endforeach
+                                        </div>
+                                        <div class="form-text" id="recurring-preview">請選擇日期區間並勾選星期。</div>
+                                    </div>
+
+                                    <input type="time" class="form-control" id="end_time" placeholder="時間" required name="estimated_end_time" value="{{ old('estimated_end_time') }}">
                                 </div>
                                 <div class="mb-3">
                                     <label for="project-priority" class="form-label">優先序<span
@@ -127,10 +170,91 @@
         $(document).ready(function() {
             bindExecutorFields();
 
+            const RECURRING_MAX = 60;
+
+            function isRecurringMode() {
+                return $('input[name="date_mode"]:checked').val() === 'recurring';
+            }
+
+            function recurringDates() {
+                const start = $('#recurring_start_date').val();
+                const end = $('#recurring_end_date').val();
+                const weekdays = $('.recurring-weekday:checked').map(function() {
+                    return parseInt(this.value, 10);
+                }).get();
+                if (!start || !end || weekdays.length === 0) {
+                    return null;
+                }
+
+                const dates = [];
+                const cursor = new Date(start + 'T00:00:00');
+                const last = new Date(end + 'T00:00:00');
+                while (cursor <= last && dates.length <= RECURRING_MAX) {
+                    if (weekdays.includes(cursor.getDay())) {
+                        dates.push(new Date(cursor));
+                    }
+                    cursor.setDate(cursor.getDate() + 1);
+                }
+                return dates;
+            }
+
+            function renderRecurringPreview() {
+                const $preview = $('#recurring-preview');
+                const dates = recurringDates();
+                if (dates === null) {
+                    $preview.removeClass('text-danger').text('請選擇日期區間並勾選星期。');
+                    return;
+                }
+                if (dates.length === 0) {
+                    $preview.addClass('text-danger').text('此區間內沒有符合勾選星期的日期。');
+                    return;
+                }
+                if (dates.length > RECURRING_MAX) {
+                    $preview.addClass('text-danger').text('超過 ' + RECURRING_MAX + ' 筆，請縮短日期區間。');
+                    return;
+                }
+                const names = ['日', '一', '二', '三', '四', '五', '六'];
+                const labels = dates.map(function(d) {
+                    return (d.getMonth() + 1) + '/' + d.getDate() + '（' + names[d.getDay()] + '）';
+                });
+                $preview.removeClass('text-danger').text('將建立 ' + dates.length + ' 筆派工：' + labels.join('、'));
+            }
+
+            function syncDateMode() {
+                const recurring = isRecurringMode();
+                $('#single-date-panel').toggle(!recurring);
+                $('#recurring-date-panel').toggle(recurring);
+                $('#end_date').prop('required', !recurring);
+                $('#recurring_start_date, #recurring_end_date').prop('required', recurring);
+                renderRecurringPreview();
+            }
+
+            $('input[name="date_mode"]').on('change', syncDateMode);
+            $('#recurring_start_date, #recurring_end_date, .recurring-weekday').on('change', renderRecurringPreview);
+            syncDateMode();
+
             $('form').on('submit', function(event) {
-                const endDate = $('#end_date').val().trim();
                 const endTime = $('#end_time').val().trim();
 
+                if (isRecurringMode()) {
+                    const dates = recurringDates();
+                    if (endTime === '' || dates === null) {
+                        alert('請選擇週期日期區間、勾選星期並輸入時間！');
+                        event.preventDefault();
+                        return;
+                    }
+                    if (dates.length === 0 || dates.length > RECURRING_MAX) {
+                        alert($('#recurring-preview').text());
+                        event.preventDefault();
+                        return;
+                    }
+                    if (!confirm('確定要建立 ' + dates.length + ' 筆派工嗎？')) {
+                        event.preventDefault();
+                    }
+                    return;
+                }
+
+                const endDate = $('#end_date').val().trim();
                 if (endDate === '' || endTime === '') {
                     alert('請輸入預計完成日期與時間！');
                     event.preventDefault();
