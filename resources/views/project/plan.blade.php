@@ -534,9 +534,44 @@
                 </div>
                 <div class="modal-body">
                     <div id="dispatchScheduleSection" class="dispatch-modal-schedule-foot border rounded p-3 mb-2 bg-light">
+                        <div class="mb-2">
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input dispatch-date-mode" type="radio" name="dispatchDateMode"
+                                    id="dispatchDateModeSingle" value="single" checked>
+                                <label class="form-check-label small" for="dispatchDateModeSingle">單一日期</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input dispatch-date-mode" type="radio" name="dispatchDateMode"
+                                    id="dispatchDateModeRecurring" value="recurring">
+                                <label class="form-check-label small" for="dispatchDateModeRecurring">週期（日期區間＋每週幾）</label>
+                            </div>
+                        </div>
+                        <div id="dispatchRecurringPanel" class="mb-2" style="display: none;">
+                            <div class="row g-2 mb-2">
+                                <div class="col-6">
+                                    <label class="d-block small text-muted mb-1">開始日期</label>
+                                    <input type="date" class="form-control form-control-sm" id="dispatchRecurringStart">
+                                </div>
+                                <div class="col-6">
+                                    <label class="d-block small text-muted mb-1">結束日期</label>
+                                    <input type="date" class="form-control form-control-sm" id="dispatchRecurringEnd">
+                                </div>
+                            </div>
+                            <label class="d-block small text-muted mb-1">每週</label>
+                            <div>
+                                @foreach ([1 => '一', 2 => '二', 3 => '三', 4 => '四', 5 => '五', 6 => '六', 0 => '日'] as $wd => $wdLabel)
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input dispatch-recurring-weekday" type="checkbox"
+                                            id="dispatchRecurringWd{{ $wd }}" value="{{ $wd }}">
+                                        <label class="form-check-label small" for="dispatchRecurringWd{{ $wd }}">{{ $wdLabel }}</label>
+                                    </div>
+                                @endforeach
+                            </div>
+                            <div class="small text-muted mt-1" id="dispatchRecurringPreview"></div>
+                        </div>
                         <div class="row g-2">
                             <div class="col-md-8">
-                                <label class="d-block small text-muted mb-1">預計完成時間</label>
+                                <label class="d-block small text-muted mb-1" id="dispatchEstimatedEndLabel">預計完成時間</label>
                                 <div class="input-group input-group-sm">
                                     <input type="date" class="form-control" id="dispatchEstimatedEndDate"
                                         placeholder="日期">
@@ -1061,6 +1096,13 @@
                     estimatedEndTime.value = parsedEstimated ? parsedEstimated.time : '';
                 }
                 currentDispatchOpenedEstimatedIso = getModalEstimatedEndIso();
+                document.getElementById('dispatchDateModeSingle').checked = true;
+                document.getElementById('dispatchRecurringStart').value = parsedEstimated ? parsedEstimated.date : '';
+                document.getElementById('dispatchRecurringEnd').value = '';
+                document.querySelectorAll('.dispatch-recurring-weekday').forEach(function(cb) {
+                    cb.checked = false;
+                });
+                refreshDispatchRecurringUI();
                 if (durationDisplay) {
                     durationDisplay.value = scheduleInfo.duration;
                 }
@@ -1113,6 +1155,62 @@
 
                 modal.show();
             }
+
+            const DISPATCH_RECURRING_MAX = 60;
+
+            function isDispatchRecurringMode() {
+                return document.getElementById('dispatchDateModeRecurring')?.checked === true;
+            }
+
+            function getDispatchRecurringDates() {
+                const start = String(document.getElementById('dispatchRecurringStart')?.value || '');
+                const end = String(document.getElementById('dispatchRecurringEnd')?.value || '');
+                const weekdays = Array.from(document.querySelectorAll('.dispatch-recurring-weekday:checked'))
+                    .map(cb => parseInt(cb.value, 10));
+                if (!start || !end || weekdays.length === 0 || end < start) {
+                    return [];
+                }
+                const [sy, sm, sd] = start.split('-').map(v => parseInt(v, 10));
+                const [ey, em, ed] = end.split('-').map(v => parseInt(v, 10));
+                const cursor = new Date(sy, sm - 1, sd);
+                const last = new Date(ey, em - 1, ed);
+                const pad = n => String(n).padStart(2, '0');
+                const dates = [];
+                while (cursor <= last && dates.length <= DISPATCH_RECURRING_MAX) {
+                    if (weekdays.includes(cursor.getDay())) {
+                        dates.push(`${cursor.getFullYear()}-${pad(cursor.getMonth() + 1)}-${pad(cursor.getDate())}`);
+                    }
+                    cursor.setDate(cursor.getDate() + 1);
+                }
+                return dates;
+            }
+
+            function refreshDispatchRecurringUI() {
+                const recurring = isDispatchRecurringMode();
+                const panel = document.getElementById('dispatchRecurringPanel');
+                const dateEl = document.getElementById('dispatchEstimatedEndDate');
+                const label = document.getElementById('dispatchEstimatedEndLabel');
+                const preview = document.getElementById('dispatchRecurringPreview');
+                if (panel) panel.style.display = recurring ? 'block' : 'none';
+                if (dateEl) dateEl.style.display = recurring ? 'none' : '';
+                if (label) label.textContent = recurring ? '每次完成時間' : '預計完成時間';
+                if (!preview) return;
+                if (!recurring) {
+                    preview.textContent = '';
+                    return;
+                }
+                const dates = getDispatchRecurringDates();
+                if (dates.length === 0) {
+                    preview.textContent = '請選擇日期區間並勾選星期';
+                } else if (dates.length > DISPATCH_RECURRING_MAX) {
+                    preview.textContent = `超過 ${DISPATCH_RECURRING_MAX} 筆上限，請縮短日期區間`;
+                } else {
+                    const shown = dates.map(d => d.slice(5).replace('-', '/')).join('、');
+                    preview.textContent = `將建立 ${dates.length} 筆：${shown}`;
+                }
+            }
+
+            $(document).on('change', '.dispatch-date-mode, .dispatch-recurring-weekday, #dispatchRecurringStart, #dispatchRecurringEnd', refreshDispatchRecurringUI);
 
             function escapeHtml(value) {
                 return $('<div/>').text(String(value || '')).html();
@@ -1233,6 +1331,28 @@
                     return;
                 }
 
+                const recurringDates = isDispatchRecurringMode() ? getDispatchRecurringDates() : [];
+                if (isDispatchRecurringMode()) {
+                    if (recurringDates.length === 0) {
+                        alert('請選擇週期的開始、結束日期，並至少勾選一個星期（區間內需有符合的日期）');
+                        return;
+                    }
+                    if (recurringDates.length > DISPATCH_RECURRING_MAX) {
+                        alert(`一次最多建立 ${DISPATCH_RECURRING_MAX} 筆，請縮短日期區間`);
+                        return;
+                    }
+                    const timeVal = String(document.getElementById('dispatchEstimatedEndTime')?.value || '');
+                    if (!timeVal) {
+                        alert('請填寫每次完成時間');
+                        return;
+                    }
+                    const shown = recurringDates.map(d => d.slice(5).replace('-', '/')).join('、');
+                    if (!confirm(`將建立 ${recurringDates.length} 筆派工：\n${shown}\n\n排程這一列會連結第一個日期（${recurringDates[0].replace(/-/g, '/')}），確定送出？`)) {
+                        return;
+                    }
+                    document.getElementById('dispatchEstimatedEndDate').value = recurringDates[0];
+                }
+
                 const modalEstimatedIso = getModalEstimatedEndIso();
                 if (!modalEstimatedIso) {
                     alert('請填寫預計完成日期與時間');
@@ -1312,6 +1432,15 @@
                     }
                     const formData = new FormData(planForm);
                     formData.append('dispatch_modal_row', String(rowKey));
+                    if (recurringDates.length > 0) {
+                        formData.append('dispatch_recurring', '1');
+                        formData.append('dispatch_recurring_start', document.getElementById('dispatchRecurringStart').value);
+                        formData.append('dispatch_recurring_end', document.getElementById('dispatchRecurringEnd').value);
+                        formData.append('dispatch_recurring_time', document.getElementById('dispatchEstimatedEndTime').value);
+                        document.querySelectorAll('.dispatch-recurring-weekday:checked').forEach(function(cb) {
+                            formData.append('dispatch_recurring_weekdays[]', cb.value);
+                        });
+                    }
                     fetch(planForm.action, {
                         method: 'POST',
                         body: formData,
@@ -1327,6 +1456,9 @@
                             // ignore parse error
                         }
                         if (response.ok) {
+                            if (data && data.recurring_message) {
+                                alert(data.recurring_message);
+                            }
                             if (data && data.warning) {
                                 alert(data.warning);
                             }

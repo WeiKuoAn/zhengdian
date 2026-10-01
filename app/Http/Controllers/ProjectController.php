@@ -38,6 +38,7 @@ use Illuminate\Support\Facades\Schema;
 use App\Models\MeetData;
 use App\Services\DispatchNotificationService;
 use App\Support\PlanOrderDateCascade;
+use App\Support\RecurringDates;
 
 class ProjectController extends Controller
 {
@@ -1048,6 +1049,34 @@ class ProjectController extends Controller
         $dispatchModalRow = $request->filled('dispatch_modal_row') ? (int) $request->input('dispatch_modal_row') : null;
         $hasLinkedTaskColumn = Schema::hasColumn('project_milestones', 'linked_task_id');
 
+        $recurringDates = [];
+        $recurringTime = '';
+        if ($dispatchModalRow !== null && $request->input('dispatch_recurring') === '1') {
+            $recurringError = null;
+            $recurringStart = (string) $request->input('dispatch_recurring_start', '');
+            $recurringEnd = (string) $request->input('dispatch_recurring_end', '');
+            $recurringTime = (string) $request->input('dispatch_recurring_time', '');
+            $recurringWeekdays = (array) $request->input('dispatch_recurring_weekdays', []);
+            if ($recurringStart === '' || $recurringEnd === '' || $recurringTime === '' || $recurringWeekdays === []) {
+                $recurringError = '週期派工請填寫開始日期、結束日期、時間，並至少勾選一個星期';
+            } elseif ($recurringEnd < $recurringStart) {
+                $recurringError = '結束日期不可早於開始日期';
+            } else {
+                $recurringDates = RecurringDates::expand($recurringStart, $recurringEnd, $recurringWeekdays);
+                if ($recurringDates === []) {
+                    $recurringError = '此日期區間內沒有符合勾選星期的日期';
+                } elseif (count($recurringDates) > RecurringDates::MAX_DATES) {
+                    $recurringError = '一次最多建立 '.RecurringDates::MAX_DATES.' 筆，請縮短日期區間';
+                }
+            }
+            if ($recurringError !== null) {
+                return response()->json(['success' => false, 'message' => $recurringError], 422);
+            }
+            $recurringTime = substr($recurringTime, 0, 5).':00';
+            $dispatch_estimated_end_datetimes[$dispatchModalRow] = $recurringDates[0].' '.$recurringTime;
+        }
+        $recurringCreated = 0;
+
         $project = CustProject::with('user_data')->where('id', $id)->firstOrFail();
 
         $dispatchNotification = $this->dispatchNotification();
@@ -1131,6 +1160,7 @@ class ProjectController extends Controller
             $taskComments = trim((string) $request->input('executor_task_comments.'.$index, ''));
 
             if ($template && count($userRows) > 0) {
+                $isRecurringRow = $recurringDates !== [] && $dispatchModalRow === (int) $index;
                 $newTaskId = $this->syncPlanDispatchTask(
                     $project,
                     $template,
@@ -1140,8 +1170,20 @@ class ProjectController extends Controller
                     $milestone_dates[$index] ?? null,
                     $order_dates[$index] ?? null,
                     $taskComments,
-                    $resolvedEstimatedEnd
+                    $resolvedEstimatedEnd,
+                    ! $isRecurringRow
                 );
+                if ($newTaskId !== null && $isRecurringRow) {
+                    $recurringCreated = $this->createPlanRecurringTasks(
+                        $project,
+                        $template,
+                        Task::find($newTaskId),
+                        $userRows,
+                        $contextRows,
+                        $recurringDates,
+                        $recurringTime
+                    );
+                }
                 if ($newTaskId !== null) {
                     if ($hasLinkedTaskColumn) {
                         $milestoneRow->linked_task_id = $newTaskId;
@@ -1171,6 +1213,9 @@ class ProjectController extends Controller
 
         if ($request->ajax() || $request->wantsJson()) {
             $response = ['success' => true, 'message' => '排程已儲存'];
+            if ($recurringCreated > 0) {
+                $response['recurring_message'] = '已建立週期派工，共 '.count($recurringDates).' 次：'.RecurringDates::label($recurringDates);
+            }
             $warning = $dispatchNotification->skippedWarningMessage();
             if ($warning !== null) {
                 $response['warning'] = $warning;
@@ -1204,7 +1249,8 @@ class ProjectController extends Controller
         ?string $milestoneDateStr,
         ?string $orderDateStr,
         ?string $taskComments = null,
-        ?string $estimatedEndDatetime = null
+        ?string $estimatedEndDatetime = null,
+        bool $notify = true
     ): ?int {
         $userIds = array_values(array_filter($userIds, fn ($v) => $v !== null && $v !== ''));
         if (count($userIds) === 0) {
@@ -1328,7 +1374,7 @@ class ProjectController extends Controller
             $shouldSend = true;
         }
 
-        if ($shouldSend) {
+        if ($shouldSend && $notify) {
             $dispatchContent = $comments !== '' ? $comments : ((string) ($template->description ?? $template->name));
             try {
                 $this->sendDispatchWebhookMessage(
@@ -1348,6 +1394,78 @@ class ProjectController extends Controller
         }
 
         return (int) $task->id;
+    }
+
+    /**
+     * 週期派工：排程列連結第一個日期的派工，其餘日期各建一筆，並合併成一則通知。
+     *
+     * @param  list<string>  $dates
+     * @return int 另外建立的派工筆數
+     */
+    protected function createPlanRecurringTasks(
+        CustProject $project,
+        TaskTemplate $template,
+        ?Task $linkedTask,
+        array $userIds,
+        array $contexts,
+        array $dates,
+        string $time
+    ): int {
+        if (! $linkedTask) {
+            return 0;
+        }
+
+        $created = 0;
+        foreach (array_slice($dates, 1) as $date) {
+            $task = new Task;
+            $task->type = 'group';
+            $task->name = $linkedTask->name;
+            $task->project_id = $project->id;
+            $task->template_id = $template->id;
+            $task->check_status_id = $template->check_status_id;
+            $task->created_by = Auth::id();
+            $task->estimated_end = $date.' '.$time;
+            $task->priority = 2;
+            $task->status = '1';
+            $task->comments = $linkedTask->comments;
+            $task->save();
+
+            foreach ($userIds as $index => $userId) {
+                TaskItem::create([
+                    'user_id' => $userId,
+                    'context' => $contexts[$index] ?? '',
+                    'task_id' => $task->id,
+                    'status' => '0',
+                    'start_time' => Carbon::now()->locale('zh-tw'),
+                ]);
+            }
+            $created++;
+        }
+
+        $executors = User::whereIn('id', $userIds)->get(['id', 'name'])
+            ->filter(fn ($u) => ! empty($u->name))
+            ->map(fn ($u) => ['id' => $u->id, 'name' => $u->name])
+            ->values()
+            ->all();
+        $comments = (string) ($linkedTask->comments ?? '');
+        $dispatchContent = $comments !== '' ? $comments : ((string) ($template->description ?? $template->name));
+        try {
+            $this->sendDispatchWebhookMessage(
+                $project,
+                $this->buildDispatchItemLabel($template),
+                RecurringDates::label($dates),
+                $dispatchContent,
+                $executors
+            );
+        } catch (\Throwable $e) {
+            Log::warning('dispatch_webhook_send_failed', [
+                'project_id' => $project->id,
+                'task_name' => $linkedTask->name,
+                'message' => $e->getMessage(),
+            ]);
+        }
+
+        return $created;
     }
 
     /**

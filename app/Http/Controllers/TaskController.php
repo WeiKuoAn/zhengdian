@@ -14,6 +14,7 @@ use App\Models\TaskEstimatedEndAdjustment;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
+use App\Support\RecurringDates;
 use App\Services\DispatchNotificationService;
 
 class TaskController extends Controller
@@ -465,7 +466,7 @@ class TaskController extends Controller
                 'recurring_weekdays.required' => '請至少勾選一個星期',
             ]);
 
-            $dates = $this->recurringDates(
+            $dates = RecurringDates::expand(
                 $request->input('recurring_start_date'),
                 $request->input('recurring_end_date'),
                 (array) $request->input('recurring_weekdays', [])
@@ -473,9 +474,9 @@ class TaskController extends Controller
             if ($dates === []) {
                 return back()->withInput()->withErrors(['recurring_weekdays' => '此日期區間內沒有符合勾選星期的日期']);
             }
-            if (count($dates) > self::RECURRING_MAX_DATES) {
+            if (count($dates) > RecurringDates::MAX_DATES) {
                 return back()->withInput()->withErrors([
-                    'recurring_end_date' => '一次最多建立 '.self::RECURRING_MAX_DATES.' 筆，請縮短日期區間',
+                    'recurring_end_date' => '一次最多建立 '.RecurringDates::MAX_DATES.' 筆，請縮短日期區間',
                 ]);
             }
         } else {
@@ -518,43 +519,13 @@ class TaskController extends Controller
         $this->syncMilestoneLinkedTask($tasks[0]);
 
         $executors = $this->buildExecutorsFromUserIds($user_ids);
-        $scheduledLabel = $isRecurring
-            ? implode('、', array_map(fn ($d) => Carbon::parse($d)->format('m/d'), $dates)).'（共 '.count($dates).' 次）'
-            : null;
+        $scheduledLabel = $isRecurring ? RecurringDates::label($dates) : null;
         // 週期派工合併成一則通知，避免同一人連收多則
         $this->sendTaskDispatchNotification($request, $tasks[0], $executors, true, $scheduledLabel);
 
         $message = $isRecurring ? '已新增 '.count($tasks).' 筆週期派工' : '派工已新增';
 
         return $this->redirectToTaskList($message, $request);
-    }
-
-    private const RECURRING_MAX_DATES = 60;
-
-    /**
-     * 依日期區間與星期（0=日 … 6=六）展開日期。
-     *
-     * @param  array<int, int|string>  $weekdays
-     * @return list<string>
-     */
-    protected function recurringDates(string $start, string $end, array $weekdays): array
-    {
-        $wanted = array_map('intval', $weekdays);
-        $cursor = Carbon::parse($start)->startOfDay();
-        $last = Carbon::parse($end)->startOfDay();
-
-        $dates = [];
-        while ($cursor->lte($last)) {
-            if (in_array($cursor->dayOfWeek, $wanted, true)) {
-                $dates[] = $cursor->format('Y-m-d');
-                if (count($dates) > self::RECURRING_MAX_DATES) {
-                    break;
-                }
-            }
-            $cursor->addDay();
-        }
-
-        return $dates;
     }
 
     /**
