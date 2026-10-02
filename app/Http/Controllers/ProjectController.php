@@ -949,6 +949,7 @@ class ProjectController extends Controller
                     : '',
                 'adjusted_estimated_end_display' => $adjustedEstimatedEndDisplay,
                 'adjustments' => $adjustments,
+                'recurring' => $this->planRecurringInfo($linkedTask),
                 'executor_rows' => $executorRows,
                 'dispatch_task_comments' => $linkedTask ? ($linkedTask->comments ?? '') : '',
                 'dispatch_comments' => $myTaskItem->context ?? ($linkedTask->comments ?? ''),
@@ -1014,6 +1015,7 @@ class ProjectController extends Controller
                 'dispatchStatusValue' => (string) ($t->dispatch_status_value ?? ''),
                 'adjustedEstimatedEnd' => $t->adjusted_estimated_end_display ?? '',
                 'adjustments' => $t->adjustments ?? [],
+                'recurring' => $t->recurring ?? null,
             ];
         })->values();
 
@@ -1040,6 +1042,21 @@ class ProjectController extends Controller
                 ->with('error', $readonlyMessage);
         }
 
+        // 表單被 max_input_vars 截斷時，後段列會「消失」而被誤刪，必須整筆拒絕
+        if ($request->input('plan_form_end') !== '1') {
+            Log::warning('plan_update_truncated_form', [
+                'project_id' => $id,
+                'received_rows' => count((array) $request->input('milestone_types', [])),
+                'max_input_vars' => ini_get('max_input_vars'),
+            ]);
+            $truncatedMessage = '排程欄位過多，伺服器只收到部分資料，本次未儲存。請聯絡管理員調高 PHP max_input_vars。';
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json(['success' => false, 'message' => $truncatedMessage], 422);
+            }
+
+            return redirect()->route('project.plan', $id)->with('error', $truncatedMessage);
+        }
+
         $milestone_types = $request->milestone_types ?? [];
         $milestone_dates = $request->milestone_dates ?? [];
         $formal_dates = $request->formal_dates ?? [];
@@ -1051,6 +1068,7 @@ class ProjectController extends Controller
 
         $recurringDates = [];
         $recurringTime = '';
+        $recurringRule = [];
         if ($dispatchModalRow !== null && $request->input('dispatch_recurring') === '1') {
             $recurringError = null;
             $recurringStart = (string) $request->input('dispatch_recurring_start', '');
@@ -1072,10 +1090,17 @@ class ProjectController extends Controller
             if ($recurringError !== null) {
                 return response()->json(['success' => false, 'message' => $recurringError], 422);
             }
+            $recurringRule = [
+                'start' => $recurringStart,
+                'end' => $recurringEnd,
+                'weekdays' => array_values(array_map('intval', $recurringWeekdays)),
+                'time' => substr($recurringTime, 0, 5),
+            ];
             $recurringTime = substr($recurringTime, 0, 5).':00';
             $dispatch_estimated_end_datetimes[$dispatchModalRow] = $recurringDates[0].' '.$recurringTime;
         }
-        $recurringCreated = 0;
+        $recurringClear = $dispatchModalRow !== null && $recurringDates === [] && $request->input('dispatch_recurring_clear') === '1';
+        $recurringResult = null;
 
         $project = CustProject::with('user_data')->where('id', $id)->firstOrFail();
 
@@ -1174,15 +1199,18 @@ class ProjectController extends Controller
                     ! $isRecurringRow
                 );
                 if ($newTaskId !== null && $isRecurringRow) {
-                    $recurringCreated = $this->createPlanRecurringTasks(
+                    $recurringResult = $this->syncPlanRecurringTasks(
                         $project,
                         $template,
                         Task::find($newTaskId),
                         $userRows,
                         $contextRows,
                         $recurringDates,
-                        $recurringTime
+                        $recurringTime,
+                        $recurringRule
                     );
+                } elseif ($newTaskId !== null && $recurringClear && $dispatchModalRow === (int) $index) {
+                    $this->clearPlanRecurringSeries(Task::find($newTaskId));
                 }
                 if ($newTaskId !== null) {
                     if ($hasLinkedTaskColumn) {
@@ -1213,8 +1241,11 @@ class ProjectController extends Controller
 
         if ($request->ajax() || $request->wantsJson()) {
             $response = ['success' => true, 'message' => '排程已儲存'];
-            if ($recurringCreated > 0) {
-                $response['recurring_message'] = '已建立週期派工，共 '.count($recurringDates).' 次：'.RecurringDates::label($recurringDates);
+            if ($recurringResult !== null) {
+                $response['recurring_message'] = '週期派工已儲存：'.RecurringDates::label($recurringDates);
+                if ($recurringResult['kept_closed'] > 0) {
+                    $response['recurring_message'] .= "\n另有 {$recurringResult['kept_closed']} 筆已完成的派工不在新週期內，已保留不刪除。";
+                }
             }
             $warning = $dispatchNotification->skippedWarningMessage();
             if ($warning !== null) {
@@ -1396,30 +1427,92 @@ class ProjectController extends Controller
         return (int) $task->id;
     }
 
+    protected function hasRecurringColumns(): bool
+    {
+        return Schema::hasColumn('task', 'recurring_parent_id') && Schema::hasColumn('task', 'recurring_rule');
+    }
+
     /**
-     * 週期派工：排程列連結第一個日期的派工，其餘日期各建一筆，並合併成一則通知。
+     * 週期派工：排程列連結第一個日期的派工（head），其餘日期為子派工（recurring_parent_id = head）。
+     * 再次儲存時同步整組：符合新日期者保留更新、缺的補建、多的刪除；
+     * 已完成／待確認完成的子派工一律不動也不刪。
      *
      * @param  list<string>  $dates
-     * @return int 另外建立的派工筆數
+     * @param  array{start: string, end: string, weekdays: list<int>, time: string}  $rule
+     * @return array{created: int, removed: int, kept_closed: int}
      */
-    protected function createPlanRecurringTasks(
+    protected function syncPlanRecurringTasks(
         CustProject $project,
         TaskTemplate $template,
-        ?Task $linkedTask,
+        ?Task $head,
         array $userIds,
         array $contexts,
         array $dates,
-        string $time
-    ): int {
-        if (! $linkedTask) {
-            return 0;
+        string $time,
+        array $rule
+    ): array {
+        $result = ['created' => 0, 'removed' => 0, 'kept_closed' => 0];
+        if (! $head) {
+            return $result;
         }
 
-        $created = 0;
-        foreach (array_slice($dates, 1) as $date) {
+        $hasColumns = $this->hasRecurringColumns();
+        $children = $hasColumns
+            ? Task::with('items')->where('recurring_parent_id', $head->id)->where('id', '!=', $head->id)->get()
+            : collect();
+        $isNewSeries = $children->isEmpty() && empty($head->recurring_rule);
+
+        $wanted = array_slice($dates, 1);
+        $claimed = [];
+        $changed = false;
+
+        foreach ($children as $child) {
+            $childDate = ! empty($child->estimated_end) ? Carbon::parse($child->estimated_end)->format('Y-m-d') : null;
+            $isClosed = in_array((string) $child->status, ['8', '9'], true);
+            $matches = $childDate !== null && in_array($childDate, $wanted, true) && ! isset($claimed[$childDate]);
+
+            if ($matches) {
+                $claimed[$childDate] = true;
+                if ($isClosed) {
+                    continue;
+                }
+                $newEnd = $childDate.' '.$time;
+                if (Carbon::parse($child->estimated_end)->format('Y-m-d H:i:s') !== $newEnd) {
+                    $changed = true;
+                }
+                $child->name = $head->name;
+                $child->check_status_id = $template->check_status_id;
+                $child->estimated_end = $newEnd;
+                $child->comments = $head->comments;
+                $child->save();
+
+                if (! $this->planExecutorUsersMatch($child->items, $userIds)) {
+                    TaskItem::where('task_id', $child->id)->delete();
+                    $this->createPlanTaskItems($child->id, $userIds, $contexts);
+                    $changed = true;
+                }
+
+                continue;
+            }
+
+            if ($isClosed) {
+                $result['kept_closed']++;
+
+                continue;
+            }
+
+            TaskItem::where('task_id', $child->id)->delete();
+            $child->delete();
+            $result['removed']++;
+        }
+
+        foreach ($wanted as $date) {
+            if (isset($claimed[$date])) {
+                continue;
+            }
             $task = new Task;
             $task->type = 'group';
-            $task->name = $linkedTask->name;
+            $task->name = $head->name;
             $task->project_id = $project->id;
             $task->template_id = $template->id;
             $task->check_status_id = $template->check_status_id;
@@ -1427,19 +1520,23 @@ class ProjectController extends Controller
             $task->estimated_end = $date.' '.$time;
             $task->priority = 2;
             $task->status = '1';
-            $task->comments = $linkedTask->comments;
-            $task->save();
-
-            foreach ($userIds as $index => $userId) {
-                TaskItem::create([
-                    'user_id' => $userId,
-                    'context' => $contexts[$index] ?? '',
-                    'task_id' => $task->id,
-                    'status' => '0',
-                    'start_time' => Carbon::now()->locale('zh-tw'),
-                ]);
+            $task->comments = $head->comments;
+            if ($hasColumns) {
+                $task->recurring_parent_id = $head->id;
             }
-            $created++;
+            $task->save();
+            $this->createPlanTaskItems($task->id, $userIds, $contexts);
+            $result['created']++;
+        }
+
+        if ($hasColumns) {
+            $head->recurring_parent_id = $head->id;
+            $head->recurring_rule = $rule;
+            $head->save();
+        }
+
+        if (! $isNewSeries && $result['created'] === 0 && $result['removed'] === 0 && ! $changed) {
+            return $result;
         }
 
         $executors = User::whereIn('id', $userIds)->get(['id', 'name'])
@@ -1447,7 +1544,7 @@ class ProjectController extends Controller
             ->map(fn ($u) => ['id' => $u->id, 'name' => $u->name])
             ->values()
             ->all();
-        $comments = (string) ($linkedTask->comments ?? '');
+        $comments = (string) ($head->comments ?? '');
         $dispatchContent = $comments !== '' ? $comments : ((string) ($template->description ?? $template->name));
         try {
             $this->sendDispatchWebhookMessage(
@@ -1460,12 +1557,79 @@ class ProjectController extends Controller
         } catch (\Throwable $e) {
             Log::warning('dispatch_webhook_send_failed', [
                 'project_id' => $project->id,
-                'task_name' => $linkedTask->name,
+                'task_name' => $head->name,
                 'message' => $e->getMessage(),
             ]);
         }
 
-        return $created;
+        return $result;
+    }
+
+    protected function createPlanTaskItems(int $taskId, array $userIds, array $contexts): void
+    {
+        foreach (array_values($userIds) as $index => $userId) {
+            TaskItem::create([
+                'user_id' => $userId,
+                'context' => $contexts[$index] ?? '',
+                'task_id' => $taskId,
+                'status' => '0',
+                'start_time' => Carbon::now()->locale('zh-tw'),
+            ]);
+        }
+    }
+
+    /**
+     * 改回單一日期：刪除尚未完成的子派工；已完成者保留為獨立派工。
+     */
+    protected function clearPlanRecurringSeries(?Task $head): void
+    {
+        if (! $head || ! $this->hasRecurringColumns() || empty($head->recurring_parent_id)) {
+            return;
+        }
+
+        $children = Task::where('recurring_parent_id', $head->recurring_parent_id)->where('id', '!=', $head->id)->get();
+        foreach ($children as $child) {
+            if (in_array((string) $child->status, ['8', '9'], true)) {
+                $child->recurring_parent_id = null;
+                $child->save();
+
+                continue;
+            }
+            TaskItem::where('task_id', $child->id)->delete();
+            $child->delete();
+        }
+
+        $head->recurring_parent_id = null;
+        $head->recurring_rule = null;
+        $head->save();
+    }
+
+    /**
+     * 排程頁小視窗用：週期規則與整組派工的日期／狀態。
+     *
+     * @return array{rule: array|null, dates: list<array{date: string, status: string, status_value: string}>}|null
+     */
+    protected function planRecurringInfo(?Task $linkedTask): ?array
+    {
+        if (! $linkedTask || ! $this->hasRecurringColumns() || empty($linkedTask->recurring_parent_id)) {
+            return null;
+        }
+
+        $series = $linkedTask->recurringSeries();
+        if (! $series || $series->count() < 2) {
+            return null;
+        }
+
+        $head = $series->firstWhere('id', $linkedTask->recurring_parent_id) ?? $linkedTask;
+
+        return [
+            'rule' => $head->recurring_rule,
+            'dates' => $series->map(fn (Task $t) => [
+                'date' => ! empty($t->estimated_end) ? Carbon::parse($t->estimated_end)->format('Y-m-d') : '',
+                'status' => $t->status(),
+                'status_value' => (string) $t->status,
+            ])->values()->all(),
+        ];
     }
 
     /**

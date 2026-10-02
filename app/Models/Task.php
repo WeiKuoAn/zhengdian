@@ -22,7 +22,27 @@ class Task extends Model
         'actual_end',
         'priority',
         'type',
+        'recurring_parent_id',
+        'recurring_rule',
     ];
+
+    protected $casts = [
+        'recurring_rule' => 'array',
+    ];
+
+    /** 同一組週期派工（含自己），依預計完成時間排序；非週期派工回傳 null。 */
+    public function recurringSeries()
+    {
+        if (empty($this->recurring_parent_id)) {
+            return null;
+        }
+
+        return static::with('items')
+            ->where('recurring_parent_id', $this->recurring_parent_id)
+            ->orderBy('estimated_end')
+            ->orderBy('id')
+            ->get();
+    }
 
     public function task_template_data()
     {

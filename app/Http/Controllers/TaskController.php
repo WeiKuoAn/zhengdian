@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 use App\Support\RecurringDates;
+use Illuminate\Support\Facades\Schema;
 use App\Services\DispatchNotificationService;
 
 class TaskController extends Controller
@@ -488,6 +489,8 @@ class TaskController extends Controller
         $endTime = (string) $request->input('estimated_end_time');
 
         $tasks = [];
+        $markRecurring = $isRecurring && count($dates) > 1
+            && Schema::hasColumn('task', 'recurring_parent_id') && Schema::hasColumn('task', 'recurring_rule');
         foreach ($dates as $date) {
             $data = new Task;
             $data->type = 'group';
@@ -500,7 +503,20 @@ class TaskController extends Controller
             $data->priority = $request->priority;
             $data->status = $request->status;
             $data->comments = $request->comments;
+            if ($markRecurring && $tasks !== []) {
+                $data->recurring_parent_id = $tasks[0]->id;
+            }
             $data->save();
+            if ($markRecurring && $tasks === []) {
+                $data->recurring_parent_id = $data->id;
+                $data->recurring_rule = [
+                    'start' => (string) $request->input('recurring_start_date'),
+                    'end' => (string) $request->input('recurring_end_date'),
+                    'weekdays' => array_values(array_map('intval', (array) $request->input('recurring_weekdays', []))),
+                    'time' => substr($endTime, 0, 5),
+                ];
+                $data->save();
+            }
 
             foreach ($user_ids as $index => $user_id) {
                 TaskItem::create([

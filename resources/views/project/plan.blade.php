@@ -402,6 +402,11 @@
                                                     派工表訂完成：
                                                     {{ $task_data->dispatch_estimated_end ?? '尚未建立' }}
                                                 </div>
+                                                @if (!empty($task_data->recurring))
+                                                    <div class="small text-primary">
+                                                        週期派工：共 {{ count($task_data->recurring['dates']) }} 次（{{ \Illuminate\Support\Str::of(collect($task_data->recurring['dates'])->first()['date'] ?? '')->substr(5)->replace('-', '/') }}～{{ \Illuminate\Support\Str::of(collect($task_data->recurring['dates'])->last()['date'] ?? '')->substr(5)->replace('-', '/') }}）
+                                                    </div>
+                                                @endif
                                             </div>
                                             <div class="col-lg-3 mb-2 mb-lg-0 plan-executor-col plan-equal-col">
                                                 <label class="d-lg-none small text-muted">派工與負責執行人員</label>
@@ -518,6 +523,8 @@
             </div>
             <!-- end row -->
 
+            {{-- 必須是表單最後一個欄位：後端據此判斷表單沒有被 max_input_vars 截斷 --}}
+            <input type="hidden" name="plan_form_end" value="1">
             </form>
         </div> <!-- end card-body -->
     </div> <!-- end card-->
@@ -568,6 +575,7 @@
                                 @endforeach
                             </div>
                             <div class="small text-muted mt-1" id="dispatchRecurringPreview"></div>
+                            <div class="small mt-2" id="dispatchRecurringExisting" style="display: none;"></div>
                         </div>
                         <div class="row g-2">
                             <div class="col-md-8">
@@ -672,6 +680,7 @@
             let currentDispatchTaskName = '';
             let currentDispatchTaskDescription = '';
             let currentDispatchOpenedEstimatedIso = '';
+            let currentDispatchSeriesCount = 0;
             let currentConfirmTaskId = null;
             const userNameMap = @json($users->pluck('name', 'id')->toArray());
             const planTaskMetaByRow = @json($planTaskMetaByRow);
@@ -1096,12 +1105,40 @@
                     estimatedEndTime.value = parsedEstimated ? parsedEstimated.time : '';
                 }
                 currentDispatchOpenedEstimatedIso = getModalEstimatedEndIso();
-                document.getElementById('dispatchDateModeSingle').checked = true;
-                document.getElementById('dispatchRecurringStart').value = parsedEstimated ? parsedEstimated.date : '';
-                document.getElementById('dispatchRecurringEnd').value = '';
+                const recurringMeta = (planTaskMetaByRow[rowKey] || {}).recurring || null;
+                currentDispatchSeriesCount = recurringMeta && Array.isArray(recurringMeta.dates) ? recurringMeta.dates.length : 0;
+                const recurringRule = recurringMeta && recurringMeta.rule ? recurringMeta.rule : null;
+                const recurringDatesMeta = recurringMeta && Array.isArray(recurringMeta.dates) ? recurringMeta.dates : [];
+                const ruleWeekdays = recurringRule && Array.isArray(recurringRule.weekdays)
+                    ? recurringRule.weekdays.map(Number)
+                    : Array.from(new Set(recurringDatesMeta.map(d => new Date(d.date + 'T00:00:00').getDay())));
+                document.getElementById(recurringMeta ? 'dispatchDateModeRecurring' : 'dispatchDateModeSingle').checked = true;
+                document.getElementById('dispatchRecurringStart').value = recurringMeta
+                    ? ((recurringRule && recurringRule.start) || (recurringDatesMeta[0] || {}).date || '')
+                    : (parsedEstimated ? parsedEstimated.date : '');
+                document.getElementById('dispatchRecurringEnd').value = recurringMeta
+                    ? ((recurringRule && recurringRule.end) || (recurringDatesMeta[recurringDatesMeta.length - 1] || {}).date || '')
+                    : '';
                 document.querySelectorAll('.dispatch-recurring-weekday').forEach(function(cb) {
-                    cb.checked = false;
+                    cb.checked = recurringMeta ? ruleWeekdays.includes(parseInt(cb.value, 10)) : false;
                 });
+                if (recurringRule && recurringRule.time && estimatedEndTime) {
+                    estimatedEndTime.value = recurringRule.time;
+                }
+                const existingBox = document.getElementById('dispatchRecurringExisting');
+                if (existingBox) {
+                    if (recurringDatesMeta.length > 0) {
+                        existingBox.innerHTML = `<div class="fw-semibold mb-1">目前週期派工（共 ${recurringDatesMeta.length} 次）</div>` +
+                            recurringDatesMeta.map(function(d) {
+                                const done = ['8', '9'].includes(String(d.status_value));
+                                return `<span class="badge ${done ? 'bg-success' : 'bg-light text-dark border'} me-1 mb-1">${escapeHtml(d.date.slice(5).replace('-', '/'))} ${escapeHtml(d.status)}</span>`;
+                            }).join('');
+                        existingBox.style.display = 'block';
+                    } else {
+                        existingBox.innerHTML = '';
+                        existingBox.style.display = 'none';
+                    }
+                }
                 refreshDispatchRecurringUI();
                 if (durationDisplay) {
                     durationDisplay.value = scheduleInfo.duration;
@@ -1206,7 +1243,9 @@
                     preview.textContent = `超過 ${DISPATCH_RECURRING_MAX} 筆上限，請縮短日期區間`;
                 } else {
                     const shown = dates.map(d => d.slice(5).replace('-', '/')).join('、');
-                    preview.textContent = `將建立 ${dates.length} 筆：${shown}`;
+                    preview.textContent = currentDispatchSeriesCount > 0
+                        ? `儲存後共 ${dates.length} 筆：${shown}`
+                        : `將建立 ${dates.length} 筆：${shown}`;
                 }
             }
 
@@ -1347,10 +1386,17 @@
                         return;
                     }
                     const shown = recurringDates.map(d => d.slice(5).replace('-', '/')).join('、');
-                    if (!confirm(`將建立 ${recurringDates.length} 筆派工：\n${shown}\n\n排程這一列會連結第一個日期（${recurringDates[0].replace(/-/g, '/')}），確定送出？`)) {
+                    const head = currentDispatchSeriesCount > 0
+                        ? `週期派工將更新為 ${recurringDates.length} 筆（不在新日期內且未完成的會刪除，已完成的保留）：`
+                        : `將建立 ${recurringDates.length} 筆派工：`;
+                    if (!confirm(`${head}\n${shown}\n\n排程這一列會連結第一個日期（${recurringDates[0].replace(/-/g, '/')}），確定送出？`)) {
                         return;
                     }
                     document.getElementById('dispatchEstimatedEndDate').value = recurringDates[0];
+                } else if (currentDispatchSeriesCount > 0) {
+                    if (!confirm(`這筆是週期派工（共 ${currentDispatchSeriesCount} 次）。\n改成單一日期會刪除其他尚未完成的週期派工，已完成的保留。確定？`)) {
+                        return;
+                    }
                 }
 
                 const modalEstimatedIso = getModalEstimatedEndIso();
@@ -1441,6 +1487,11 @@
                             formData.append('dispatch_recurring_weekdays[]', cb.value);
                         });
                     }
+                    if (recurringDates.length === 0 && currentDispatchSeriesCount > 0) {
+                        formData.append('dispatch_recurring_clear', '1');
+                    }
+                    formData.delete('plan_form_end');
+                    formData.append('plan_form_end', '1');
                     fetch(planForm.action, {
                         method: 'POST',
                         body: formData,
