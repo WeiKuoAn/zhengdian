@@ -394,7 +394,7 @@
                                                     data-row="{{ $key }}"
                                                     data-link-days="{{ (int) ($task_data->link_days ?? 0) }}"
                                                     data-duration-minutes="{{ (int) ($task_data->duration_minutes ?? 0) }}"
-                                                    @if (!empty($task_data->linked_task_estimated_end))
+                                                    @if (!empty($task_data->linked_task_id) && !empty($task_data->linked_task_estimated_end))
                                                         data-fixed-estimated-end="{{ $task_data->linked_task_estimated_end }}"
                                                     @endif
                                                     @if ($isLevelTwo) readonly @endif>
