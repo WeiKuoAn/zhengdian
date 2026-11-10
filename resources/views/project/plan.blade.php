@@ -736,6 +736,7 @@
             }
 
             let syncPlanMilestoneDates = null;
+            let cascadePlanOrderFromRow = null;
 
             function bindOrderCascade() {
                 const inputs = document.querySelectorAll('.plan-order-date');
@@ -910,6 +911,10 @@
                         if (!prevInput || !prevInput.value) {
                             continue;
                         }
+                        // 已派工列的表訂日／預計完成以派工為準，連動時不覆蓋
+                        if (inputs[j].getAttribute('data-fixed-estimated-end')) {
+                            continue;
+                        }
                         inputs[j].removeAttribute('data-manual-order');
                         const linkDays = parseInt(inputs[j].getAttribute('data-link-days') || '0', 10);
                         inputs[j].value = computeNextOrderDateFromPrevious(prevInput, linkDays);
@@ -917,7 +922,7 @@
                     refreshAllEstimatedEnds();
                 }
 
-                // 載入時：只填空白列；已有表訂日的列當錨點，不回推、不覆蓋
+                // 載入時：先補空白列；再以已派工列為錨點，把後面未派工的表訂日重算一次
                 function fillEmptyCascade() {
                     const n = inputs.length;
                     for (let j = 1; j < n; j++) {
@@ -931,6 +936,15 @@
                         const linkDays = parseInt(inputs[j].getAttribute('data-link-days') || '0', 10);
                         inputs[j].value = computeNextOrderDateFromPrevious(prevInput, linkDays);
                     }
+                    inputs.forEach(function(input) {
+                        if (!input.getAttribute('data-fixed-estimated-end')) {
+                            return;
+                        }
+                        const row = parseInt(input.getAttribute('data-row'), 10);
+                        if (!isNaN(row)) {
+                            cascadeFromRow(row);
+                        }
+                    });
                     refreshAllEstimatedEnds();
                 }
 
@@ -948,6 +962,11 @@
                             estimatedEndInput.value = estimated ? formatIsoDateTime(estimated) : '';
                         }
                     });
+                };
+
+                cascadePlanOrderFromRow = function(startRow) {
+                    cascadeFromRow(startRow);
+                    syncPlanMilestoneDates();
                 };
 
                 inputs.forEach(function(input) {
@@ -1468,7 +1487,10 @@
                 const planForm = document.getElementById('plan-form');
                 if (planForm) {
                     syncCurrentRowEstimatedEndHidden(rowKey);
-                    if (typeof syncPlanMilestoneDates === 'function') {
+                    const cascadeRow = parseInt(rowKey, 10);
+                    if (typeof cascadePlanOrderFromRow === 'function' && !isNaN(cascadeRow)) {
+                        cascadePlanOrderFromRow(cascadeRow);
+                    } else if (typeof syncPlanMilestoneDates === 'function') {
                         syncPlanMilestoneDates();
                     }
                     const saveBtn = document.getElementById('saveDispatchEditor');
